@@ -1,4 +1,33 @@
 // ŞEHİR VERİSİ (şimdilik sadece Türkiye)
+// Ülke -> Kıta eşleşmesi
+const ulkeKita = {
+    "Turkey": "Asya", "Russia": "Asya", "Cyprus": "Asya",
+    "France": "Avrupa", "Italy": "Avrupa", "Spain": "Avrupa", "Germany": "Avrupa",
+    "United Kingdom": "Avrupa", "Netherlands": "Avrupa", "Belgium": "Avrupa",
+    "Portugal": "Avrupa", "Switzerland": "Avrupa", "Austria": "Avrupa",
+    "Greece": "Avrupa", "Poland": "Avrupa", "Czech Republic": "Avrupa",
+    "Hungary": "Avrupa", "Ireland": "Avrupa", "Sweden": "Avrupa",
+    "Norway": "Avrupa", "Denmark": "Avrupa", "Finland": "Avrupa",
+    "Croatia": "Avrupa", "Romania": "Avrupa", "Bulgaria": "Avrupa",
+    "Republic of Serbia": "Avrupa", "Ukraine": "Avrupa", "Iceland": "Avrupa",
+    "Slovakia": "Avrupa", "Slovenia": "Avrupa", "Bosnia and Herzegovina": "Avrupa",
+    "Albania": "Avrupa", "Macedonia": "Avrupa", "Montenegro": "Avrupa",
+    "Kosovo": "Avrupa", "Lithuania": "Avrupa", "Latvia": "Avrupa",
+    "Estonia": "Avrupa", "Belarus": "Avrupa", "Moldova": "Avrupa",
+    "Luxembourg": "Avrupa"
+};
+
+// Kıta başına toplam ülke sayısı (dünyadaki, kabaca)
+const kitaToplam = {
+    "Avrupa": 44, "Asya": 48, "Afrika": 54,
+    "Kuzey Amerika": 23, "Güney Amerika": 12, "Okyanusya": 14
+};
+
+// Kıta renkleri
+const kitaRenk = {
+    "Avrupa": "#E67E22", "Asya": "#3498DB", "Afrika": "#F1C40F",
+    "Kuzey Amerika": "#2ECC71", "Güney Amerika": "#9B59B6", "Okyanusya": "#1ABC9C"
+};
 const sehirVerisi = {
     "Turkey": [
         { ad: "İstanbul", foto: "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=400", aciklama: "İki kıtayı birleştiren tarihi metropol." },
@@ -162,6 +191,87 @@ const sehirVerisi = {
         { ad: "Akureyri", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kuzey'in başkenti denen şehir." },
         { ad: "Vik", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Siyah kumlu plajlar." },
         { ad: "Hafnarfjörður", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Lav alanı üstünde kurulu liman." }
+    ]    ,
+    "Slovakia": [
+        { ad: "Bratislava", foto: "https://images.unsplash.com/photo-1568792923760-d70635a89fdc?w=400", aciklama: "Tuna kıyısında şirin başkent." },
+        { ad: "Košice", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Doğunun tarihi şehri." },
+        { ad: "Žilina", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kuzeyin sanayi ve kültür merkezi." },
+        { ad: "Poprad", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Yüksek Tatra dağlarının kapısı." }
+    ],
+    "Slovenia": [
+        { ad: "Ljubljana", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Ejderha köprülü yeşil başkent." },
+        { ad: "Bled", foto: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=400", aciklama: "Göl ortasında kilise, masalsı." },
+        { ad: "Maribor", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Dünyanın en yaşlı asmasının şehri." },
+        { ad: "Piran", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Adriyatik'te Venedik havalı kasaba." }
+    ],
+        "Bosnia and Herzegovina": [
+        { ad: "Saraybosna", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Doğu-Batı kültürünün buluştuğu başkent." },
+        { ad: "Mostar", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Ünlü eski köprüsüyle tanınır." },
+        { ad: "Banja Luka", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Yeşil, nehir kıyısı şehir." },
+        { ad: "Tuzla", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tuz gölleriyle ünlü şehir." }
+    ],
+    "Albania": [
+        { ad: "Tiran", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Renkli binalarıyla canlanan başkent." },
+        { ad: "Sarande", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "İyon sahilinin tatil şehri." },
+        { ad: "Berat", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Bin pencereli şehir, UNESCO." },
+        { ad: "Shkoder", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Göl kıyısında kültür şehri." }
+    ],
+    "Macedonia": [
+        { ad: "Üsküp", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Vardar nehri ve heykeller şehri." },
+        { ad: "Ohrid", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Göl kıyısında tarihi inci." },
+        { ad: "Bitola", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Konsoloslar şehri denen yer." },
+        { ad: "Tetovo", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Renkli camiyle ünlü." }
+    ],
+    "Montenegro": [
+        { ad: "Podgorica", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Karadağ'ın sakin başkenti." },
+        { ad: "Kotor", foto: "https://images.unsplash.com/photo-1591536421904-8b8b8b8b8b8b?w=400", aciklama: "Fiyort benzeri körfezde surlu şehir." },
+        { ad: "Budva", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Adriyatik'in gece hayatı merkezi." },
+        { ad: "Cetinje", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Eski kraliyet başkenti." }
+    ],
+    "Kosovo": [
+        { ad: "Priştine", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Genç nüfuslu canlı başkent." },
+        { ad: "Prizren", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Osmanlı mirası tarihi şehir." },
+        { ad: "Peja", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Dağların eteğinde, manastırlar." },
+        { ad: "Gjakova", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Eski çarşısıyla ünlü." }
+    ],
+    "Lithuania": [
+        { ad: "Vilnius", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Barok mimarili tarihi başkent." },
+        { ad: "Kaunas", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Savaşlar arası mimari şehri." },
+        { ad: "Klaipeda", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Baltık liman şehri." },
+        { ad: "Šiauliai", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Haçlar Tepesi'nin şehri." }
+    ],
+    "Latvia": [
+        { ad: "Riga", foto: "https://images.unsplash.com/photo-1567095761054-7a02e69e5c43?w=400", aciklama: "Art nouveau başkenti, Baltık." },
+        { ad: "Jurmala", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Baltık kıyısında kaplıca şehri." },
+        { ad: "Daugavpils", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Doğunun kültür merkezi." },
+        { ad: "Liepaja", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Rüzgar ve müzik şehri." }
+    ],
+    "Estonia": [
+        { ad: "Tallinn", foto: "https://images.unsplash.com/photo-1541447271487-09612b3f49f7?w=400", aciklama: "Ortaçağ surları korunmuş başkent." },
+        { ad: "Tartu", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Estonya'nın üniversite şehri." },
+        { ad: "Pärnu", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Yazlık başkent, plajlar." },
+        { ad: "Narva", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Rusya sınırında kaleli şehir." }
+    ],
+    "Belarus": [
+        { ad: "Minsk", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Geniş bulvarlı Sovyet mimarisi." },
+        { ad: "Brest", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Ünlü kalesiyle sınır şehri." },
+        { ad: "Grodno", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Tarihi merkezi korunmuş şehir." },
+        { ad: "Vitebsk", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Chagall'ın doğduğu şehir." }
+    ],
+    "Moldova": [
+        { ad: "Kişinev", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Yeşil parklı sakin başkent." },
+        { ad: "Tiraspol", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Transdinyester bölgesinin merkezi." },
+        { ad: "Bălți", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Kuzeyin başkenti denen şehir." },
+        { ad: "Orhei", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Eski manastırlarıyla ünlü." }
+    ],
+    "Luxembourg": [
+        { ad: "Lüksemburg", foto: "https://images.unsplash.com/photo-1591622180787-1e2b1e1e1e1e?w=400", aciklama: "Vadiler üstünde kaleli başkent." }
+    ],
+    "Cyprus": [
+        { ad: "Lefkoşa", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Bölünmüş son başkent." },
+        { ad: "Limasol", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sahil ve gece hayatı." },
+        { ad: "Baf", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Antik mozaikler, Afrodit efsanesi." },
+        { ad: "Larnaka", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Palmiyeli sahil şehri." }
     ]
 };
 
@@ -207,6 +317,7 @@ function sehirSec(kart, ulke, sehir) {
     istatistikGuncelle();
     gecmisGuncelle();
     ulkeRenkGuncelle(ulke);
+    kitaChartCiz();
 }
 
 const harita = L.map("harita", { center: [30, 15], zoom: 2 });
@@ -321,3 +432,93 @@ document.addEventListener("mousemove", function(e) {
     document.getElementById("crosshairX").style.top = e.clientY + "px";
     document.getElementById("crosshairY").style.left = e.clientX + "px";
 });
+
+function kitaChartCiz() {
+    // Gezilen tekrarsız ülkeleri bul
+    const gezilenUlkeler = [];
+    for (let i = 0; i < gezilenler.length; i++) {
+        if (gezilenUlkeler.indexOf(gezilenler[i].ulke) === -1) {
+            gezilenUlkeler.push(gezilenler[i].ulke);
+        }
+    }
+
+    // Kıta başına gezilen ülke sayısı
+    const kitaSayim = {};
+    for (let i = 0; i < gezilenUlkeler.length; i++) {
+        const kita = ulkeKita[gezilenUlkeler[i]];
+        if (!kita) continue;
+        kitaSayim[kita] = (kitaSayim[kita] || 0) + 1;
+    }
+
+    const svg = document.getElementById("kitaSvg");
+    const lejant = document.getElementById("kitaLejant");
+    svg.innerHTML = "";
+    lejant.innerHTML = "";
+
+    const kitalar = Object.keys(kitaSayim);
+    const toplamGezilen = gezilenUlkeler.length;
+
+    if (toplamGezilen === 0) {
+        lejant.innerHTML = "<div style='color:#888;font-size:13px'>Henüz ülke gezmedin.</div>";
+        return;
+    }
+
+    // Donut ayarları
+        // Pasta (pie) ayarları
+        const merkez = 100, yaricap = 90;
+        let baslangicAci = -90; // tepeden başla
+    
+        // Bir açıyı x,y noktasına çeviren yardımcı
+        function noktaBul(aci) {
+            const rad = (aci * Math.PI) / 180;
+            return {
+                x: merkez + yaricap * Math.cos(rad),
+                y: merkez + yaricap * Math.sin(rad)
+            };
+        }
+    
+        for (let i = 0; i < kitalar.length; i++) {
+            const kita = kitalar[i];
+            const pay = kitaSayim[kita] / toplamGezilen;
+            const renk = kitaRenk[kita] || "#888";
+    
+            const bitisAci = baslangicAci + pay * 360;
+            const bas = noktaBul(baslangicAci);
+            const bit = noktaBul(bitisAci);
+            const buyukYay = pay > 0.5 ? 1 : 0;
+    
+            // Dilim (path): merkez -> yay başı -> yay -> merkez
+            const d =
+                "M " + merkez + " " + merkez + " " +
+                "L " + bas.x + " " + bas.y + " " +
+                "A " + yaricap + " " + yaricap + " 0 " + buyukYay + " 1 " + bit.x + " " + bit.y + " " +
+                "Z";
+    
+            const dilim = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            dilim.setAttribute("d", d);
+            dilim.setAttribute("fill", renk);
+            svg.appendChild(dilim);
+    
+            baslangicAci = bitisAci;
+    
+            // Lejant satırı
+            const gezilen = kitaSayim[kita];
+            const toplam = kitaToplam[kita] || "?";
+            const yuzde = Math.round((gezilen / toplam) * 100);
+    
+            lejant.innerHTML +=
+                "<div class='lejant-satir'>" +
+                    "<span class='lejant-renk' style='background:" + renk + "'></span>" +
+                    "<span>" + kita + "</span>" +
+                    "<span class='lejant-yuzde'>%" + yuzde + " (" + gezilen + "/" + toplam + ")</span>" +
+                "</div>";
+        }
+    
+        // Dönerek açılma efekti
+        // Dönerek açılma efekti
+        svg.classList.remove("donuyor");
+        void svg.offsetWidth; // animasyonu yeniden tetikle
+        svg.classList.add("donuyor");
+}
+
+kitaChartCiz();

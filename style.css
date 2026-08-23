@@ -179,3 +179,37 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     z-index: 901;
     letter-spacing: 2px;
 }
+
+#kitaChart {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: #1e2a3a;
+    border-radius: 16px;
+    padding: 16px;
+    z-index: 1000;
+    width: 240px;
+    box-sizing: border-box;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+}
+#kitaSvg { width: 100%; height: auto; display: block; transform-origin: center center; }
+@keyframes pastaDon {
+    from { transform: rotate(-90deg) scale(0); }
+    to { transform: rotate(0deg) scale(1); }
+}
+#kitaSvg.donuyor { animation: pastaDon 1s ease; }
+#kitaLejant { margin-top: 12px; }
+.lejant-satir {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    color: #eee;
+    font-size: 13px;
+}
+.lejant-renk {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+.lejant-yuzde { color: #FF8C1A; font-weight: 700; margin-left: auto; }
