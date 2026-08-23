@@ -5,6 +5,30 @@ const sehirVerisi = {
         { ad: "Ankara", foto: "https://images.unsplash.com/photo-1589561253898-768105ca91a8?w=400", aciklama: "Türkiye'nin başkenti." },
         { ad: "İzmir", foto: "https://images.unsplash.com/photo-1605101479435-005f9c563944?w=400", aciklama: "Ege'nin incisi, sahil şehri." },
         { ad: "Antalya", foto: "https://images.unsplash.com/photo-1600240644455-3edc55c375fe?w=400", aciklama: "Turkuaz sahilleriyle ünlü tatil şehri." }
+    ],
+    "France": [
+        { ad: "Paris", foto: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400", aciklama: "Işık şehri, Eyfel Kulesi'nin evi." },
+        { ad: "Nice", foto: "https://images.unsplash.com/photo-1491166617655-0723a0999cfc?w=400", aciklama: "Fransız Rivierası'nın gözdesi." },
+        { ad: "Lyon", foto: "https://images.unsplash.com/photo-1524396309943-e03f5249f002?w=400", aciklama: "Gastronomi başkenti." },
+        { ad: "Marseille", foto: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/1_marseille_vieux_port_20140324.jpg/400px-1_marseille_vieux_port_20140324.jpg", aciklama: "Akdeniz'in liman şehri." }
+    ],
+    "Italy": [
+        { ad: "Roma", foto: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400", aciklama: "Antik tarihin başkenti, Kolezyum." },
+        { ad: "Venedik", foto: "https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=400", aciklama: "Kanallar üstüne kurulu şehir." },
+        { ad: "Floransa", foto: "https://images.unsplash.com/photo-1541370976299-4d24ebbc9077?w=400", aciklama: "Rönesans'ın doğduğu yer." },
+        { ad: "Milano", foto: "https://images.unsplash.com/photo-1520440229-6469a149ac59?w=400", aciklama: "Moda ve tasarım merkezi." }
+    ],
+    "Spain": [
+        { ad: "Barselona", foto: "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=400", aciklama: "Gaudí mimarisi ve deniz." },
+        { ad: "Madrid", foto: "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=400", aciklama: "İspanya'nın canlı başkenti." },
+        { ad: "Sevilla", foto: "https://images.unsplash.com/photo-1559386081-325882507af7?w=400", aciklama: "Flamenko ve Endülüs ruhu." },
+        { ad: "Valencia", foto: "https://images.unsplash.com/photo-1560717789-0ac7c58ac90a?w=400", aciklama: "Paella'nın ve modern mimarinin şehri." }
+    ],
+    "Germany": [
+        { ad: "Berlin", foto: "https://images.unsplash.com/photo-1560969184-10fe8719e047?w=400", aciklama: "Tarih ve sanatın buluştuğu başkent." },
+        { ad: "Münih", foto: "https://images.unsplash.com/photo-1595867818082-083862f3d630?w=400", aciklama: "Bavyera'nın kalbi, Oktoberfest." },
+        { ad: "Hamburg", foto: "https://images.unsplash.com/photo-1567696911980-2eed69a46042?w=400", aciklama: "Kuzey'in büyük liman şehri." },
+        { ad: "Köln", foto: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Cologne_Cathedral_at_night.jpg/400px-Cologne_Cathedral_at_night.jpg", aciklama: "Ünlü katedraliyle tanınır." }
     ]
 };
 
@@ -105,7 +129,7 @@ function panelAc(ulkeAdi) {
 
             liste.innerHTML +=
                 "<div class='sehir-kart" + (seciliMi ? " secili" : "") + "' onclick='sehirSec(this, \"" + ulkeAdi + "\", \"" + sehirler[i].ad + "\")'>" +
-                    "<img src='" + sehirler[i].foto + "'>" +
+                "<img src='" + sehirler[i].foto + "' onerror='this.src=\"https://placehold.co/400x200/1a1a1a/E67E22?text=\" + encodeURIComponent(this.alt || \"foto\")' alt='" + sehirler[i].ad + "'>" +
                     "<div class='sehir-bilgi'>" +
                         "<div class='sehir-ad'>" + sehirler[i].ad + "</div>" +
                         "<div class='sehir-aciklama'>" + sehirler[i].aciklama + "</div>" +
@@ -114,8 +138,13 @@ function panelAc(ulkeAdi) {
         }
     }
     document.getElementById("panel").classList.add("acik");
+    document.getElementById("ortu").classList.add("acik");
 }
 
-document.getElementById("kapat").addEventListener("click", function() {
+function paneliKapat() {
     document.getElementById("panel").classList.remove("acik");
-});
+    document.getElementById("ortu").classList.remove("acik");
+}
+
+document.getElementById("kapat").addEventListener("click", paneliKapat);
+document.getElementById("ortu").addEventListener("click", paneliKapat);
