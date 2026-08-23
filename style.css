@@ -1,5 +1,5 @@
 body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
-#harita { height: 100vh; width: 100%; background: #1b3a5c; }
+#harita { height: 100vh; width: 100%; background: #e8e0d0; }
 
 /* Panel */
 #panel {
@@ -84,10 +84,13 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     transform: translateX(-50%);
     z-index: 1000;
     color: #FF8C1A;
-    font-size: 34px;
+    font-size: 30px;
     font-weight: 800;
     letter-spacing: 0.5px;
-    text-shadow: 0 2px 12px rgba(0,0,0,0.7), 0 0 20px rgba(255,140,26,0.4);
+    background: #1e2a3a;
+    padding: 12px 28px;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
     pointer-events: none;
 }
 #crosshairX, #crosshairY {
@@ -117,7 +120,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     box-sizing: border-box;
     max-height: 70vh;
     overflow-y: auto;
-    background: rgba(17,17,17,0.9);
+    background: #1e2a3a;
     border-radius: 12px;
     padding: 16px;
     z-index: 900;
@@ -166,7 +169,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     right: 20px;
     width: 240px;
     box-sizing: border-box;
-    background: #000;
+    background: #1e2a3a;
     color: #E67E22;
     font-family: "Black Ops One", sans-serif;
     font-size: 26px;

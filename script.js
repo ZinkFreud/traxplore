@@ -55,7 +55,7 @@ function ulkeRenkGuncelle(ulke) {
     const katman = ulkeKatmanlari[ulke];
     if (!katman) return;
     const gezildi = gezilenler.some(function(g) { return g.ulke === ulke; });
-    katman.setStyle({ fillColor: gezildi ? "#E67E22" : "#1a1a1a" });
+    katman.setStyle({ fillColor: gezildi ? "#E67E22" : "#1e2a3a" });
 }
 
 function sehirSec(kart, ulke, sehir) {
@@ -83,9 +83,9 @@ fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.g
     .then(function(veri) {
         L.geoJSON(veri, {
             style: {
-                fillColor: "#1a1a1a",
+                fillColor: "#1e2a3a",
                 fillOpacity: 1,
-                color: "#1b3a5c",
+                color: "#e8e0d0",
                 weight: 1
             },
             onEachFeature: function(feature, layer) {
@@ -95,7 +95,7 @@ fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.g
                     mouseover: function(e) { e.target.setStyle({ fillColor: "#E67E22" }); },
                     mouseout: function(e) {
                         const gezildi = gezilenler.some(function(g) { return g.ulke === feature.properties.name; });
-                        e.target.setStyle({ fillColor: gezildi ? "#E67E22" : "#1a1a1a" });
+                        e.target.setStyle({ fillColor: gezildi ? "#E67E22" : "#1e2a3a" });
                     },
                     click: function(e) { panelAc(feature.properties.name); }
                 });
