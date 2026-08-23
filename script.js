@@ -72,6 +72,7 @@ function sehirSec(kart, ulke, sehir) {
     }
     gezileriKaydet();
     istatistikGuncelle();
+    gecmisGuncelle();
     ulkeRenkGuncelle(ulke);
 }
 
@@ -106,8 +107,42 @@ fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.g
             ulkeRenkGuncelle(gezilenler[i].ulke);
         }
     });
-
+    gecmisGuncelle();
 istatistikGuncelle();
+function gecmisGuncelle() {
+    const liste = document.getElementById("gecmisListe");
+    liste.innerHTML = "";
+
+    // Ülkeleri son eklenme sırasına göre, tekrarsız topla
+    const ulkeSirasi = [];
+    for (let i = gezilenler.length - 1; i >= 0; i--) {
+        const u = gezilenler[i].ulke;
+        if (ulkeSirasi.indexOf(u) === -1) {
+            ulkeSirasi.push(u);
+        }
+    }
+
+    const son10 = ulkeSirasi.slice(0, 10);
+
+    for (let i = 0; i < son10.length; i++) {
+        const ulke = son10[i];
+        const sehirler = gezilenler.filter(function(g) { return g.ulke === ulke; });
+
+        let sehirHtml = "";
+        for (let j = 0; j < sehirler.length; j++) {
+            sehirHtml += "<div class='gecmis-sehir'>" + sehirler[j].sehir + "</div>";
+        }
+
+        liste.innerHTML +=
+            "<div class='gecmis-ulke' onclick='this.classList.toggle(\"acik\")'>" +
+                "<div class='gecmis-ulke-ad'>" +
+                    "<span>" + ulke + "</span>" +
+                    "<span class='gecmis-ok'>›</span>" +
+                "</div>" +
+                "<div class='gecmis-sehirler'>" + sehirHtml + "</div>" +
+            "</div>";
+    }
+}
 
 function panelAc(ulkeAdi) {
     document.getElementById("panelBaslik").textContent = ulkeAdi;
@@ -148,3 +183,8 @@ function paneliKapat() {
 
 document.getElementById("kapat").addEventListener("click", paneliKapat);
 document.getElementById("ortu").addEventListener("click", paneliKapat);
+
+document.addEventListener("mousemove", function(e) {
+    document.getElementById("crosshairX").style.top = e.clientY + "px";
+    document.getElementById("crosshairY").style.left = e.clientX + "px";
+});

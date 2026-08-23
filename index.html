@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Traxplore</title>
-
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="crosshairY"></div>
+    <div id="crosshairX"></div>
     <div id="istatistik">0 ÜLKE — 0 ŞEHİR GEZDİN</div>
     <div id="harita"></div>
     <div id="ortu"></div>
@@ -19,6 +21,11 @@
         <h2 id="panelBaslik"></h2>
         <p id="panelAltBaslik">Hangi şehirlere gittin?</p>
         <div id="sehirListe"></div>
+    </div>
+    <div id="logo">TRAXPLORE</div>
+    <div id="gecmisPanel">
+        <h3 id="gecmisBaslik">Son Gezdiklerin</h3>
+        <div id="gecmisListe"></div>
     </div>
 
     <script src="script.js"></script>
