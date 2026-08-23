@@ -10,7 +10,7 @@ const sehirVerisi = {
         { ad: "Paris", foto: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400", aciklama: "Işık şehri, Eyfel Kulesi'nin evi." },
         { ad: "Nice", foto: "https://images.unsplash.com/photo-1491166617655-0723a0999cfc?w=400", aciklama: "Fransız Rivierası'nın gözdesi." },
         { ad: "Lyon", foto: "https://images.unsplash.com/photo-1524396309943-e03f5249f002?w=400", aciklama: "Gastronomi başkenti." },
-        { ad: "Marseille", foto: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/1_marseille_vieux_port_20140324.jpg/400px-1_marseille_vieux_port_20140324.jpg", aciklama: "Akdeniz'in liman şehri." }
+        { ad: "Marseille", foto: "https://commons.wikimedia.org/wiki/Special:FilePath/Vieux%20Port%20Marseille.jpg?width=400", aciklama: "Akdeniz'in liman şehri." }
     ],
     "Italy": [
         { ad: "Roma", foto: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=400", aciklama: "Antik tarihin başkenti, Kolezyum." },
@@ -28,7 +28,7 @@ const sehirVerisi = {
         { ad: "Berlin", foto: "https://images.unsplash.com/photo-1560969184-10fe8719e047?w=400", aciklama: "Tarih ve sanatın buluştuğu başkent." },
         { ad: "Münih", foto: "https://images.unsplash.com/photo-1595867818082-083862f3d630?w=400", aciklama: "Bavyera'nın kalbi, Oktoberfest." },
         { ad: "Hamburg", foto: "https://images.unsplash.com/photo-1567696911980-2eed69a46042?w=400", aciklama: "Kuzey'in büyük liman şehri." },
-        { ad: "Köln", foto: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Cologne_Cathedral_at_night.jpg/400px-Cologne_Cathedral_at_night.jpg", aciklama: "Ünlü katedraliyle tanınır." }
+        { ad: "Köln", foto: "https://commons.wikimedia.org/wiki/Special:FilePath/Cologne%20Germany%20Panorama-of-Cologne-city-center-01.jpg?width=400", aciklama: "Ünlü katedraliyle tanınır." }
     ]
 };
 
