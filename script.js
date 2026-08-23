@@ -812,6 +812,7 @@ function gecmisGuncelle() {
                 "<div class='gecmis-sehirler'>" + sehirHtml + "</div>" +
             "</div>";
     }
+    
 }
 
 function panelAc(ulkeAdi) {
@@ -1014,3 +1015,22 @@ function istatistikPaneliKapat() {
 
 document.getElementById("kitaChart").addEventListener("click", istatistikPaneliAc);
 document.getElementById("istatistikKapat").addEventListener("click", istatistikPaneliKapat);
+
+
+document.getElementById("sifirlaBtn").addEventListener("click", function() {
+    if (confirm("Emin misin? Tüm gezdiğin yerler silinecek ve harita ilk haline dönecek.")) {
+        gezilenler = [];
+        gezileriKaydet();
+
+        // Tüm ülke renklerini sıfırla
+        for (const ulke in ulkeKatmanlari) {
+            ulkeKatmanlari[ulke].setStyle({ fillColor: "#1e2a3a" });
+        }
+
+        istatistikGuncelle();
+        kitaChartCiz();
+        gecmisGuncelle();
+        
+    }
+});
+

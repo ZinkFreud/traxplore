@@ -273,3 +273,25 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     transition: width 1s ease;
 }
 #kitaChart { cursor: pointer; }
+
+#sifirlaBtn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 240px;
+    box-sizing: border-box;
+    background: #1e2a3a;
+    color: #E67E22;
+    font-family: "Black Ops One", sans-serif;
+    font-size: 15px;
+    text-align: center;
+    padding: 14px 0;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    z-index: 901;
+    letter-spacing: 1px;
+    transition: background 0.2s;
+}
+#sifirlaBtn:hover { background: #E67E22; color: #1e2a3a; }
+#sifirlaBtn:hover { background: #E67E22; color: #1e2a3a; }
