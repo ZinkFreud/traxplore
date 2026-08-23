@@ -14,8 +14,17 @@ const ulkeKita = {
     "Albania": "Avrupa", "Macedonia": "Avrupa", "Montenegro": "Avrupa",
     "Kosovo": "Avrupa", "Lithuania": "Avrupa", "Latvia": "Avrupa",
     "Estonia": "Avrupa", "Belarus": "Avrupa", "Moldova": "Avrupa",
-    "Luxembourg": "Avrupa"
+    "Luxembourg": "Avrupa",
+    "Brazil": "Güney Amerika", "Argentina": "Güney Amerika", "Chile": "Güney Amerika",
+    "Peru": "Güney Amerika", "Colombia": "Güney Amerika", "Venezuela": "Güney Amerika",
+    "Ecuador": "Güney Amerika", "Bolivia": "Güney Amerika", "Paraguay": "Güney Amerika",
+    "Uruguay": "Güney Amerika", "Guyana": "Güney Amerika", "Suriname": "Güney Amerika",
+    "United States of America": "Kuzey Amerika", "Canada": "Kuzey Amerika",
+    "Mexico": "Kuzey Amerika", "Cuba": "Kuzey Amerika", "Guatemala": "Kuzey Amerika",
+    "Panama": "Kuzey Amerika", "Costa Rica": "Kuzey Amerika", "Jamaica": "Kuzey Amerika"
 };
+
+
 
 // Kıta başına toplam ülke sayısı (dünyadaki, kabaca)
 const kitaToplam = {
@@ -272,6 +281,126 @@ const sehirVerisi = {
         { ad: "Limasol", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sahil ve gece hayatı." },
         { ad: "Baf", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Antik mozaikler, Afrodit efsanesi." },
         { ad: "Larnaka", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Palmiyeli sahil şehri." }
+    ]    ,
+    "Brazil": [
+        { ad: "Rio de Janeiro", foto: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=400", aciklama: "Kristo heykeli ve Copacabana." },
+        { ad: "São Paulo", foto: "https://images.unsplash.com/photo-1541609309631-0a1a1a1a1a1a?w=400", aciklama: "Latin Amerika'nın dev metropolü." },
+        { ad: "Salvador", foto: "https://images.unsplash.com/photo-1591634616938-1dfa7ee2e617?w=400", aciklama: "Afro-Brezilya kültürünün kalbi." },
+        { ad: "Brasília", foto: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400", aciklama: "Modern mimarili planlı başkent." }
+    ],
+    "Argentina": [
+        { ad: "Buenos Aires", foto: "https://images.unsplash.com/photo-1589909202802-8f4aadce1849?w=400", aciklama: "Tango ve Avrupa havalı başkent." },
+        { ad: "Córdoba", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Kolonyal mimarili üniversite şehri." },
+        { ad: "Mendoza", foto: "https://images.unsplash.com/photo-1560707303-4e980ce876ad?w=400", aciklama: "And Dağları eteğinde şarap bölgesi." },
+        { ad: "Bariloche", foto: "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=400", aciklama: "Göller ve kayak, İsviçre havası." }
+    ],
+    "Chile": [
+        { ad: "Santiago", foto: "https://images.unsplash.com/photo-1478827387698-1527781a4887?w=400", aciklama: "And Dağları'nın gölgesinde başkent." },
+        { ad: "Valparaíso", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Renkli tepe evleri, liman şehri." },
+        { ad: "Atacama", foto: "https://images.unsplash.com/photo-1518623489648-a173ef7824f3?w=400", aciklama: "Dünyanın en kurak çölü." },
+        { ad: "Puerto Montt", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Patagonya'nın kapısı." }
+    ],
+    "Peru": [
+        { ad: "Lima", foto: "https://images.unsplash.com/photo-1531968455001-5c5272a41129?w=400", aciklama: "Pasifik kıyısında gastronomi başkenti." },
+        { ad: "Cusco", foto: "https://images.unsplash.com/photo-1526392060635-9d6019884377?w=400", aciklama: "İnka İmparatorluğu'nun eski başkenti." },
+        { ad: "Machu Picchu", foto: "https://images.unsplash.com/photo-1587595431973-160d0d94add1?w=400", aciklama: "Bulutlar üstünde İnka şehri." },
+        { ad: "Arequipa", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Beyaz taştan kolonyal şehir." }
+    ],
+    "Colombia": [
+        { ad: "Bogotá", foto: "https://images.unsplash.com/photo-1568632234157-ce7aecd03d0d?w=400", aciklama: "Dağların üstünde yüksek başkent." },
+        { ad: "Cartagena", foto: "https://images.unsplash.com/photo-1583531352515-8c0e9d1a4b5d?w=400", aciklama: "Karayip kıyısında surlu kolonyal şehir." },
+        { ad: "Medellín", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Ebedi bahar şehri." },
+        { ad: "Cali", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Salsa'nın dünya başkenti." }
+    ],
+    "Venezuela": [
+        { ad: "Caracas", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Dağ eteğinde canlı başkent." },
+        { ad: "Maracaibo", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Petrol ve göl şehri." },
+        { ad: "Mérida", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "And Dağları'nda üniversite şehri." },
+        { ad: "Valencia", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Sanayi merkezi." }
+    ],
+    "Ecuador": [
+        { ad: "Quito", foto: "https://images.unsplash.com/photo-1568632234157-ce7aecd03d0d?w=400", aciklama: "Ekvator çizgisindeki başkent." },
+        { ad: "Guayaquil", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Büyük liman şehri." },
+        { ad: "Cuenca", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kolonyal mimarili UNESCO şehri." },
+        { ad: "Galápagos", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Eşsiz doğa yaşamının adaları." }
+    ],
+    "Bolivia": [
+        { ad: "La Paz", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Dünyanın en yüksek başkenti." },
+        { ad: "Uyuni", foto: "https://images.unsplash.com/photo-1526392060635-9d6019884377?w=400", aciklama: "Dünyanın en büyük tuz gölü." },
+        { ad: "Sucre", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Beyaz şehir, anayasal başkent." },
+        { ad: "Santa Cruz", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Ovadaki büyük ticaret şehri." }
+    ],
+    "Paraguay": [
+        { ad: "Asunción", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Nehir kıyısında tarihi başkent." },
+        { ad: "Ciudad del Este", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Sınır ticaret şehri, Iguazú yakını." },
+        { ad: "Encarnación", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Plajları ve karnavalıyla ünlü." },
+        { ad: "Luque", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "El sanatları merkezi." }
+    ],
+    "Uruguay": [
+        { ad: "Montevideo", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Sakin sahil başkenti." },
+        { ad: "Punta del Este", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Güney Amerika'nın lüks tatil yeri." },
+        { ad: "Colonia del Sacramento", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kolonyal UNESCO kasabası." },
+        { ad: "Salto", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Kaplıcaları ve nehriyle bilinir." }
+    ],
+    "Guyana": [
+        { ad: "Georgetown", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Ahşap kolonyal mimarili başkent." },
+        { ad: "Linden", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Boksit madenciliği şehri." },
+        { ad: "Kaieteur", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Dünyanın en büyük tek şelalelerinden." },
+        { ad: "New Amsterdam", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Doğu kıyısında nehir şehri." }
+    ],
+    "Suriname": [
+        { ad: "Paramaribo", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Hollanda kolonyal mimarili başkent." },
+        { ad: "Lelydorp", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "İkinci büyük yerleşim." },
+        { ad: "Nieuw Nickerie", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Pirinç tarımı bölgesi." },
+        { ad: "Brokopondo", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Baraj gölü ve orman." }
+    ]    ,
+    "United States of America": [
+        { ad: "New York", foto: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=400", aciklama: "Özgürlük Heykeli ve gökdelenler." },
+        { ad: "Los Angeles", foto: "https://images.unsplash.com/photo-1506190503914-c e2b4f5b5c8e?w=400", aciklama: "Hollywood ve Pasifik sahili." },
+        { ad: "San Francisco", foto: "https://images.unsplash.com/photo-1521747116042-5a810fda9664?w=400", aciklama: "Golden Gate ve teknoloji vadisi." },
+        { ad: "Las Vegas", foto: "https://images.unsplash.com/photo-1605833556294-ea5c7a74f57d?w=400", aciklama: "Çölün ortasında ışıklar şehri." }
+    ],
+    "Canada": [
+        { ad: "Toronto", foto: "https://images.unsplash.com/photo-1517935706615-2717063c2225?w=400", aciklama: "CN Kulesi ve çok kültürlü metropol." },
+        { ad: "Vancouver", foto: "https://images.unsplash.com/photo-1560814304-4f05b62af116?w=400", aciklama: "Dağlar ve okyanus arasında." },
+        { ad: "Montreal", foto: "https://images.unsplash.com/photo-1519178614-68673b201f36?w=400", aciklama: "Fransız ruhlu tarihi şehir." },
+        { ad: "Quebec City", foto: "https://images.unsplash.com/photo-1609825488888-3a766db05542?w=400", aciklama: "Surlu Avrupa havalı şehir." }
+    ],
+    "Mexico": [
+        { ad: "Mexico City", foto: "https://images.unsplash.com/photo-1518105779142-d975f22f1b0a?w=400", aciklama: "Aztek mirası üstüne kurulu dev başkent." },
+        { ad: "Cancún", foto: "https://images.unsplash.com/photo-1552074284-5e88ef1aef18?w=400", aciklama: "Karayip'in turkuaz plajları." },
+        { ad: "Guadalajara", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Tekila ve mariachi'nin şehri." },
+        { ad: "Oaxaca", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Renkli kültür ve mutfak." }
+    ],
+    "Cuba": [
+        { ad: "Havana", foto: "https://images.unsplash.com/photo-1500759285222-a95626b934cb?w=400", aciklama: "Klasik arabalar ve kolonyal şehir." },
+        { ad: "Varadero", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Uzun beyaz kumlu plajlar." },
+        { ad: "Trinidad", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Zamanın durduğu kolonyal kasaba." },
+        { ad: "Santiago de Cuba", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Müzik ve devrim tarihi." }
+    ],
+    "Guatemala": [
+        { ad: "Guatemala City", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Ülkenin büyük başkenti." },
+        { ad: "Antigua", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Volkanlar arası kolonyal şehir." },
+        { ad: "Tikal", foto: "https://images.unsplash.com/photo-1526392060635-9d6019884377?w=400", aciklama: "Ormanda antik Maya kenti." },
+        { ad: "Panajachel", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Atitlán gölü kıyısında." }
+    ],
+    "Panama": [
+        { ad: "Panama City", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Modern gökdelenler ve ünlü kanal." },
+        { ad: "Bocas del Toro", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Karayip takımadası." },
+        { ad: "Boquete", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Dağlarda kahve bölgesi." },
+        { ad: "Colón", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Kanalın Karayip ucu." }
+    ],
+    "Costa Rica": [
+        { ad: "San José", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Yeşil ülkenin başkenti." },
+        { ad: "Monteverde", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Bulut ormanı ve doğa." },
+        { ad: "Tamarindo", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Sörf ve Pasifik plajları." },
+        { ad: "La Fortuna", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Arenal yanardağının eteği." }
+    ],
+    "Jamaica": [
+        { ad: "Kingston", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Reggae'nin doğduğu başkent." },
+        { ad: "Montego Bay", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tatil ve plaj şehri." },
+        { ad: "Negril", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Yedi millik plajıyla ünlü." },
+        { ad: "Ocho Rios", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Şelaleler ve kruvaziyer limanı." }
     ]
 };
 
