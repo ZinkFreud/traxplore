@@ -213,3 +213,63 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     flex-shrink: 0;
 }
 .lejant-yuzde { color: #FF8C1A; font-weight: 700; margin-left: auto; }
+
+#istatistikPanel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 520px;
+    max-width: 90vw;
+    max-height: 85vh;
+    background: #1e2a3a;
+    color: #eee;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    overflow-y: auto;
+    z-index: 1001;
+    padding: 28px;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+#istatistikPanel.acik {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+#istatistikBaslik {
+    margin: 0 0 24px;
+    font-size: 22px;
+    color: #E67E22;
+    font-family: "Black Ops One", sans-serif;
+    letter-spacing: 1px;
+}
+#istatistikKapat {
+    position: absolute; top: 20px; right: 20px;
+    background: none; border: none; color: #888;
+    font-size: 24px; cursor: pointer;
+}
+.bar-satir { margin-bottom: 18px; }
+.bar-ust {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.bar-yuzde { color: #FF8C1A; }
+.bar-dis {
+    background: #0f1620;
+    border-radius: 8px;
+    height: 16px;
+    overflow: hidden;
+}
+.bar-ic {
+    height: 100%;
+    width: 0;
+    border-radius: 8px;
+    transition: width 1s ease;
+}
+#kitaChart { cursor: pointer; }

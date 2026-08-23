@@ -426,7 +426,10 @@ function paneliKapat() {
 }
 
 document.getElementById("kapat").addEventListener("click", paneliKapat);
-document.getElementById("ortu").addEventListener("click", paneliKapat);
+document.getElementById("ortu").addEventListener("click", function() {
+    paneliKapat();
+    istatistikPaneliKapat();
+});
 
 document.addEventListener("mousemove", function(e) {
     document.getElementById("crosshairX").style.top = e.clientY + "px";
@@ -522,3 +525,66 @@ function kitaChartCiz() {
 }
 
 kitaChartCiz();
+
+function istatistikPaneliDoldur() {
+    // Gezilen tekrarsız ülkeleri kıtalara göre say
+    const gezilenUlkeler = [];
+    for (let i = 0; i < gezilenler.length; i++) {
+        if (gezilenUlkeler.indexOf(gezilenler[i].ulke) === -1) {
+            gezilenUlkeler.push(gezilenler[i].ulke);
+        }
+    }
+    const kitaSayim = {};
+    for (let i = 0; i < gezilenUlkeler.length; i++) {
+        const kita = ulkeKita[gezilenUlkeler[i]];
+        if (!kita) continue;
+        kitaSayim[kita] = (kitaSayim[kita] || 0) + 1;
+    }
+
+    const liste = document.getElementById("kitaBarListe");
+    liste.innerHTML = "";
+
+    // TÜM kıtalar (gidilmemiş olsa da)
+    const tumKitalar = Object.keys(kitaToplam);
+
+    for (let i = 0; i < tumKitalar.length; i++) {
+        const kita = tumKitalar[i];
+        const gezilen = kitaSayim[kita] || 0;
+        const toplam = kitaToplam[kita];
+        const yuzde = Math.round((gezilen / toplam) * 100);
+        const renk = kitaRenk[kita] || "#888";
+
+        liste.innerHTML +=
+            "<div class='bar-satir'>" +
+                "<div class='bar-ust'>" +
+                    "<span>" + kita + " (" + gezilen + "/" + toplam + ")</span>" +
+                    "<span class='bar-yuzde'>%" + yuzde + "</span>" +
+                "</div>" +
+                "<div class='bar-dis'>" +
+                    "<div class='bar-ic' data-yuzde='" + yuzde + "' style='background:" + renk + "'></div>" +
+                "</div>" +
+            "</div>";
+    }
+
+    // Çubukları soldan sağa doldur (kısa gecikmeyle animasyon tetiklensin)
+    setTimeout(function() {
+        const barlar = document.querySelectorAll("#kitaBarListe .bar-ic");
+        for (let i = 0; i < barlar.length; i++) {
+            barlar[i].style.width = barlar[i].getAttribute("data-yuzde") + "%";
+        }
+    }, 50);
+}
+
+function istatistikPaneliAc() {
+    istatistikPaneliDoldur();
+    document.getElementById("istatistikPanel").classList.add("acik");
+    document.getElementById("ortu").classList.add("acik");
+}
+
+function istatistikPaneliKapat() {
+    document.getElementById("istatistikPanel").classList.remove("acik");
+    document.getElementById("ortu").classList.remove("acik");
+}
+
+document.getElementById("kitaChart").addEventListener("click", istatistikPaneliAc);
+document.getElementById("istatistikKapat").addEventListener("click", istatistikPaneliKapat);
