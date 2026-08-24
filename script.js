@@ -45,7 +45,7 @@ const ulkeKita = {
 // Kıta başına toplam ülke sayısı (dünyadaki, kabaca)
 const kitaToplam = {
     "Avrupa": 44, "Asya": 48, "Afrika": 54,
-    "Kuzey Amerika": 23, "Güney Amerika": 12, "Okyanusya": 14
+    "Kuzey Amerika": 23, "Güney Amerika": 14, "Okyanusya": 16
 };
 
 // Kıta renkleri
@@ -59,7 +59,7 @@ const sehirVerisi = {
         { ad: "Ankara", foto: "https://images.unsplash.com/photo-1589561253898-768105ca91a8?w=400", aciklama: "Türkiye'nin başkenti." },
         { ad: "İzmir", foto: "https://images.unsplash.com/photo-1605101479435-005f9c563944?w=400", aciklama: "Ege'nin incisi, sahil şehri." },
         { ad: "Antalya", foto: "https://images.unsplash.com/photo-1600240644455-3edc55c375fe?w=400", aciklama: "Turkuaz sahilleriyle ünlü tatil şehri." }
-    ],
+            ],
     "France": [
         { ad: "Paris", foto: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400", aciklama: "Işık şehri, Eyfel Kulesi'nin evi." },
         { ad: "Nice", foto: "https://images.unsplash.com/photo-1491166617655-0723a0999cfc?w=400", aciklama: "Fransız Rivierası'nın gözdesi." },
