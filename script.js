@@ -1152,6 +1152,8 @@ const sehirVerisi = {
 let gezilenler = JSON.parse(localStorage.getItem("gezilenler")) || [];
 let sehirDetaylari = JSON.parse(localStorage.getItem("sehirDetaylari")) || {};
 let aktifDetay = { ulke: "", sehir: "" };
+let sehirKoordinatlari = JSON.parse(localStorage.getItem("sehirKoordinatlari")) || {};
+let pinler = {}; // haritadaki marker'ları tutar (anahtar: "ulke|sehir")
 
 function gezileriKaydet() {
     localStorage.setItem("gezilenler", JSON.stringify(gezilenler));
@@ -1193,11 +1195,13 @@ function sehirSec(btn, ulke, sehir) {
         kart.classList.add("secili");
         btn.classList.add("aktif");
         btn.textContent = "✓";
+        pinEkle(ulke, sehir);
     } else {
         gezilenler.splice(indeks, 1);
         kart.classList.remove("secili");
         btn.classList.remove("aktif");
         btn.textContent = "+";
+        pinKaldir(ulke, sehir);
     }
     gezileriKaydet();
     istatistikGuncelle();
@@ -1233,9 +1237,15 @@ fetch("https://raw.githubusercontent.com/johan/world.geo.json/master/countries.g
         }).addTo(harita);
 
         // Kayıtlı gezilen ülkeleri baştan renklendir
-        for (let i = 0; i < gezilenler.length; i++) {
-            ulkeRenkGuncelle(gezilenler[i].ulke);
-        }
+                // Kayıtlı gezilen ülkeleri baştan renklendir
+                for (let i = 0; i < gezilenler.length; i++) {
+                    ulkeRenkGuncelle(gezilenler[i].ulke);
+                }
+        
+                // Kayıtlı gezilen şehirlere pin at
+                for (let i = 0; i < gezilenler.length; i++) {
+                    pinEkle(gezilenler[i].ulke, gezilenler[i].sehir);
+                }
     });
     gecmisGuncelle();
 istatistikGuncelle();
@@ -1498,6 +1508,13 @@ document.getElementById("istatistikKapat").addEventListener("click", istatistikP
 document.getElementById("sifirlaBtn").addEventListener("click", function() {
     if (confirm("Emin misin? Tüm gezdiğin yerler silinecek ve harita ilk haline dönecek.")) {
         gezilenler = [];
+
+                // Pinleri kaldır
+                for (const anahtar in pinler) {
+                    harita.removeLayer(pinler[anahtar]);
+                }
+                pinler = {};
+
         gezileriKaydet();
 
         // Tüm ülke renklerini sıfırla
@@ -1515,6 +1532,16 @@ document.getElementById("sifirlaBtn").addEventListener("click", function() {
 function sehirDetayAc(ulke, sehir) {
     aktifDetay = { ulke: ulke, sehir: sehir };
     document.getElementById("sehirDetayBaslik").textContent = sehir;
+
+    // Şehrin hazır görselini üstte göster
+    const sehirObj = (sehirVerisi[ulke] || []).find(function(s) { return s.ad === sehir; });
+    const kapak = document.getElementById("sehirKapak");
+    if (sehirObj && sehirObj.foto) {
+        kapak.src = sehirObj.foto;
+        kapak.style.display = "block";
+    } else {
+        kapak.style.display = "none";
+    }
 
     const anahtar = ulke + "|" + sehir;
     const detay = sehirDetaylari[anahtar] || { puan: 0, foto: "", not: "" };
@@ -1599,3 +1626,69 @@ harita.on("mousemove", function(e) {
     const lng = e.latlng.lng.toFixed(2);
     document.getElementById("koordinat").textContent = lat + ", " + lng;
 });
+
+// ---- PİN / KOORDİNAT SİSTEMİ ----
+let koordinatKuyrugu = [];
+let kuyrukCalisiyor = false;
+
+function kuyruguIslet() {
+    if (kuyrukCalisiyor || koordinatKuyrugu.length === 0) return;
+    kuyrukCalisiyor = true;
+
+    const is = koordinatKuyrugu.shift();
+    const anahtar = is.ulke + "|" + is.sehir;
+
+    const sorgu = encodeURIComponent(is.sehir + ", " + is.ulke);
+    fetch("https://nominatim.openstreetmap.org/search?format=json&q=" + sorgu + "&limit=1")
+        .then(function(cevap) { return cevap.json(); })
+        .then(function(veri) {
+            if (veri && veri.length > 0) {
+                const koord = [parseFloat(veri[0].lat), parseFloat(veri[0].lon)];
+                sehirKoordinatlari[anahtar] = koord;
+                localStorage.setItem("sehirKoordinatlari", JSON.stringify(sehirKoordinatlari));
+                is.callback(koord);
+            }
+        })
+        .catch(function() {})
+        .finally(function() {
+            setTimeout(function() {
+                kuyrukCalisiyor = false;
+                kuyruguIslet();
+            }, 2000);
+        });
+}
+
+function sehirKoordinatBul(ulke, sehir, callback) {
+    const anahtar = ulke + "|" + sehir;
+    if (sehirKoordinatlari[anahtar]) {
+        callback(sehirKoordinatlari[anahtar]);
+        return;
+    }
+    koordinatKuyrugu.push({ ulke: ulke, sehir: sehir, callback: callback });
+    kuyruguIslet();
+}
+
+function pinEkle(ulke, sehir) {
+    const anahtar = ulke + "|" + sehir;
+    if (pinler[anahtar]) return;
+
+    sehirKoordinatBul(ulke, sehir, function(koord) {
+        const marker = L.circleMarker(koord, {
+            radius: 5,
+            fillColor: "#E67E22",
+            color: "#fff",
+            weight: 2,
+            fillOpacity: 1
+        }).addTo(harita);
+        pinler[anahtar] = marker;
+    });
+}
+
+function pinKaldir(ulke, sehir) {
+    const anahtar = ulke + "|" + sehir;
+    if (pinler[anahtar]) {
+        harita.removeLayer(pinler[anahtar]);
+        delete pinler[anahtar];
+    }
+}
+
