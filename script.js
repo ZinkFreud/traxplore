@@ -1260,7 +1260,7 @@ function gecmisGuncelle() {
 
         let sehirHtml = "";
         for (let j = 0; j < sehirler.length; j++) {
-            sehirHtml += "<div class='gecmis-sehir'>" + sehirler[j].sehir + "</div>";
+            sehirHtml += "<div class='gecmis-sehir' onclick='event.stopPropagation(); sehirDetayAc(\"" + ulke + "\", \"" + sehirler[j].sehir + "\")'>" + sehirler[j].sehir + "</div>";
         }
 
         liste.innerHTML +=
