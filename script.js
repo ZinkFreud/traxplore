@@ -1558,11 +1558,27 @@ function sehirDetayAc(ulke, sehir) {
     }
 
     // Not
-    document.getElementById("sehirNot").value = detay.not || "";
+        // Not
+        document.getElementById("sehirNot").value = detay.not || "";
 
-    document.getElementById("sehirDetayPanel").classList.add("acik");
-    document.getElementById("ortu").classList.add("acik");
-}
+        // Gidilmiş mi? Gidilmediyse değerlendirme alanlarını kilitle
+        const gidildiMi = gezilenler.findIndex(function(g) {
+            return g.ulke === ulke && g.sehir === sehir;
+        }) !== -1;
+    
+        const detayGovde = document.getElementById("detayGovde");
+        const kilitUyari = document.getElementById("kilitUyari");
+        if (gidildiMi) {
+            detayGovde.style.display = "block";
+            kilitUyari.style.display = "none";
+        } else {
+            detayGovde.style.display = "none";
+            kilitUyari.style.display = "block";
+        }
+    
+        document.getElementById("sehirDetayPanel").classList.add("acik");
+        document.getElementById("ortu").classList.add("acik");
+    }
 
 let seciliPuan = 0;
 let seciliFoto = "";

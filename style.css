@@ -449,3 +449,16 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     margin-bottom: 20px;
     display: none;
 }
+
+#kilitUyari {
+    display: none;
+    background: #0f1620;
+    border: 2px dashed #E67E22;
+    color: #ccc;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.5;
+}
+#kilitUyari b { color: #E67E22; }
