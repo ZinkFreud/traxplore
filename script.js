@@ -1293,15 +1293,31 @@ function panelAc(ulkeAdi) {
                 return g.ulke === ulkeAdi && g.sehir === sehirler[i].ad;
             }) !== -1;
 
+            // Bu şehrin puanını al
+            const anahtar = ulkeAdi + "|" + sehirler[i].ad;
+            const detay = sehirDetaylari[anahtar];
+            const puan = detay && detay.puan ? detay.puan : 0;
+
+            // Yıldız HTML'i (puan varsa göster)
+            let yildizHtml = "";
+            if (puan > 0) {
+                let dolu = "";
+                for (let y = 0; y < 5; y++) {
+                    dolu += (y < puan) ? "★" : "☆";
+                }
+                yildizHtml = "<div class='kart-puan'>" + dolu + "</div>";
+            }
+
             liste.innerHTML +=
-            "<div class='sehir-kart" + (seciliMi ? " secili" : "") + "' onclick='sehirDetayAc(\"" + ulkeAdi + "\", \"" + sehirler[i].ad + "\")'>" +
-            "<button class='gittim-btn" + (seciliMi ? " aktif" : "") + "' onclick='event.stopPropagation(); sehirSec(this, \"" + ulkeAdi + "\", \"" + sehirler[i].ad + "\")'>" + (seciliMi ? "✓" : "+") + "</button>" +
-            "<img src='" + sehirler[i].foto + "' onerror='this.src=\"https://placehold.co/400x200/1a1a1a/E67E22?text=\" + encodeURIComponent(this.alt || \"foto\")' alt='" + sehirler[i].ad + "'>" +
-                "<div class='sehir-bilgi'>" +
-                    "<div class='sehir-ad'>" + sehirler[i].ad + "</div>" +
-                    "<div class='sehir-aciklama'>" + sehirler[i].aciklama + "</div>" +
-                "</div>" +
-            "</div>";
+                "<div class='sehir-kart" + (seciliMi ? " secili" : "") + "' onclick='sehirDetayAc(\"" + ulkeAdi + "\", \"" + sehirler[i].ad + "\")'>" +
+                "<button class='gittim-btn" + (seciliMi ? " aktif" : "") + "' onclick='event.stopPropagation(); sehirSec(this, \"" + ulkeAdi + "\", \"" + sehirler[i].ad + "\")'>" + (seciliMi ? "✓" : "+") + "</button>" +
+                yildizHtml +
+                "<img src='" + sehirler[i].foto + "' onerror='this.src=\"https://placehold.co/400x200/1a1a1a/E67E22?text=\" + encodeURIComponent(this.alt || \"foto\")' alt='" + sehirler[i].ad + "'>" +
+                    "<div class='sehir-bilgi'>" +
+                        "<div class='sehir-ad'>" + sehirler[i].ad + "</div>" +
+                        "<div class='sehir-aciklama'>" + sehirler[i].aciklama + "</div>" +
+                    "</div>" +
+                "</div>";
         }
     }
     document.getElementById("panel").classList.add("acik");
