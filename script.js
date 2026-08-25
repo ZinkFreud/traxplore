@@ -37,21 +37,48 @@ const ulkeKita = {
     "Taiwan": "Asya", "East Timor": "Asya", "Malaysia": "Asya",
     "Brunei": "Asya", "Sri Lanka": "Asya",
     "Mongolia": "Asya", "New Caledonia": "Okyanusya",
-    "French Guiana": "Güney Amerika"
+    "French Guiana": "Güney Amerika",
+    "Belize": "Kuzey Amerika", "Honduras": "Kuzey Amerika", "Nicaragua": "Kuzey Amerika",
+    "El Salvador": "Kuzey Amerika", "The Bahamas": "Kuzey Amerika",
+    "Dominican Republic": "Kuzey Amerika", "Haiti": "Kuzey Amerika",
+    "Puerto Rico": "Kuzey Amerika", "Trinidad and Tobago": "Kuzey Amerika",
+    "Falkland Islands": "Güney Amerika",
+    "Greenland": "Kuzey Amerika", "Georgia": "Asya", "Armenia": "Asya",
+    "Turkmenistan": "Asya", "Afghanistan": "Asya", "Antarctica": "Antarktika",
+    "West Bank": "Asya", "Northern Cyprus": "Asya", "Bhutan": "Asya",
+    "French Southern and Antarctic Lands": "Antarktika",
+    "Egypt": "Afrika", "Morocco": "Afrika", "Algeria": "Afrika", "Tunisia": "Afrika",
+    "Libya": "Afrika", "Nigeria": "Afrika", "Ghana": "Afrika", "Senegal": "Afrika",
+    "Kenya": "Afrika", "Ethiopia": "Afrika", "United Republic of Tanzania": "Afrika", "Uganda": "Afrika",
+    "Rwanda": "Afrika", "Democratic Republic of the Congo": "Afrika", "Cameroon": "Afrika",
+    "South Africa": "Afrika", "Namibia": "Afrika", "Botswana": "Afrika",
+    "Zimbabwe": "Afrika", "Mozambique": "Afrika", "Madagascar": "Afrika", "Angola": "Afrika",
+    "Western Sahara": "Afrika", "Mauritania": "Afrika", "Mali": "Afrika", "Gambia": "Afrika",
+    "Guinea Bissau": "Afrika", "Guinea": "Afrika", "Sierra Leone": "Afrika",
+    "Liberia": "Afrika", "Ivory Coast": "Afrika", "Togo": "Afrika", "Benin": "Afrika",
+    "Burkina Faso": "Afrika", "Niger": "Afrika", "Chad": "Afrika",
+    "Central African Republic": "Afrika", "Sudan": "Afrika", "South Sudan": "Afrika",
+    "Eritrea": "Afrika", "Republic of the Congo": "Afrika", "Equatorial Guinea": "Afrika",
+    "Gabon": "Afrika", "Burundi": "Afrika", "Zambia": "Afrika", "Malawi": "Afrika",
+    "Swaziland": "Afrika", "Lesotho": "Afrika",
+    "Somalia": "Afrika", "Somaliland": "Afrika", "Djibouti": "Afrika"
 };
 
 
 
-// Kıta başına toplam ülke sayısı (dünyadaki, kabaca)
-const kitaToplam = {
-    "Avrupa": 44, "Asya": 48, "Afrika": 54,
-    "Kuzey Amerika": 23, "Güney Amerika": 14, "Okyanusya": 16
-};
+
+// Her kıtada kaç ülke EKLEDİĞİMİZİ otomatik say (ulkeKita'dan)
+const kitaToplam = {};
+for (const ulke in ulkeKita) {
+    const kita = ulkeKita[ulke];
+    kitaToplam[kita] = (kitaToplam[kita] || 0) + 1;
+}
 
 // Kıta renkleri
 const kitaRenk = {
     "Avrupa": "#E67E22", "Asya": "#3498DB", "Afrika": "#F1C40F",
-    "Kuzey Amerika": "#2ECC71", "Güney Amerika": "#9B59B6", "Okyanusya": "#1ABC9C"
+    "Kuzey Amerika": "#2ECC71", "Güney Amerika": "#9B59B6", "Okyanusya": "#1ABC9C",
+    "Antarktika": "#95A5A6"
 };
 const sehirVerisi = {
     "Turkey": [
@@ -693,6 +720,432 @@ const sehirVerisi = {
         { ad: "Kourou", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Avrupa uzay üssünün şehri." },
         { ad: "Saint-Laurent", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Eski ceza kolonisi kasabası." },
         { ad: "Maripasoula", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Amazon ormanı derinliğinde." }
+    ]    ,
+    "Belize": [
+        { ad: "Belize City", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Karayip kıyısında liman şehri." },
+        { ad: "San Ignacio", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Orman ve Maya harabeleri kapısı." },
+        { ad: "Caye Caulker", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Resif üstünde sakin ada." },
+        { ad: "Placencia", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Beyaz kumlu yarımada." }
+    ],
+    "Honduras": [
+        { ad: "Tegucigalpa", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Dağlar arasında başkent." },
+        { ad: "San Pedro Sula", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Ticaret ve sanayi şehri." },
+        { ad: "Roatán", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Dalış cenneti Karayip adası." },
+        { ad: "Copán", foto: "https://images.unsplash.com/photo-1526392060635-9d6019884377?w=400", aciklama: "Ünlü Maya harabeleri." }
+    ],
+    "Nicaragua": [
+        { ad: "Managua", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Göl kıyısında başkent." },
+        { ad: "Granada", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Renkli kolonyal şehir." },
+        { ad: "León", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Katedral ve volkan şehri." },
+        { ad: "Ometepe", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Göl ortasında çift volkanlı ada." }
+    ],
+    "El Salvador": [
+        { ad: "San Salvador", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Volkanlar arasında başkent." },
+        { ad: "Santa Ana", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tarihi katedral ve volkan." },
+        { ad: "El Tunco", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sörf plajı kasabası." },
+        { ad: "Suchitoto", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Kolonyal sanat kasabası." }
+    ],
+    "The Bahamas": [
+        { ad: "Nassau", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Renkli kolonyal başkent." },
+        { ad: "Freeport", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Plaj ve mağaralar." },
+        { ad: "Exuma", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Yüzen domuzlar ve turkuaz su." },
+        { ad: "Paradise Island", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Lüks tatil adası." }
+    ],
+    "Dominican Republic": [
+        { ad: "Santo Domingo", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Amerika'nın en eski kolonyal şehri." },
+        { ad: "Punta Cana", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Palmiyeli tatil plajları." },
+        { ad: "Puerto Plata", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kuzey kıyısı liman şehri." },
+        { ad: "Samaná", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Balina izleme koyu." }
+    ],
+    "Haiti": [
+        { ad: "Port-au-Prince", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Canlı ve tarihi başkent." },
+        { ad: "Cap-Haïtien", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kuzeyin kolonyal şehri." },
+        { ad: "Jacmel", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sanat ve el sanatları kasabası." },
+        { ad: "Labadee", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Özel plaj koyu." }
+    ],
+    "Puerto Rico": [
+        { ad: "San Juan", foto: "https://images.unsplash.com/photo-1579282240050-352db0a14c21?w=400", aciklama: "Renkli surlu kolonyal başkent." },
+        { ad: "Ponce", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Güneyin kültür şehri." },
+        { ad: "Rincón", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sörf ve gün batımı kasabası." },
+        { ad: "Culebra", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Flamenco plajlı ada." }
+    ],
+    "Trinidad and Tobago": [
+        { ad: "Port of Spain", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Karnavalın başkenti." },
+        { ad: "San Fernando", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Güneyin sanayi şehri." },
+        { ad: "Scarborough", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Tobago adasının merkezi." },
+        { ad: "Chaguaramas", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Yat limanı ve doğa." }
+    ]    ,
+    "Falkland Islands": [
+        { ad: "Stanley", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Rüzgarlı ada başkenti." },
+        { ad: "Goose Green", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Küçük yerleşim, tarih." },
+        { ad: "Volunteer Point", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Kral penguen kolonisi." },
+        { ad: "Pebble Island", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kuş ve yaban hayatı adası." }
+    ]    ,
+    "Greenland": [
+        { ad: "Nuuk", foto: "https://images.unsplash.com/photo-1601629665203-f9f2b8d07f0e?w=400", aciklama: "Dünyanın en kuzey başkentlerinden." },
+        { ad: "Ilulissat", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Buzdağı fiyortuyla ünlü." },
+        { ad: "Sisimiut", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kuzey kutup dairesi üstünde." },
+        { ad: "Qaqortoq", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Güneyin renkli kasabası." }
+    ],
+    "Georgia": [
+        { ad: "Tiflis", foto: "https://images.unsplash.com/photo-1565008576549-57569a49371d?w=400", aciklama: "Kükürt hamamları ve eski şehir." },
+        { ad: "Batum", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Karadeniz kıyısında modern şehir." },
+        { ad: "Kutaisi", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Antik başkent, manastırlar." },
+        { ad: "Mtsheta", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Dini tarih merkezi." }
+    ],
+    "Armenia": [
+        { ad: "Erivan", foto: "https://images.unsplash.com/photo-1600250395178-40fe752e5189?w=400", aciklama: "Pembe taştan antik başkent." },
+        { ad: "Gyumri", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "İkinci büyük tarihi şehir." },
+        { ad: "Dilijan", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Orman içinde kaplıca kasabası." },
+        { ad: "Sevan", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Dağ gölü kıyısında manastır." }
+    ],
+    "Turkmenistan": [
+        { ad: "Aşkabat", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Beyaz mermer şehri." },
+        { ad: "Türkmenbaşı", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Hazar kıyısında liman." },
+        { ad: "Darvaza", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Çölde yanan 'cehennem kapısı'." },
+        { ad: "Mari", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Antik Merv yakını şehir." }
+    ],
+    "Afghanistan": [
+        { ad: "Kabil", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Dağlar arasında tarihi başkent." },
+        { ad: "Herat", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Batının kültür ve sanat şehri." },
+        { ad: "Mezar-ı Şerif", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Mavi Camii ile ünlü." },
+        { ad: "Bamyan", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Antik Buda heykelleri vadisi." }
+    ],
+    "Antarctica": [
+        { ad: "McMurdo", foto: "https://images.unsplash.com/photo-1551986782-d0169b3f8fa7?w=400", aciklama: "En büyük araştırma istasyonu." },
+        { ad: "Amundsen-Scott", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Güney Kutbu üssü." },
+        { ad: "Vostok", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Dünyanın en soğuk yeri." },
+        { ad: "Palmer", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Yarımadada araştırma istasyonu." }
+    ]    ,
+    "West Bank": [
+        { ad: "Ramallah", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "İdari merkez, canlı şehir." },
+        { ad: "Beytüllahim", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Doğuş Kilisesi'nin şehri." },
+        { ad: "Hebron", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tarihi eski şehir." },
+        { ad: "Eriha", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Dünyanın en eski şehirlerinden." }
+    ],
+    "Northern Cyprus": [
+        { ad: "Lefkoşa", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Bölünmüş başkentin kuzeyi." },
+        { ad: "Girne", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kale ve limanıyla ünlü." },
+        { ad: "Gazimağusa", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Surlu tarihi liman şehri." },
+        { ad: "Güzelyurt", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Narenciye bahçeleri bölgesi." }
+    ],
+    "Bhutan": [
+        { ad: "Timphu", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Trafik ışığı olmayan başkent." },
+        { ad: "Paro", foto: "https://images.unsplash.com/photo-1553856622-d1b352e9a211?w=400", aciklama: "Kaplan Yuvası Manastırı'nın vadisi." },
+        { ad: "Punakha", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Nehirler arası kadim kale." },
+        { ad: "Bumthang", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kutsal vadiler bölgesi." }
+    ],
+    "French Southern and Antarctic Lands": [
+        { ad: "Port-aux-Français", foto: "https://images.unsplash.com/photo-1551986782-d0169b3f8fa7?w=400", aciklama: "Kerguelen adası üssü." },
+        { ad: "Kerguelen", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Izole subantarktik adalar." },
+        { ad: "Crozet", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Penguen kolonili adalar." },
+        { ad: "Amsterdam Island", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Hint Okyanusu'nda volkanik ada." }
+    ]    ,
+    "Egypt": [
+        { ad: "Kahire", foto: "https://images.unsplash.com/photo-1572252009286-268acec5ca0a?w=400", aciklama: "Piramitlerin gölgesinde dev başkent." },
+        { ad: "Luksor", foto: "https://images.unsplash.com/photo-1568322445389-f64ac2515020?w=400", aciklama: "Açık hava müzesi, tapınaklar." },
+        { ad: "İskenderiye", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Akdeniz kıyısında liman şehri." },
+        { ad: "Asvan", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Nil üstünde güney şehri." }
+    ],
+    "Morocco": [
+        { ad: "Marakeş", foto: "https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=400", aciklama: "Kırmızı şehir, çarşılar ve meydan." },
+        { ad: "Fes", foto: "https://images.unsplash.com/photo-1531761535209-180857e963b9?w=400", aciklama: "Ortaçağ medinasıyla ünlü." },
+        { ad: "Kazablanka", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Modern liman metropolü." },
+        { ad: "Şafşavan", foto: "https://images.unsplash.com/photo-1548018560-c7196548e84d?w=400", aciklama: "Mavi boyalı dağ kasabası." }
+    ],
+    "Algeria": [
+        { ad: "Cezayir", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Beyaz evli Akdeniz başkenti." },
+        { ad: "Oran", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Sahil ve müzik şehri." },
+        { ad: "Constantine", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Köprüler ve kanyon şehri." },
+        { ad: "Tamanrasset", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Sahra çölünün kapısı." }
+    ],
+    "Tunisia": [
+        { ad: "Tunus", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Medina ve Kartaca'nın şehri." },
+        { ad: "Sidi Bou Said", foto: "https://images.unsplash.com/photo-1605281317010-fe5ffe798166?w=400", aciklama: "Mavi-beyaz sahil kasabası." },
+        { ad: "Sus", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Plaj ve tarihi ribat." },
+        { ad: "Kayravan", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kutsal cami şehri." }
+    ],
+    "Libya": [
+        { ad: "Trablus", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Akdeniz kıyısında başkent." },
+        { ad: "Bingazi", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Doğunun büyük şehri." },
+        { ad: "Leptis Magna", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Görkemli Roma harabeleri." },
+        { ad: "Gadamis", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Çölde vaha kasabası." }
+    ],
+    "Nigeria": [
+        { ad: "Lagos", foto: "https://images.unsplash.com/photo-1618828665347-d5b5c1a5c6ea?w=400", aciklama: "Afrika'nın en kalabalık metropollerinden." },
+        { ad: "Abuja", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Planlı modern başkent." },
+        { ad: "Kano", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kuzeyin kadim ticaret şehri." },
+        { ad: "Ibadan", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Geniş tarihi şehir." }
+    ],
+    "Ghana": [
+        { ad: "Akra", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Atlantik kıyısında canlı başkent." },
+        { ad: "Kumasi", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Aşanti kültürünün merkezi." },
+        { ad: "Cape Coast", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Tarihi kaleler ve sahil." },
+        { ad: "Tamale", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kuzeyin merkezi." }
+    ],
+    "Senegal": [
+        { ad: "Dakar", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Atlantik ucunda başkent." },
+        { ad: "Saint-Louis", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kolonyal UNESCO şehri." },
+        { ad: "Gorée", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Tarihi köle adası." },
+        { ad: "Saly", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sahil tatil bölgesi." }
+    ]    ,
+    "Kenya": [
+        { ad: "Nairobi", foto: "https://images.unsplash.com/photo-1611348586804-61bf6c080437?w=400", aciklama: "Safari kapısı, canlı başkent." },
+        { ad: "Mombasa", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Hint Okyanusu liman şehri." },
+        { ad: "Masai Mara", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Ünlü safari rezervi." },
+        { ad: "Nakuru", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Flamingolu göl şehri." }
+    ],
+    "Ethiopia": [
+        { ad: "Addis Ababa", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Yüksek yaylada başkent." },
+        { ad: "Lalibela", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Kayaya oyulmuş kiliseler." },
+        { ad: "Gondar", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kaleler ve saraylar şehri." },
+        { ad: "Aksum", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Antik krallık başkenti." }
+    ],
+    "United Republic of Tanzania": [
+        { ad: "Darüsselam", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Büyük liman ve ticaret şehri." },
+        { ad: "Zanzibar", foto: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=400", aciklama: "Baharat adası, turkuaz su." },
+        { ad: "Arusha", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Safari ve Kilimanjaro kapısı." },
+        { ad: "Serengeti", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Efsanevi milli park." }
+    ],
+    "Uganda": [
+        { ad: "Kampala", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Tepeler üstünde canlı başkent." },
+        { ad: "Entebbe", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Göl kıyısında sakin şehir." },
+        { ad: "Jinja", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Nil'in kaynağı." },
+        { ad: "Bwindi", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Goril ormanı." }
+    ],
+    "Rwanda": [
+        { ad: "Kigali", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Tertemiz tepeler şehri." },
+        { ad: "Musanze", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Dağ gorilleri kapısı." },
+        { ad: "Gisenyi", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kivu gölü kıyısı." },
+        { ad: "Butare", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Üniversite ve kültür şehri." }
+    ],
+    "Democratic Republic of the Congo": [
+        { ad: "Kinşasa", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Kongo nehri kıyısında dev başkent." },
+        { ad: "Lubumbashi", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Madencilik merkezi." },
+        { ad: "Goma", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Yanardağ eteğinde göl şehri." },
+        { ad: "Kisangani", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Nehir üstünde orman şehri." }
+    ],
+    "Cameroon": [
+        { ad: "Yaunde", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Tepeler üstünde başkent." },
+        { ad: "Douala", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Büyük liman ve ekonomi şehri." },
+        { ad: "Kribi", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Şelaleli sahil kasabası." },
+        { ad: "Bamenda", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Yayla bölgesi şehri." }
+    ]    ,
+    "South Africa": [
+        { ad: "Cape Town", foto: "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=400", aciklama: "Masa Dağı ve okyanus şehri." },
+        { ad: "Johannesburg", foto: "https://images.unsplash.com/photo-1577948000111-9c970dfe3743?w=400", aciklama: "Altın şehri, büyük metropol." },
+        { ad: "Durban", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Sıcak Hint Okyanusu sahili." },
+        { ad: "Pretoria", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Jakaranda ağaçlı başkent." }
+    ],
+    "Namibia": [
+        { ad: "Windhoek", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Yaylada sakin başkent." },
+        { ad: "Swakopmund", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Çöl ve okyanus arası kasaba." },
+        { ad: "Sossusvlei", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Kızıl dev kum tepeleri." },
+        { ad: "Etosha", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Büyük safari parkı." }
+    ],
+    "Botswana": [
+        { ad: "Gaborone", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Sakin modern başkent." },
+        { ad: "Okavango", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Eşsiz iç deltası." },
+        { ad: "Chobe", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Fil sürüleriyle ünlü park." },
+        { ad: "Maun", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Safari kapısı kasabası." }
+    ],
+    "Zimbabwe": [
+        { ad: "Harare", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Yeşil bahçeler şehri, başkent." },
+        { ad: "Victoria Falls", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Dünyanın en büyük şelalelerinden." },
+        { ad: "Bulawayo", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Geniş caddeli tarihi şehir." },
+        { ad: "Great Zimbabwe", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Antik taş şehir harabeleri." }
+    ],
+    "Mozambique": [
+        { ad: "Maputo", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Sahil kıyısında kolonyal başkent." },
+        { ad: "Tofo", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Dalış ve plaj kasabası." },
+        { ad: "Ilha de Moçambique", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tarihi UNESCO adası." },
+        { ad: "Pemba", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Mercan resifli körfez." }
+    ],
+    "Madagascar": [
+        { ad: "Antananarivo", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Tepeler üstünde başkent." },
+        { ad: "Nosy Be", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Tropik tatil adası." },
+        { ad: "Morondava", foto: "https://images.unsplash.com/photo-1535941339077-2dd1c7963098?w=400", aciklama: "Baobab ağaçları yolu." },
+        { ad: "Andasibe", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Lemur ormanı." }
+    ],
+    "Angola": [
+        { ad: "Luanda", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Atlantik kıyısında başkent." },
+        { ad: "Lubango", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Dağlar arası şehir." },
+        { ad: "Benguela", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sahil liman şehri." },
+        { ad: "Namibe", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Çöl ve okyanus buluşması." }
+    ]    ,
+    "Western Sahara": [
+        { ad: "Layun", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Çöl bölgesinin en büyük şehri." },
+        { ad: "Dakhla", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Atlantik kıyısında rüzgar sörfü." },
+        { ad: "Smara", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "İç çöl kasabası." },
+        { ad: "Bojador", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Sahil burnu kasabası." }
+    ],
+    "Mauritania": [
+        { ad: "Nuakşot", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Çöl kıyısında başkent." },
+        { ad: "Şingetti", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Antik kütüphane şehri." },
+        { ad: "Nouadhibou", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Balıkçılık liman şehri." },
+        { ad: "Atar", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sahra vahaları kapısı." }
+    ],
+    "Mali": [
+        { ad: "Bamako", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Nijer nehri kıyısında başkent." },
+        { ad: "Tombuktu", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Efsanevi çöl bilim şehri." },
+        { ad: "Djenné", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kerpiç Büyük Camii." },
+        { ad: "Mopti", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Nehir limanı, 'Venedik'." }
+    ],
+    "Gambia": [
+        { ad: "Banjul", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Nehir ağzında küçük başkent." },
+        { ad: "Serekunda", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "En büyük şehir, çarşılar." },
+        { ad: "Kololi", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sahil tatil bölgesi." },
+        { ad: "Janjanbureh", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "İç nehir adası kasabası." }
+    ],
+    "Guinea Bissau": [
+        { ad: "Bissau", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Kolonyal liman başkenti." },
+        { ad: "Bafatá", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Nehir kıyısında tarihi şehir." },
+        { ad: "Bolama", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Eski başkent adası." },
+        { ad: "Bijagós", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Bakir takımadalar." }
+    ],
+    "Guinea": [
+        { ad: "Konakri", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Atlantik yarımadasında başkent." },
+        { ad: "Kankan", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "İç bölgenin büyük şehri." },
+        { ad: "Labé", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Yayla bölgesi merkezi." },
+        { ad: "Nzérékoré", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Orman bölgesi şehri." }
+    ],
+    "Sierra Leone": [
+        { ad: "Freetown", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Tepeler ve plajlar başkenti." },
+        { ad: "Bo", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "İkinci büyük şehir." },
+        { ad: "Kenema", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Elmas bölgesi şehri." },
+        { ad: "Tokeh", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Beyaz kumlu plaj." }
+    ],
+    "Liberia": [
+        { ad: "Monrovia", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Atlantik kıyısında başkent." },
+        { ad: "Gbarnga", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "İç bölge merkezi." },
+        { ad: "Buchanan", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Liman şehri." },
+        { ad: "Robertsport", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Sörf kasabası." }
+    ],
+    "Ivory Coast": [
+        { ad: "Abidjan", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Lagün kıyısında büyük şehir." },
+        { ad: "Yamoussoukro", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Dev bazilikalı başkent." },
+        { ad: "Grand-Bassam", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kolonyal UNESCO kasabası." },
+        { ad: "Man", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Dağlar ve şelaleler." }
+    ],
+    "Togo": [
+        { ad: "Lome", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Sahil kıyısında başkent." },
+        { ad: "Kpalimé", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Dağlar ve şelaleler kasabası." },
+        { ad: "Sokodé", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "İkinci büyük şehir." },
+        { ad: "Aného", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Eski kolonyal başkent." }
+    ],
+    "Benin": [
+        { ad: "Porto-Novo", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Resmi başkent." },
+        { ad: "Cotonou", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Ekonomik merkez, liman." },
+        { ad: "Ganvié", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Göl üstünde kazıklı köy." },
+        { ad: "Ouidah", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Vudu ve tarih şehri." }
+    ],
+    "Burkina Faso": [
+        { ad: "Ouagadougou", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Film festivalli başkent." },
+        { ad: "Bobo-Dioulasso", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kültür ve müzik şehri." },
+        { ad: "Banfora", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Şelaleler ve kaya oluşumları." },
+        { ad: "Koudougou", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Üçüncü büyük şehir." }
+    ],
+    "Niger": [
+        { ad: "Niamey", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Nijer nehri kıyısında başkent." },
+        { ad: "Agadez", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Çöl kapısı, kerpiç minare." },
+        { ad: "Zinder", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Eski başkent, sultan sarayı." },
+        { ad: "Maradi", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Ticaret şehri." }
+    ],
+    "Chad": [
+        { ad: "Ndjamena", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Nehir kıyısında başkent." },
+        { ad: "Zakouma", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Fil ve safari parkı." },
+        { ad: "Abéché", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Doğunun tarihi şehri." },
+        { ad: "Ennedi", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Çölde kaya oluşumları." }
+    ],
+    "Central African Republic": [
+        { ad: "Bangui", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Nehir kıyısında başkent." },
+        { ad: "Bimbo", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Başkent yakını şehir." },
+        { ad: "Berbérati", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Batının büyük şehri." },
+        { ad: "Dzanga-Sangha", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Orman fili rezervi." }
+    ],
+    "Sudan": [
+        { ad: "Hartum", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "İki Nil'in birleştiği başkent." },
+        { ad: "Omdurman", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Geleneksel çarşı şehri." },
+        { ad: "Meroë", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Nubya piramitleri." },
+        { ad: "Port Sudan", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kızıldeniz liman şehri." }
+    ],
+    "South Sudan": [
+        { ad: "Juba", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Nil kıyısında genç başkent." },
+        { ad: "Wau", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "İkinci büyük şehir." },
+        { ad: "Malakal", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Nehir liman şehri." },
+        { ad: "Boma", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Geniş milli park." }
+    ],
+    "Eritrea": [
+        { ad: "Asmara", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Art deco mimarili başkent." },
+        { ad: "Massawa", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kızıldeniz liman şehri." },
+        { ad: "Keren", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Dağlar arası pazar şehri." },
+        { ad: "Dahlak", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Kızıldeniz takımadaları." }
+    ]    ,
+    "Republic of the Congo": [
+        { ad: "Brazzavil", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Kongo nehri kıyısında başkent." },
+        { ad: "Pointe-Noire", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Atlantik liman şehri." },
+        { ad: "Dolisie", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Üçüncü büyük şehir." },
+        { ad: "Odzala", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Goril ormanı parkı." }
+    ],
+    "Equatorial Guinea": [
+        { ad: "Malabo", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Ada üstünde başkent." },
+        { ad: "Bata", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Anakaranın büyük şehri." },
+        { ad: "Mongomo", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Dev bazilikalı şehir." },
+        { ad: "Luba", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Liman kasabası." }
+    ],
+    "Gabon": [
+        { ad: "Libreville", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Atlantik kıyısında başkent." },
+        { ad: "Port-Gentil", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Petrol ve liman şehri." },
+        { ad: "Loango", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Plajda fillerin gezdiği park." },
+        { ad: "Franceville", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Güneydoğu merkezi." }
+    ],
+    "Burundi": [
+        { ad: "Gitega", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "İç bölgede başkent." },
+        { ad: "Bujumbura", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tanganyika gölü kıyısı." },
+        { ad: "Rumonge", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Göl kıyısı kasabası." },
+        { ad: "Ngozi", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Kuzeyin merkezi." }
+    ],
+    "Zambia": [
+        { ad: "Lusaka", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Canlı ve büyüyen başkent." },
+        { ad: "Livingstone", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Victoria Şelaleleri kapısı." },
+        { ad: "Kitwe", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Bakır kuşağı şehri." },
+        { ad: "South Luangwa", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Ünlü safari parkı." }
+    ],
+    "Malawi": [
+        { ad: "Lilongwe", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Planlı başkent." },
+        { ad: "Blantyre", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Ticaret ve tarih şehri." },
+        { ad: "Malawi Gölü", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Berrak sulu dev göl." },
+        { ad: "Zomba", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Yayla eteğinde eski başkent." }
+    ],
+    "Swaziland": [
+        { ad: "Mbabane", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Dağlar arasında başkent." },
+        { ad: "Lobamba", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kraliyet ve meclis merkezi." },
+        { ad: "Manzini", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "En büyük şehir, pazar." },
+        { ad: "Hlane", foto: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=400", aciklama: "Kraliyet safari parkı." }
+    ],
+    "Lesotho": [
+        { ad: "Maseru", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Dağlar arasında başkent." },
+        { ad: "Semonkong", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Yüksek şelale kasabası." },
+        { ad: "Thaba-Bosiu", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tarihi kaya platosu." },
+        { ad: "Katse", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Dev baraj ve gölü." }
+    ],
+    "Somalia": [
+        { ad: "Mogadişu", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Hint Okyanusu kıyısında başkent." },
+        { ad: "Hargeisa", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kuzeyin büyük şehri." },
+        { ad: "Kismayo", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Güney liman şehri." },
+        { ad: "Berbera", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Kızıldeniz liman kasabası." }
+    ],
+    "Somaliland": [
+        { ad: "Hargeisa", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "İlan edilmiş başkent." },
+        { ad: "Berbera", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tarihi liman şehri." },
+        { ad: "Burao", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "İç bölge merkezi." },
+        { ad: "Laas Geel", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Antik kaya resimleri." }
+    ],
+    "Djibouti": [
+        { ad: "Cibuti", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Körfez ağzında başkent." },
+        { ad: "Lac Assal", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Afrika'nın en alçak tuz gölü." },
+        { ad: "Tadjoura", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Eski beyaz kasaba." },
+        { ad: "Obock", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Kuzey sahil kasabası." }
     ]
 };
 
