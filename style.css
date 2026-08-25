@@ -114,7 +114,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
 
 #gecmisPanel {
     position: fixed;
-    top: 90px;
+    top: 155px;
     right: 20px;
     width: 240px;
     box-sizing: border-box;
@@ -477,3 +477,151 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
 .pin-etiket::before {
     border-top-color: #1e2a3a !important;
 }
+
+#profilBtn {
+    position: fixed;
+    top: 82px;
+    right: 20px;
+    width: 240px;
+    box-sizing: border-box;
+    background: #1e2a3a;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    z-index: 901;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.2s;
+}
+#profilBtn:hover { background: #2a3a4e; }
+
+#profilFoto {
+    flex: 0 0 25%;
+    aspect-ratio: 1;
+    background: #E67E22 url('idle.png') center/cover no-repeat;
+    border-radius: 50%;
+    max-width: 44px;
+}
+#profilCizgi {
+    width: 2px;
+    align-self: stretch;
+    background: #E67E22;
+    opacity: 0.5;
+}
+#profilYazi {
+    flex: 1;
+    color: #E67E22;
+    font-family: "Black Ops One", sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+#profilKart {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 440px;
+    max-width: 90vw;
+    max-height: 85vh;
+    background: #1e2a3a;
+    color: #eee;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    overflow-y: auto;
+    z-index: 1003;
+    padding: 28px;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+#profilKart.acik {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+#profilKapat {
+    position: absolute; top: 20px; right: 20px;
+    background: none; border: none; color: #888;
+    font-size: 24px; cursor: pointer;
+}
+
+/* Fotoğraflar */
+#profilFotolar {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+#profilFotoListe { display: flex; gap: 10px; }
+.profil-foto-kutu {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #E67E22;
+}
+.profil-foto-kutu img { width: 100%; height: 100%; object-fit: cover; }
+.profil-foto-sil {
+    position: absolute; top: 0; right: 0;
+    background: #c0392b; color: #fff;
+    border: none; width: 20px; height: 20px;
+    border-radius: 50%; cursor: pointer;
+    font-size: 12px; line-height: 1;
+}
+#profilFotoEkle {
+    width: 80px; height: 80px;
+    border: 2px dashed #555;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #aaa; cursor: pointer;
+    font-size: 12px; text-align: center;
+}
+#profilFotoEkle:hover { border-color: #E67E22; color: #E67E22; }
+
+/* Bölümler */
+.profil-bolum { margin-bottom: 20px; }
+.profil-bolum label {
+    display: block; font-size: 12px; color: #888;
+    letter-spacing: 1px; margin-bottom: 8px;
+}
+.profil-bolum input {
+    width: 100%; box-sizing: border-box;
+    background: #0f1620; border: 2px solid #2a3a4a;
+    border-radius: 8px; color: #eee;
+    padding: 12px; font-family: inherit; font-size: 15px;
+}
+.profil-bolum input:disabled { color: #ccc; border-color: #1a2530; }
+
+#profilSonGezilen { display: flex; flex-direction: column; gap: 6px; }
+.profil-gezi-satir {
+    background: #0f1620;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #ddd;
+}
+
+#profilButonlar { display: flex; gap: 12px; margin-top: 24px; }
+#profilKaydet, #profilDegistir {
+    flex: 1;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    font-family: "Black Ops One", sans-serif;
+    letter-spacing: 1px;
+}
+#profilKaydet { background: #E67E22; color: #1e2a3a; }
+#profilKaydet:hover { background: #FF8C1A; }
+#profilDegistir { background: #2a3a4e; color: #eee; }
+#profilDegistir:hover { background: #354a63; }

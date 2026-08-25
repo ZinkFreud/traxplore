@@ -1153,6 +1153,8 @@ let gezilenler = JSON.parse(localStorage.getItem("gezilenler")) || [];
 let sehirDetaylari = JSON.parse(localStorage.getItem("sehirDetaylari")) || {};
 let aktifDetay = { ulke: "", sehir: "" };
 let sehirKoordinatlari = JSON.parse(localStorage.getItem("sehirKoordinatlari")) || {};
+let profilVeri = JSON.parse(localStorage.getItem("profilVeri")) || { isim: "", konum: "", fotolar: [] };
+let profilDuzenleme = false;
 let pinler = {}; // haritadaki marker'ları tutar (anahtar: "ulke|sehir")
 
 function gezileriKaydet() {
@@ -1344,6 +1346,7 @@ document.getElementById("ortu").addEventListener("click", function() {
     paneliKapat();
     istatistikPaneliKapat();
     sehirDetayKapat();
+    profilKapat();
 });
 
 document.addEventListener("mousemove", function(e) {
@@ -1709,3 +1712,89 @@ function pinKaldir(ulke, sehir) {
     }
 }
 
+// ---- PROFİL KARTI ----
+function profilAc() {
+    profilDuzenleme = false;
+    profilDoldur();
+    profilKilitle(true);
+    document.getElementById("profilKart").classList.add("acik");
+    document.getElementById("ortu").classList.add("acik");
+}
+
+function profilKapat() {
+    document.getElementById("profilKart").classList.remove("acik");
+    document.getElementById("ortu").classList.remove("acik");
+}
+
+function profilDoldur() {
+    document.getElementById("profilIsim").value = profilVeri.isim || "";
+    document.getElementById("profilKonum").value = profilVeri.konum || "";
+
+    // Fotoğraflar
+    const liste = document.getElementById("profilFotoListe");
+    liste.innerHTML = "";
+    for (let i = 0; i < profilVeri.fotolar.length; i++) {
+        liste.innerHTML +=
+            "<div class='profil-foto-kutu'>" +
+                "<img src='" + profilVeri.fotolar[i] + "'>" +
+                (profilDuzenleme ? "<button class='profil-foto-sil' data-i='" + i + "'>×</button>" : "") +
+            "</div>";
+    }
+    // Sil butonlarını bağla
+    document.querySelectorAll(".profil-foto-sil").forEach(function(b) {
+        b.addEventListener("click", function() {
+            profilVeri.fotolar.splice(parseInt(this.dataset.i), 1);
+            profilDoldur();
+        });
+    });
+
+    // Foto ekle butonu 3'ten azsa ve düzenlemedeyse görünsün
+    const ekleBtn = document.getElementById("profilFotoEkle");
+    ekleBtn.style.display = (profilDuzenleme && profilVeri.fotolar.length < 3) ? "flex" : "none";
+
+    // Son gezilen (otomatik, son 5)
+    const sonGezilen = document.getElementById("profilSonGezilen");
+    sonGezilen.innerHTML = "";
+    const son5 = gezilenler.slice(-5).reverse();
+    if (son5.length === 0) {
+        sonGezilen.innerHTML = "<div class='profil-gezi-satir' style='color:#777'>Henüz yer eklenmedi.</div>";
+    } else {
+        for (let i = 0; i < son5.length; i++) {
+            sonGezilen.innerHTML += "<div class='profil-gezi-satir'>" + son5[i].ulke + " — " + son5[i].sehir + "</div>";
+        }
+    }
+}
+
+function profilKilitle(kilitli) {
+    document.getElementById("profilIsim").disabled = kilitli;
+    document.getElementById("profilKonum").disabled = kilitli;
+}
+
+// Butonlar
+document.getElementById("profilBtn").addEventListener("click", profilAc);
+document.getElementById("profilKapat").addEventListener("click", profilKapat);
+
+document.getElementById("profilDegistir").addEventListener("click", function() {
+    profilDuzenleme = true;
+    profilKilitle(false);
+    profilDoldur(); // foto sil butonları + ekle butonu görünsün
+});
+
+document.getElementById("profilKaydet").addEventListener("click", function() {
+    profilVeri.isim = document.getElementById("profilIsim").value;
+    profilVeri.konum = document.getElementById("profilKonum").value;
+    localStorage.setItem("profilVeri", JSON.stringify(profilVeri));
+    profilKapat();
+});
+
+// Foto ekleme
+document.getElementById("profilFotoInput").addEventListener("change", function(e) {
+    const dosya = e.target.files[0];
+    if (!dosya || profilVeri.fotolar.length >= 3) return;
+    const okuyucu = new FileReader();
+    okuyucu.onload = function(olay) {
+        profilVeri.fotolar.push(olay.target.result);
+        profilDoldur();
+    };
+    okuyucu.readAsDataURL(dosya);
+});

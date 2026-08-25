@@ -66,10 +66,44 @@
         <button id="sehirDetayKaydet">KAYDET</button>
     </div>
 </div>
-    <div id="logo">TRAXPLORE</div>
+<div id="logo">TRAXPLORE</div>
+<button id="profilBtn">
+    <span id="profilFoto"></span>
+    <span id="profilCizgi"></span>
+    <span id="profilYazi">PROFİL</span>
+</button>
     <div id="gecmisPanel">
         <h3 id="gecmisBaslik">Son Gezdiklerin</h3>
         <div id="gecmisListe"></div>
+    </div>
+    <div id="profilKart">
+        <button id="profilKapat">×</button>
+
+        <div id="profilFotolar">
+            <input type="file" id="profilFotoInput" accept="image/*" hidden>
+            <div id="profilFotoListe"></div>
+            <label for="profilFotoInput" id="profilFotoEkle">+ Fotoğraf</label>
+        </div>
+
+        <div class="profil-bolum">
+            <label>İSİM</label>
+            <input type="text" id="profilIsim" placeholder="Adın" disabled>
+        </div>
+
+        <div class="profil-bolum">
+            <label>KONUM</label>
+            <input type="text" id="profilKonum" placeholder="Şehir, Ülke" disabled>
+        </div>
+
+        <div class="profil-bolum">
+            <label>SON GEZDİĞİN YERLER</label>
+            <div id="profilSonGezilen"></div>
+        </div>
+
+        <div id="profilButonlar">
+            <button id="profilKaydet">KAYDET</button>
+            <button id="profilDegistir">DEĞİŞTİR</button>
+        </div>
     </div>
     <button id="sifirlaBtn">HARİTAYI SIFIRLA</button>
 
