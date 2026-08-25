@@ -1152,6 +1152,7 @@ const sehirVerisi = {
 let gezilenler = JSON.parse(localStorage.getItem("gezilenler")) || [];
 let sehirDetaylari = JSON.parse(localStorage.getItem("sehirDetaylari")) || {};
 let aktifDetay = { ulke: "", sehir: "" };
+let sehirFotolari = JSON.parse(localStorage.getItem("sehirFotolari")) || {};
 let sehirKoordinatlari = JSON.parse(localStorage.getItem("sehirKoordinatlari")) || {};
 let profilVeri = JSON.parse(localStorage.getItem("profilVeri")) || { isim: "", konum: "", fotolar: [] };
 let profilDuzenleme = false;
@@ -1331,6 +1332,34 @@ function panelAc(ulkeAdi) {
                     "</div>" +
                 "</div>";
         }
+                // Her şehir için Wikipedia fotosunu çek (kayıtlıysa direkt kullan)
+                const kartlar = liste.querySelectorAll(".sehir-kart img");
+                for (let i = 0; i < sehirler.length; i++) {
+                    (function(index) {
+                        const sehirAd = sehirler[index].ad;
+                        const img = kartlar[index];
+                        if (!img) return;
+        
+                        // Kayıtlı foto varsa direkt koy
+                        if (sehirFotolari[sehirAd]) {
+                            if (sehirFotolari[sehirAd] !== "yok") {
+                                img.src = sehirFotolari[sehirAd];
+                            }
+                            return;
+                        }
+        
+                        // Yoksa Wikipedia'dan çek
+                        wikiFotoBul(sehirAd, function(foto) {
+                            if (foto) {
+                                sehirFotolari[sehirAd] = foto;
+                                img.src = foto;
+                            } else {
+                                sehirFotolari[sehirAd] = "yok"; // bir daha arama
+                            }
+                            localStorage.setItem("sehirFotolari", JSON.stringify(sehirFotolari));
+                        });
+                    })(i);
+                }
     }
     document.getElementById("panel").classList.add("acik");
     document.getElementById("ortu").classList.add("acik");
@@ -1812,3 +1841,24 @@ function profilButonFotoGuncelle() {
 
 // Sayfa açılışında bir kez çağır
 profilButonFotoGuncelle();
+
+// Wikipedia'dan şehir görseli çek
+function wikiFotoBul(sehir, callback) {
+    // Türkçe Wikipedia'dan şehrin sayfa görselini iste
+    const url = "https://tr.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
+                "&prop=pageimages&piprop=original&titles=" + encodeURIComponent(sehir);
+
+    fetch(url)
+        .then(function(cevap) { return cevap.json(); })
+        .then(function(veri) {
+            const sayfalar = veri.query.pages;
+            for (const id in sayfalar) {
+                if (sayfalar[id].original && sayfalar[id].original.source) {
+                    callback(sayfalar[id].original.source);
+                    return;
+                }
+            }
+            callback(null); // bulunamadı
+        })
+        .catch(function() { callback(null); });
+}
