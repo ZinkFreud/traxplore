@@ -1784,6 +1784,7 @@ document.getElementById("profilKaydet").addEventListener("click", function() {
     profilVeri.isim = document.getElementById("profilIsim").value;
     profilVeri.konum = document.getElementById("profilKonum").value;
     localStorage.setItem("profilVeri", JSON.stringify(profilVeri));
+    profilButonFotoGuncelle();
     profilKapat();
 });
 
@@ -1798,3 +1799,16 @@ document.getElementById("profilFotoInput").addEventListener("change", function(e
     };
     okuyucu.readAsDataURL(dosya);
 });
+
+// Profil butonundaki küçük fotoyu güncelle
+function profilButonFotoGuncelle() {
+    const foto = document.getElementById("profilFoto");
+    if (profilVeri.fotolar && profilVeri.fotolar.length > 0) {
+        foto.style.backgroundImage = "url('" + profilVeri.fotolar[0] + "')";
+    } else {
+        foto.style.backgroundImage = "";
+    }
+}
+
+// Sayfa açılışında bir kez çağır
+profilButonFotoGuncelle();
