@@ -1150,6 +1150,8 @@ const sehirVerisi = {
 };
 
 let gezilenler = JSON.parse(localStorage.getItem("gezilenler")) || [];
+let sehirDetaylari = JSON.parse(localStorage.getItem("sehirDetaylari")) || {};
+let aktifDetay = { ulke: "", sehir: "" };
 
 function gezileriKaydet() {
     localStorage.setItem("gezilenler", JSON.stringify(gezilenler));
@@ -1180,17 +1182,22 @@ function ulkeRenkGuncelle(ulke) {
     katman.setStyle({ fillColor: gezildi ? "#E67E22" : "#1e2a3a" });
 }
 
-function sehirSec(kart, ulke, sehir) {
+function sehirSec(btn, ulke, sehir) {
     const indeks = gezilenler.findIndex(function(g) {
         return g.ulke === ulke && g.sehir === sehir;
     });
 
+    const kart = btn.closest(".sehir-kart");
     if (indeks === -1) {
         gezilenler.push({ ulke: ulke, sehir: sehir });
         kart.classList.add("secili");
+        btn.classList.add("aktif");
+        btn.textContent = "✓";
     } else {
         gezilenler.splice(indeks, 1);
         kart.classList.remove("secili");
+        btn.classList.remove("aktif");
+        btn.textContent = "+";
     }
     gezileriKaydet();
     istatistikGuncelle();
@@ -1287,13 +1294,14 @@ function panelAc(ulkeAdi) {
             }) !== -1;
 
             liste.innerHTML +=
-                "<div class='sehir-kart" + (seciliMi ? " secili" : "") + "' onclick='sehirSec(this, \"" + ulkeAdi + "\", \"" + sehirler[i].ad + "\")'>" +
-                "<img src='" + sehirler[i].foto + "' onerror='this.src=\"https://placehold.co/400x200/1a1a1a/E67E22?text=\" + encodeURIComponent(this.alt || \"foto\")' alt='" + sehirler[i].ad + "'>" +
-                    "<div class='sehir-bilgi'>" +
-                        "<div class='sehir-ad'>" + sehirler[i].ad + "</div>" +
-                        "<div class='sehir-aciklama'>" + sehirler[i].aciklama + "</div>" +
-                    "</div>" +
-                "</div>";
+            "<div class='sehir-kart" + (seciliMi ? " secili" : "") + "' onclick='sehirDetayAc(\"" + ulkeAdi + "\", \"" + sehirler[i].ad + "\")'>" +
+            "<button class='gittim-btn" + (seciliMi ? " aktif" : "") + "' onclick='event.stopPropagation(); sehirSec(this, \"" + ulkeAdi + "\", \"" + sehirler[i].ad + "\")'>" + (seciliMi ? "✓" : "+") + "</button>" +
+            "<img src='" + sehirler[i].foto + "' onerror='this.src=\"https://placehold.co/400x200/1a1a1a/E67E22?text=\" + encodeURIComponent(this.alt || \"foto\")' alt='" + sehirler[i].ad + "'>" +
+                "<div class='sehir-bilgi'>" +
+                    "<div class='sehir-ad'>" + sehirler[i].ad + "</div>" +
+                    "<div class='sehir-aciklama'>" + sehirler[i].aciklama + "</div>" +
+                "</div>" +
+            "</div>";
         }
     }
     document.getElementById("panel").classList.add("acik");
@@ -1309,6 +1317,7 @@ document.getElementById("kapat").addEventListener("click", paneliKapat);
 document.getElementById("ortu").addEventListener("click", function() {
     paneliKapat();
     istatistikPaneliKapat();
+    sehirDetayKapat();
 });
 
 document.addEventListener("mousemove", function(e) {
@@ -1487,3 +1496,83 @@ document.getElementById("sifirlaBtn").addEventListener("click", function() {
     }
 });
 
+function sehirDetayAc(ulke, sehir) {
+    aktifDetay = { ulke: ulke, sehir: sehir };
+    document.getElementById("sehirDetayBaslik").textContent = sehir;
+
+    const anahtar = ulke + "|" + sehir;
+    const detay = sehirDetaylari[anahtar] || { puan: 0, foto: "", not: "" };
+
+    // Yıldızları göster
+    yildizGoster(detay.puan);
+
+    // Foto
+    const onizle = document.getElementById("sehirFotoOnizle");
+    if (detay.foto) {
+        onizle.innerHTML = "<img src='" + detay.foto + "'>";
+    } else {
+        onizle.innerHTML = "";
+    }
+
+    // Not
+    document.getElementById("sehirNot").value = detay.not || "";
+
+    document.getElementById("sehirDetayPanel").classList.add("acik");
+    document.getElementById("ortu").classList.add("acik");
+}
+
+let seciliPuan = 0;
+let seciliFoto = "";
+
+function yildizGoster(puan) {
+    seciliPuan = puan;
+    const yildizlar = document.querySelectorAll("#yildizlar .yildiz");
+    for (let i = 0; i < yildizlar.length; i++) {
+        if (i < puan) {
+            yildizlar[i].classList.add("dolu");
+        } else {
+            yildizlar[i].classList.remove("dolu");
+        }
+    }
+}
+
+// Yıldıza tıklama
+document.querySelectorAll("#yildizlar .yildiz").forEach(function(y) {
+    y.addEventListener("click", function() {
+        yildizGoster(parseInt(this.dataset.puan));
+    });
+});
+
+// Foto seçme
+document.getElementById("sehirFotoInput").addEventListener("change", function(e) {
+    const dosya = e.target.files[0];
+    if (!dosya) return;
+    const okuyucu = new FileReader();
+    okuyucu.onload = function(olay) {
+        seciliFoto = olay.target.result;
+        document.getElementById("sehirFotoOnizle").innerHTML = "<img src='" + seciliFoto + "'>";
+    };
+    okuyucu.readAsDataURL(dosya);
+});
+
+// Kaydet
+document.getElementById("sehirDetayKaydet").addEventListener("click", function() {
+    const anahtar = aktifDetay.ulke + "|" + aktifDetay.sehir;
+    const mevcut = sehirDetaylari[anahtar] || {};
+    sehirDetaylari[anahtar] = {
+        puan: seciliPuan,
+        foto: seciliFoto || mevcut.foto || "",
+        not: document.getElementById("sehirNot").value
+    };
+    localStorage.setItem("sehirDetaylari", JSON.stringify(sehirDetaylari));
+    seciliFoto = ""; // sıfırla
+    sehirDetayKapat();
+});
+
+// Kapat
+function sehirDetayKapat() {
+    document.getElementById("sehirDetayPanel").classList.remove("acik");
+    document.getElementById("ortu").classList.remove("acik");
+    seciliFoto = "";
+}
+document.getElementById("sehirDetayKapat").addEventListener("click", sehirDetayKapat);

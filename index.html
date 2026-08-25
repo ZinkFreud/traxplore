@@ -31,6 +31,35 @@
         <p id="panelAltBaslik">Hangi şehirlere gittin?</p>
         <div id="sehirListe"></div>
     </div>
+    <div id="sehirDetayPanel">
+        <button id="sehirDetayKapat">×</button>
+        <h2 id="sehirDetayBaslik"></h2>
+
+        <div class="detay-bolum">
+            <label>PUANIN</label>
+            <div id="yildizlar">
+                <span class="yildiz" data-puan="1">★</span>
+                <span class="yildiz" data-puan="2">★</span>
+                <span class="yildiz" data-puan="3">★</span>
+                <span class="yildiz" data-puan="4">★</span>
+                <span class="yildiz" data-puan="5">★</span>
+            </div>
+        </div>
+
+        <div class="detay-bolum">
+            <label>FOTOĞRAF</label>
+            <input type="file" id="sehirFotoInput" accept="image/*" hidden>
+            <label for="sehirFotoInput" id="sehirFotoLabel">+ Fotoğraf Ekle</label>
+            <div id="sehirFotoOnizle"></div>
+        </div>
+
+        <div class="detay-bolum">
+            <label>NOTUN</label>
+            <textarea id="sehirNot" placeholder="Bu şehirle ilgili notların..."></textarea>
+        </div>
+
+        <button id="sehirDetayKaydet">KAYDET</button>
+    </div>
     <div id="logo">TRAXPLORE</div>
     <div id="gecmisPanel">
         <h3 id="gecmisBaslik">Son Gezdiklerin</h3>

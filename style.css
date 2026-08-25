@@ -295,3 +295,124 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
 }
 #sifirlaBtn:hover { background: #E67E22; color: #1e2a3a; }
 #sifirlaBtn:hover { background: #E67E22; color: #1e2a3a; }
+
+.gittim-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 5;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.gittim-btn.aktif { background: #E67E22; border-color: #fff; }
+.sehir-kart { position: relative; }
+
+#sehirDetayPanel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 480px;
+    max-width: 90vw;
+    max-height: 85vh;
+    background: #1e2a3a;
+    color: #eee;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    overflow-y: auto;
+    z-index: 1002;
+    padding: 28px;
+    box-sizing: border-box;
+    pointer-events: none;
+}
+#sehirDetayPanel.acik {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    pointer-events: auto;
+}
+#sehirDetayBaslik {
+    margin: 0 0 24px;
+    font-size: 24px;
+    color: #E67E22;
+    font-family: "Black Ops One", sans-serif;
+}
+#sehirDetayKapat {
+    position: absolute; top: 20px; right: 20px;
+    background: none; border: none; color: #888;
+    font-size: 24px; cursor: pointer;
+}
+.detay-bolum { margin-bottom: 24px; }
+.detay-bolum label {
+    display: block;
+    font-size: 12px;
+    color: #888;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+#yildizlar { display: flex; gap: 6px; }
+.yildiz {
+    font-size: 32px;
+    color: #444;
+    cursor: pointer;
+    transition: color 0.15s, transform 0.15s;
+}
+.yildiz:hover { transform: scale(1.15); }
+.yildiz.dolu { color: #FF8C1A; }
+#sehirFotoLabel {
+    display: inline-block;
+    border: 2px dashed #555;
+    color: #aaa;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+}
+#sehirFotoLabel:hover { border-color: #E67E22; color: #E67E22; }
+#sehirFotoOnizle { margin-top: 12px; }
+#sehirFotoOnizle img {
+    max-width: 100%;
+    border-radius: 8px;
+    display: block;
+}
+#sehirNot {
+    width: 100%;
+    min-height: 80px;
+    background: #0f1620;
+    border: 2px solid #2a3a4a;
+    border-radius: 8px;
+    color: #eee;
+    padding: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+#sehirDetayKaydet {
+    width: 100%;
+    background: #E67E22;
+    color: #1e2a3a;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: "Black Ops One", sans-serif;
+    letter-spacing: 1px;
+}
+#sehirDetayKaydet:hover { background: #FF8C1A; }
