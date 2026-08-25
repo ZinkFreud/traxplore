@@ -1691,11 +1691,12 @@ function pinEkle(ulke, sehir) {
     sehirKoordinatBul(ulke, sehir, function(koord) {
         const marker = L.circleMarker(koord, {
             radius: 5,
-            fillColor: "#E67E22",
+            fillColor: "#4A2511",
             color: "#fff",
             weight: 2,
             fillOpacity: 1
         }).addTo(harita);
+        marker.bindTooltip(sehir, { direction: "top", offset: [0, -5], className: "pin-etiket" });
         pinler[anahtar] = marker;
     });
 }

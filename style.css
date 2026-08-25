@@ -462,3 +462,18 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     line-height: 1.5;
 }
 #kilitUyari b { color: #E67E22; }
+
+.pin-etiket {
+    background: #1e2a3a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: "Black Ops One", sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.pin-etiket::before {
+    border-top-color: #1e2a3a !important;
+}
