@@ -1592,3 +1592,10 @@ function sehirDetayKapat() {
     seciliFoto = "";
 }
 document.getElementById("sehirDetayKapat").addEventListener("click", sehirDetayKapat);
+
+// Fare koordinatlarını canlı göster
+harita.on("mousemove", function(e) {
+    const lat = e.latlng.lat.toFixed(2);
+    const lng = e.latlng.lng.toFixed(2);
+    document.getElementById("koordinat").textContent = lat + ", " + lng;
+});

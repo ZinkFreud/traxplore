@@ -431,3 +431,12 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     z-index: 5;
     box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
+
+#koordinat {
+    font-family: "Black Ops One", monospace;
+    font-size: 13px;
+    color: #FF8C1A;
+    text-align: center;
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+}
