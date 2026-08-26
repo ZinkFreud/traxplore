@@ -1349,7 +1349,7 @@ function panelAc(ulkeAdi) {
                         }
         
                         // Yoksa Wikipedia'dan çek
-                        wikiFotoBul(sehirAd, function(foto) {
+                        wikiFotoBul(sehirAd, ulkeAdi, function(foto) {
                             if (foto) {
                                 sehirFotolari[sehirAd] = foto;
                                 img.src = foto;
@@ -1843,9 +1843,9 @@ function profilButonFotoGuncelle() {
 profilButonFotoGuncelle();
 
 // Wikipedia'dan şehir görseli çek (önce arar, sonra doğru sayfanın görselini alır)
-function wikiFotoBul(sehir, callback) {
+function wikiFotoBul(sehir, ulke, callback) {
     const aramaUrl = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
-                     "&list=search&srlimit=1&srsearch=" + encodeURIComponent(sehir);
+                     "&list=search&srlimit=1&srsearch=" + encodeURIComponent(sehir + " " + ulke);
 
     fetch(aramaUrl)
         .then(function(cevap) { return cevap.json(); })
