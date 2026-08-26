@@ -1845,7 +1845,7 @@ profilButonFotoGuncelle();
 // Wikipedia'dan şehir görseli çek
 function wikiFotoBul(sehir, callback) {
     // Türkçe Wikipedia'dan şehrin sayfa görselini iste
-    const url = "https://tr.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
+    const url = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
                 "&prop=pageimages&piprop=original&titles=" + encodeURIComponent(sehir);
 
     fetch(url)
