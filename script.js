@@ -1842,23 +1842,38 @@ function profilButonFotoGuncelle() {
 // Sayfa açılışında bir kez çağır
 profilButonFotoGuncelle();
 
-// Wikipedia'dan şehir görseli çek
+// Wikipedia'dan şehir görseli çek (önce arar, sonra doğru sayfanın görselini alır)
 function wikiFotoBul(sehir, callback) {
-    // Türkçe Wikipedia'dan şehrin sayfa görselini iste
-    const url = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
-                "&prop=pageimages&piprop=original&titles=" + encodeURIComponent(sehir);
+    // 1. ADIM: Şehri Wikipedia'da ara, doğru sayfa başlığını bul
+    const aramaUrl = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
+                     "&list=search&srlimit=1&srsearch=" + encodeURIComponent(sehir);
 
-    fetch(url)
+    fetch(aramaUrl)
         .then(function(cevap) { return cevap.json(); })
         .then(function(veri) {
-            const sayfalar = veri.query.pages;
-            for (const id in sayfalar) {
-                if (sayfalar[id].original && sayfalar[id].original.source) {
-                    callback(sayfalar[id].original.source);
-                    return;
-                }
+            if (!veri.query || !veri.query.search || veri.query.search.length === 0) {
+                callback(null);
+                return;
             }
-            callback(null); // bulunamadı
+            // Bulunan gerçek sayfa başlığı (şapkalı doğru hali)
+            const gercekBaslik = veri.query.search[0].title;
+
+            // 2. ADIM: O başlığın görselini çek
+            const fotoUrl = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
+                            "&prop=pageimages&piprop=original&titles=" + encodeURIComponent(gercekBaslik);
+
+            return fetch(fotoUrl)
+                .then(function(c) { return c.json(); })
+                .then(function(d) {
+                    const sayfalar = d.query.pages;
+                    for (const id in sayfalar) {
+                        if (sayfalar[id].original && sayfalar[id].original.source) {
+                            callback(sayfalar[id].original.source);
+                            return;
+                        }
+                    }
+                    callback(null);
+                });
         })
         .catch(function() { callback(null); });
 }
