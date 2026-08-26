@@ -1844,7 +1844,6 @@ profilButonFotoGuncelle();
 
 // Wikipedia'dan şehir görseli çek (önce arar, sonra doğru sayfanın görselini alır)
 function wikiFotoBul(sehir, callback) {
-    // 1. ADIM: Şehri Wikipedia'da ara, doğru sayfa başlığını bul
     const aramaUrl = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
                      "&list=search&srlimit=1&srsearch=" + encodeURIComponent(sehir);
 
@@ -1855,25 +1854,25 @@ function wikiFotoBul(sehir, callback) {
                 callback(null);
                 return;
             }
-            // Bulunan gerçek sayfa başlığı (şapkalı doğru hali)
             const gercekBaslik = veri.query.search[0].title;
-
-            // 2. ADIM: O başlığın görselini çek
             const fotoUrl = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
                             "&prop=pageimages&piprop=original&titles=" + encodeURIComponent(gercekBaslik);
-
-            return fetch(fotoUrl)
-                .then(function(c) { return c.json(); })
-                .then(function(d) {
-                    const sayfalar = d.query.pages;
-                    for (const id in sayfalar) {
-                        if (sayfalar[id].original && sayfalar[id].original.source) {
-                            callback(sayfalar[id].original.source);
-                            return;
-                        }
-                    }
-                    callback(null);
-                });
+            return fetch(fotoUrl);
+        })
+        .then(function(cevap2) {
+            if (!cevap2) return; // arama boştu, zaten callback(null) çağrıldı
+            return cevap2.json();
+        })
+        .then(function(veri2) {
+            if (!veri2) return;
+            const sayfalar = veri2.query.pages;
+            for (const id in sayfalar) {
+                if (sayfalar[id].original && sayfalar[id].original.source) {
+                    callback(sayfalar[id].original.source);
+                    return;
+                }
+            }
+            callback(null);
         })
         .catch(function() { callback(null); });
 }
