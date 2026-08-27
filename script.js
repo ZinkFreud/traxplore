@@ -484,7 +484,7 @@ const sehirVerisi = {
             "China": [
                 { ad: "Beijing", foto: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=400", aciklama: "Yasak Şehir ve Çin Seddi'nin kapısı." },
                 { ad: "Shanghai", foto: "https://images.unsplash.com/photo-1474181487882-5abf3f0ba6c2?w=400", aciklama: "Fütüristik silüetli dev metropol." },
-                { ad: "Xi'an", foto: "https://images.unsplash.com/photo-1537531383496-f4749b8032cf?w=400", aciklama: "Terracotta askerlerinin şehri." },
+                { ad: "Xian", foto: "https://images.unsplash.com/photo-1537531383496-f4749b8032cf?w=400", aciklama: "Terracotta askerlerinin şehri." },
                 { ad: "Guilin", foto: "https://images.unsplash.com/photo-1537531383496-f4749b8032cf?w=400", aciklama: "Masalsı karst dağları." }
             ],
             "Japan": [
@@ -593,12 +593,12 @@ const sehirVerisi = {
                 { ad: "Baku", foto: "https://images.unsplash.com/photo-1601581875039-e899893d520c?w=400", aciklama: "Hazar kıyısında modern başkent." },
                 { ad: "Ganja", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "İkinci büyük tarihi şehir." },
                 { ad: "Sheki", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Han sarayı ve el sanatları." },
-                { ad: "Gabala", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Dağ eteğinde tatil bölgesi." }
+                { ad: "Gabala", foto: "https://commons.wikimedia.org/wiki/Special:FilePath/Gabala_in_Azerbaijan.jpg?width=400", aciklama: "Dağ eteğinde tatil bölgesi." },
             ],
             "Kuwait": [
                 { ad: "Kuwait City", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Körfez kıyısında modern başkent." },
                 { ad: "Hawalli", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kalabalık şehir bölgesi." },
-                { ad: "Al Ahmadi", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Petrol sanayi şehri." },
+                { ad: "Al Ahmadi", foto: "https://commons.wikimedia.org/wiki/Special:FilePath/The%20Church%20at%20Ahmadi.jpg?width=400", aciklama: "Petrol sanayi şehri." },
                 { ad: "Fahaheel", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Sahil ve alışveriş bölgesi." }
             ],
             "Qatar": [
@@ -887,7 +887,7 @@ const sehirVerisi = {
                 { ad: "Dakar", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Atlantik ucunda başkent." },
                 { ad: "Saint-Louis", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Kolonyal UNESCO şehri." },
                 { ad: "Goree", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Tarihi köle adası." },
-                { ad: "Saly", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Sahil tatil bölgesi." }
+                { ad: "Saly", foto: "https://commons.wikimedia.org/wiki/Special:FilePath/Plage-Saly.jpg?width=400", aciklama: "Sahil tatil bölgesi." },
             ]    ,
             "Kenya": [
                 { ad: "Nairobi", foto: "https://images.unsplash.com/photo-1611348586804-61bf6c080437?w=400", aciklama: "Safari kapısı, canlı başkent." },
@@ -1017,7 +1017,7 @@ const sehirVerisi = {
             ],
             "Liberia": [
                 { ad: "Monrovia", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Atlantik kıyısında başkent." },
-                { ad: "Gbarnga", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "İç bölge merkezi." },
+                { ad: "Gbarnga", foto: "https://commons.wikimedia.org/wiki/Special:FilePath/Monrovia%20to%20Gbarnga%20highway.jpg?width=400", aciklama: "İç bölge merkezi." },
                 { ad: "Buchanan", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Liman şehri." },
                 { ad: "Robertsport", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Sörf kasabası." }
             ],
@@ -1084,7 +1084,7 @@ const sehirVerisi = {
             "Republic of the Congo": [
                 { ad: "Brazzaville", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Kongo nehri kıyısında başkent." },
                 { ad: "Pointe-Noire", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Atlantik liman şehri." },
-                { ad: "Dolisie", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Üçüncü büyük şehir." },
+                { ad: "Dolisie", foto: "https://commons.wikimedia.org/wiki/Special:FilePath/Dolisie.jpg?width=400", aciklama: "Üçüncü büyük şehir." },
                 { ad: "Odzala", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Goril ormanı parkı." }
             ],
             "Equatorial Guinea": [
@@ -1102,7 +1102,7 @@ const sehirVerisi = {
             "Burundi": [
                 { ad: "Gitega", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "İç bölgede başkent." },
                 { ad: "Bujumbura", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tanganyika gölü kıyısı." },
-                { ad: "Rumonge", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Göl kıyısı kasabası." },
+                { ad: "Rumonge", foto: "https://commons.wikimedia.org/wiki/Special:FilePath/Lac%20Tanganyika,%20Rumonge.jpg?width=400", aciklama: "Göl kıyısı kasabası." },
                 { ad: "Ngozi", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Kuzeyin merkezi." }
             ],
             "Zambia": [
@@ -1125,7 +1125,7 @@ const sehirVerisi = {
             ],
             "Lesotho": [
                 { ad: "Maseru", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Dağlar arasında başkent." },
-                { ad: "Semonkong", foto: "https://images.unsplash.com/photo-1518709594023-6eab9bab7b23?w=400", aciklama: "Yüksek şelale kasabası." },
+                { ad: "Semonkong", foto: "https://commons.wikimedia.org/wiki/Special:FilePath/Lesotho%20maletsunyane%20falls.jpg?width=400", aciklama: "Yüksek şelale kasabası." },
                 { ad: "Thaba-Bosiu", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Tarihi kaya platosu." },
                 { ad: "Katse", foto: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?w=400", aciklama: "Dev baraj ve gölü." }
             ],
@@ -1565,15 +1565,17 @@ function sehirDetayAc(ulke, sehir) {
     aktifDetay = { ulke: ulke, sehir: sehir };
     document.getElementById("sehirDetayBaslik").textContent = sehir;
 
-    // Şehrin hazır görselini üstte göster
-    const sehirObj = (sehirVerisi[ulke] || []).find(function(s) { return s.ad === sehir; });
-    const kapak = document.getElementById("sehirKapak");
-    if (sehirObj && sehirObj.foto) {
-        kapak.src = sehirObj.foto;
-        kapak.style.display = "block";
-    } else {
-        kapak.style.display = "none";
-    }
+        // Şehrin görselini üstte göster (önce çekilmiş Wikipedia fotosu, yoksa hazır foto)
+        const sehirObj = (sehirVerisi[ulke] || []).find(function(s) { return s.ad === sehir; });
+        const kapak = document.getElementById("sehirKapak");
+        const wikiFoto = sehirFotolari[sehir]; // kartta çekilip kaydedilen foto
+        const kapakFoto = (wikiFoto && wikiFoto !== "yok") ? wikiFoto : (sehirObj ? sehirObj.foto : "");
+        if (kapakFoto) {
+            kapak.src = kapakFoto;
+            kapak.style.display = "block";
+        } else {
+            kapak.style.display = "none";
+        }
 
     const anahtar = ulke + "|" + sehir;
     const detay = sehirDetaylari[anahtar] || { puan: 0, foto: "", not: "" };
@@ -1842,37 +1844,52 @@ function profilButonFotoGuncelle() {
 // Sayfa açılışında bir kez çağır
 profilButonFotoGuncelle();
 
-// Wikipedia'dan şehir görseli çek (önce arar, sonra doğru sayfanın görselini alır)
+// Wikipedia'dan şehir görseli çek (önce ülkeli arar, bulamazsa ülkesiz dener)
 function wikiFotoBul(sehir, ulke, callback) {
-    const aramaUrl = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
-                     "&list=search&srlimit=1&srsearch=" + encodeURIComponent(sehir + " " + ulke);
+    // Bir sayfa başlığının orijinal görselini çeken yardımcı
+    function fotoCek(baslik, sonuc) {
+        const url = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
+                    "&prop=pageimages&piprop=original&titles=" + encodeURIComponent(baslik);
+        fetch(url)
+            .then(function(c) { return c.json(); })
+            .then(function(d) {
+                const sayfalar = d.query.pages;
+                for (const id in sayfalar) {
+                    if (sayfalar[id].original && sayfalar[id].original.source) {
+                        sonuc(sayfalar[id].original.source);
+                        return;
+                    }
+                }
+                sonuc(null);
+            })
+            .catch(function() { sonuc(null); });
+    }
 
-    fetch(aramaUrl)
-        .then(function(cevap) { return cevap.json(); })
-        .then(function(veri) {
-            if (!veri.query || !veri.query.search || veri.query.search.length === 0) {
-                callback(null);
-                return;
-            }
-            const gercekBaslik = veri.query.search[0].title;
-            const fotoUrl = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
-                            "&prop=pageimages&piprop=original&titles=" + encodeURIComponent(gercekBaslik);
-            return fetch(fotoUrl);
-        })
-        .then(function(cevap2) {
-            if (!cevap2) return; // arama boştu, zaten callback(null) çağrıldı
-            return cevap2.json();
-        })
-        .then(function(veri2) {
-            if (!veri2) return;
-            const sayfalar = veri2.query.pages;
-            for (const id in sayfalar) {
-                if (sayfalar[id].original && sayfalar[id].original.source) {
-                    callback(sayfalar[id].original.source);
+    // Bir arama sorgusuyla en iyi sayfayı bulup fotosunu çeken yardımcı
+    function aramaYap(sorgu, sonuc) {
+        const url = "https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
+                    "&list=search&srlimit=1&srsearch=" + encodeURIComponent(sorgu);
+        fetch(url)
+            .then(function(c) { return c.json(); })
+            .then(function(d) {
+                if (!d.query || !d.query.search || d.query.search.length === 0) {
+                    sonuc(null);
                     return;
                 }
-            }
-            callback(null);
-        })
-        .catch(function() { callback(null); });
+                fotoCek(d.query.search[0].title, sonuc);
+            })
+            .catch(function() { sonuc(null); });
+    }
+
+    // 1. DENEME: şehir + ülke ile ara
+    aramaYap(sehir + " " + ulke, function(foto) {
+        if (foto) {
+            callback(foto);
+        } else {
+            // 2. DENEME: sadece şehir adının kendi sayfasını dene
+            fotoCek(sehir, function(foto2) {
+                callback(foto2); // bulursa foto, bulamazsa null
+            });
+        }
+    });
 }
