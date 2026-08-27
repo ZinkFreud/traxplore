@@ -1,3 +1,8 @@
+// Supabase bağlantısı
+const SUPABASE_URL = "https://nfmbutrdhdomgaltneuq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_VHpyi0vznoFhj2RaXewyig_Rk0v07tG";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // ŞEHİR VERİSİ (şimdilik sadece Türkiye)
 // Ülke -> Kıta eşleşmesi
 const ulkeKita = {
