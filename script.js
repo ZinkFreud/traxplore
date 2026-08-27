@@ -61,7 +61,8 @@ const ulkeKita = {
     "Eritrea": "Afrika", "Republic of the Congo": "Afrika", "Equatorial Guinea": "Afrika",
     "Gabon": "Afrika", "Burundi": "Afrika", "Zambia": "Afrika", "Malawi": "Afrika",
     "Swaziland": "Afrika", "Lesotho": "Afrika",
-    "Somalia": "Afrika", "Somaliland": "Afrika", "Djibouti": "Afrika"
+    "Somalia": "Afrika", "Somaliland": "Afrika", "Djibouti": "Afrika",
+    "Malta": "Avrupa"
 };
 
 
@@ -325,6 +326,12 @@ const sehirVerisi = {
                 { ad: "Paphos", foto: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?w=400", aciklama: "Antik mozaikler, Afrodit efsanesi." },
                 { ad: "Larnaca", foto: "https://images.unsplash.com/photo-1580996378027-23040f16f0c9?w=400", aciklama: "Palmiyeli sahil şehri." }
             ]    ,
+            "Malta": [
+                { ad: "Valletta", foto: "https://images.unsplash.com/photo-1509130446053-9a5b8a4b0e7d?w=400", aciklama: "Surlarla çevrili barok başkent." },
+                { ad: "Mdina", foto: "https://images.unsplash.com/photo-1558271736-cd043ef2e855?w=400", aciklama: "Sessiz sedasız eski başkent." },
+                { ad: "Sliema", foto: "https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=400", aciklama: "Sahil ve alışveriş şehri." },
+                { ad: "Gozo", foto: "https://images.unsplash.com/photo-1591792447271-4a1a1a1a1a1a?w=400", aciklama: "Kırsal ve sakin kardeş ada." }
+            ],
             "Brazil": [
                 { ad: "Rio de Janeiro", foto: "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=400", aciklama: "Kristo heykeli ve Copacabana." },
                 { ad: "Sao Paulo", foto: "https://images.unsplash.com/photo-1541609309631-0a1a1a1a1a1a?w=400", aciklama: "Latin Amerika'nın dev metropolü." },
