@@ -1398,12 +1398,13 @@ function panelAc(ulkeAdi) {
                 }
     }
     document.getElementById("panel").classList.add("acik");
-    document.getElementById("ortu").classList.add("acik");
+    document.getElementById("harita").classList.add("itili"); // haritayı sola it
+    
 }
 
 function paneliKapat() {
     document.getElementById("panel").classList.remove("acik");
-    document.getElementById("ortu").classList.remove("acik");
+    document.getElementById("harita").classList.remove("itili"); // haritayı geri getir
 }
 
 document.getElementById("kapat").addEventListener("click", paneliKapat);
@@ -2179,3 +2180,13 @@ function aramaKapat() {
     aramaSonuc.innerHTML = "";
     
 }
+
+// ESC ile şehir panelini kapat
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") {
+        const panel = document.getElementById("panel");
+        if (panel.classList.contains("acik")) {
+            paneliKapat();
+        }
+    }
+});

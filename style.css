@@ -1,26 +1,28 @@
 body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
 #harita { height: 100vh; width: 100%; background: #e8e0d0; }
 
-/* Panel */
+/* Panel - sağdan kayan */
 #panel {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 640px;
-    max-width: 90vw;
-    max-height: 85vh;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 420px;
+    max-width: 85vw;
     background: #111;
     color: #eee;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.4);
+    transform: translateX(100%);
+    transition: transform 0.35s ease;
     overflow-y: auto;
     z-index: 1000;
     padding: 24px;
     box-sizing: border-box;
     pointer-events: none;
+}
+#panel.acik {
+    transform: translateX(0);
+    pointer-events: auto;
 }
 #ortu {
     position: fixed;
@@ -36,11 +38,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     opacity: 1;
     pointer-events: auto;
 }
-#panel.acik {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-    pointer-events: auto;
-}
+
 
 #panelBaslik { font-size: 22px; font-weight: 600; margin: 0 0 4px; }
 #panelAltBaslik { color: #888; font-size: 14px; margin: 0 0 20px; }
@@ -740,4 +738,12 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     font-size: 11px;
     opacity: 0.6;
     margin-left: 6px;
+}
+
+/* Panel açıkken harita sola kaysın */
+#harita {
+    transition: transform 0.35s ease;
+}
+#harita.itili {
+    transform: translateX(-420px);
 }
