@@ -1685,7 +1685,7 @@ document.getElementById("sehirFotoInput").addEventListener("change", function(e)
 });
 
 // Kaydet
-document.getElementById("sehirDetayKaydet").addEventListener("click", function() {
+document.getElementById("sehirDetayKaydet").addEventListener("click", async function() {
     const anahtar = aktifDetay.ulke + "|" + aktifDetay.sehir;
     const mevcut = sehirDetaylari[anahtar] || {};
     sehirDetaylari[anahtar] = {
@@ -1694,6 +1694,21 @@ document.getElementById("sehirDetayKaydet").addEventListener("click", function()
         not: document.getElementById("sehirNot").value
     };
     localStorage.setItem("sehirDetaylari", JSON.stringify(sehirDetaylari));
+
+    // Supabase'e YAZ (puan + not)
+    const { data: oturum } = await db.auth.getSession();
+    if (oturum.session) {
+        const kullanici = oturum.session.user.id;
+        const { error } = await db.from("sehir_detaylari").upsert({
+            user_id: kullanici,
+            ulke: aktifDetay.ulke,
+            sehir: aktifDetay.sehir,
+            puan: seciliPuan,
+            notlar: document.getElementById("sehirNot").value
+        }, { onConflict: "user_id,ulke,sehir" });
+        if (error) console.log("Detay yazma hatası:", error.message);
+    }
+
     seciliFoto = ""; // sıfırla
     sehirDetayKapat();
 });
@@ -1974,18 +1989,19 @@ document.getElementById("girisBtn").addEventListener("click", async function() {
         girisMesaj.style.color = "#c0392b";
         girisMesaj.textContent = "Hata: " + error.message;
     } else {
-        girisEkran.style.display = "none"; // giriş başarılı → ekranı kapat, haritayı göster
+        girisEkran.style.display = "none"; // giriş başarılı → ekranı kapat
+        await gezileriYukleSupabase(); // Supabase'den veriyi çek
+        await detaylariYukleSupabase(); // puan + notları çek
     }
 });
 
-// AÇILIŞTA: kullanıcı zaten giriş yapmış mı kontrol et
 async function oturumKontrol() {
     const { data } = await db.auth.getSession();
     if (data.session) {
-        // Oturum var → giriş ekranını gizle, haritayı göster
         girisEkran.style.display = "none";
+        await gezileriYukleSupabase(); // Supabase'den veriyi çek
+        await detaylariYukleSupabase();
     } else {
-        // Oturum yok → giriş ekranını göster
         girisEkran.style.display = "flex";
     }
 }
@@ -1996,3 +2012,62 @@ document.getElementById("cikisBtn").addEventListener("click", async function() {
     await db.auth.signOut();
     location.reload(); // sayfayı yenile → giriş ekranı geri gelir
 }); 
+
+// Supabase'den kullanıcının gezdiği şehirleri çek
+async function gezileriYukleSupabase() {
+    const { data: oturum } = await db.auth.getSession();
+    if (!oturum.session) return; // giriş yoksa bir şey yapma
+
+    const kullanici = oturum.session.user.id;
+    const { data, error } = await db.from("gezilenler")
+        .select("ulke, sehir")
+        .eq("user_id", kullanici);
+
+    if (error) {
+        console.log("Supabase okuma hatası:", error.message);
+        return;
+    }
+
+    // Gelen veriyi gezilenler'e koy
+    gezilenler = data.map(function(satir) {
+        return { ulke: satir.ulke, sehir: satir.sehir };
+    });
+
+    // Haritayı ve sayaçları güncelle
+    gezileriKaydet();
+    istatistikGuncelle();
+    gecmisGuncelle();
+    kitaChartCiz();
+    // Tüm gezilen ülkelerin rengini güncelle
+    gezilenler.forEach(function(g) { ulkeRenkGuncelle(g.ulke); });
+    // Pinleri ekle
+    gezilenler.forEach(function(g) { pinEkle(g.ulke, g.sehir); });
+}
+
+// Supabase'den puan + notları çek
+async function detaylariYukleSupabase() {
+    const { data: oturum } = await db.auth.getSession();
+    if (!oturum.session) return;
+
+    const kullanici = oturum.session.user.id;
+    const { data, error } = await db.from("sehir_detaylari")
+        .select("ulke, sehir, puan, notlar")
+        .eq("user_id", kullanici);
+
+    if (error) {
+        console.log("Detay okuma hatası:", error.message);
+        return;
+    }
+
+    // Gelen veriyi sehirDetaylari'na koy
+    data.forEach(function(satir) {
+        const anahtar = satir.ulke + "|" + satir.sehir;
+        const mevcut = sehirDetaylari[anahtar] || {};
+        sehirDetaylari[anahtar] = {
+            puan: satir.puan || 0,
+            foto: mevcut.foto || "",   // foto localStorage'da kalıyor şimdilik
+            not: satir.notlar || ""
+        };
+    });
+    localStorage.setItem("sehirDetaylari", JSON.stringify(sehirDetaylari));
+}
