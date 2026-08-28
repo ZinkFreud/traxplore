@@ -213,20 +213,19 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
 }
 .lejant-yuzde { color: #FF8C1A; font-weight: 700; margin-left: auto; }
 
+/* İstatistik paneli - sağdan kayan */
 #istatistikPanel {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    width: 520px;
-    max-width: 90vw;
-    max-height: 85vh;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 460px;
+    max-width: 85vw;
     background: #1e2a3a;
     color: #eee;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.4);
+    transform: translateX(100%);
+    transition: transform 0.35s ease;
     overflow-y: auto;
     z-index: 1001;
     padding: 28px;
@@ -234,8 +233,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     pointer-events: none;
 }
 #istatistikPanel.acik {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
+    transform: translateX(0);
     pointer-events: auto;
 }
 #istatistikBaslik {
@@ -517,20 +515,19 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     text-align: center;
 }
 
+/* Profil kartı - sağdan kayan */
 #profilKart {
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 0;
+    right: 0;
+    height: 100vh;
     width: 440px;
-    max-width: 90vw;
-    max-height: 85vh;
+    max-width: 85vw;
     background: #1e2a3a;
     color: #eee;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.4);
+    transform: translateX(100%);
+    transition: transform 0.35s ease;
     overflow-y: auto;
     z-index: 1003;
     padding: 28px;
@@ -538,8 +535,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     pointer-events: none;
 }
 #profilKart.acik {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
+    transform: translateX(0);
     pointer-events: auto;
 }
 #profilKapat {
@@ -747,3 +743,32 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
 #harita.itili {
     transform: translateX(-420px);
 }
+
+/* Eski çıkış ve sıfırla butonlarını gizle (profile taşındı) */
+.cikis-btn { display: none; }
+#sifirlaBtn { display: none; }
+
+/* Profil içi ayar butonları */
+#profilAyarlar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(230,126,34,0.25);
+}
+.profil-ayar-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: "Black Ops One", sans-serif;
+    letter-spacing: 1px;
+    background: #2a3a4e;
+    color: #eee;
+}
+.profil-ayar-btn:hover { background: #354a63; }
+.profil-ayar-btn.tehlike { background: #6e2020; color: #ffd0d0; }
+.profil-ayar-btn.tehlike:hover { background: #8e2a2a; }

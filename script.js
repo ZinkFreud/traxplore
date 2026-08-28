@@ -1562,12 +1562,12 @@ function istatistikPaneliDoldur() {
 function istatistikPaneliAc() {
     istatistikPaneliDoldur();
     document.getElementById("istatistikPanel").classList.add("acik");
-    document.getElementById("ortu").classList.add("acik");
+    document.getElementById("harita").classList.add("itili");
 }
 
 function istatistikPaneliKapat() {
     document.getElementById("istatistikPanel").classList.remove("acik");
-    document.getElementById("ortu").classList.remove("acik");
+    document.getElementById("harita").classList.remove("itili");
 }
 
 document.getElementById("kitaChart").addEventListener("click", istatistikPaneliAc);
@@ -1801,12 +1801,13 @@ function profilAc() {
     profilDoldur();
     profilKilitle(true);
     document.getElementById("profilKart").classList.add("acik");
-    document.getElementById("ortu").classList.add("acik");
+    document.getElementById("harita").classList.add("itili"); // haritayı sola it
+
 }
 
 function profilKapat() {
     document.getElementById("profilKart").classList.remove("acik");
-    document.getElementById("ortu").classList.remove("acik");
+    document.getElementById("harita").classList.remove("itili"); // haritayı geri getir
 }
 
 function profilDoldur() {
@@ -2181,12 +2182,30 @@ function aramaKapat() {
     
 }
 
-// ESC ile şehir panelini kapat
 document.addEventListener("keydown", function(e) {
     if (e.key === "Escape") {
         const panel = document.getElementById("panel");
+        const profil = document.getElementById("profilKart");
+        const istat = document.getElementById("istatistikPanel");
         if (panel.classList.contains("acik")) {
             paneliKapat();
         }
+        if (profil.classList.contains("acik")) {
+            profilKapat();
+        }
+        if (istat.classList.contains("acik")) {
+            istatistikPaneliKapat();
+        }
     }
+});
+
+// Profil içindeki Çıkış butonu
+document.getElementById("profilCikis").addEventListener("click", async function() {
+    await db.auth.signOut();
+    location.reload();
+});
+
+// Profil içindeki Haritayı Sıfırla butonu
+document.getElementById("profilSifirla").addEventListener("click", function() {
+    document.getElementById("sifirlaBtn").click(); // eski sıfırlama işlevini tetikle
 });
