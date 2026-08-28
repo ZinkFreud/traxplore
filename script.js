@@ -1862,10 +1862,23 @@ document.getElementById("profilDegistir").addEventListener("click", function() {
     profilDoldur(); // foto sil butonları + ekle butonu görünsün
 });
 
-document.getElementById("profilKaydet").addEventListener("click", function() {
+document.getElementById("profilKaydet").addEventListener("click", async function() {
     profilVeri.isim = document.getElementById("profilIsim").value;
     profilVeri.konum = document.getElementById("profilKonum").value;
     localStorage.setItem("profilVeri", JSON.stringify(profilVeri));
+
+    // Supabase'e YAZ (isim + konum)
+    const { data: oturum } = await db.auth.getSession();
+    if (oturum.session) {
+        const kullanici = oturum.session.user.id;
+        const { error } = await db.from("profil").upsert({
+            user_id: kullanici,
+            isim: profilVeri.isim,
+            konum: profilVeri.konum
+        }, { onConflict: "user_id" });
+        if (error) console.log("Profil yazma hatası:", error.message);
+    }
+
     profilButonFotoGuncelle();
     profilKapat();
 });
@@ -1992,6 +2005,7 @@ document.getElementById("girisBtn").addEventListener("click", async function() {
         girisEkran.style.display = "none"; // giriş başarılı → ekranı kapat
         await gezileriYukleSupabase(); // Supabase'den veriyi çek
         await detaylariYukleSupabase(); // puan + notları çek
+        await profilYukleSupabase(); // profili çek
     }
 });
 
@@ -2001,6 +2015,7 @@ async function oturumKontrol() {
         girisEkran.style.display = "none";
         await gezileriYukleSupabase(); // Supabase'den veriyi çek
         await detaylariYukleSupabase();
+        await profilYukleSupabase(); // profili çek
     } else {
         girisEkran.style.display = "flex";
     }
@@ -2070,4 +2085,27 @@ async function detaylariYukleSupabase() {
         };
     });
     localStorage.setItem("sehirDetaylari", JSON.stringify(sehirDetaylari));
+}
+
+// Supabase'den profili çek
+async function profilYukleSupabase() {
+    const { data: oturum } = await db.auth.getSession();
+    if (!oturum.session) return;
+
+    const kullanici = oturum.session.user.id;
+    const { data, error } = await db.from("profil")
+        .select("isim, konum")
+        .eq("user_id", kullanici)
+        .maybeSingle();
+
+    if (error) {
+        console.log("Profil okuma hatası:", error.message);
+        return;
+    }
+    if (!data) return; // profil henüz yok
+
+    profilVeri.isim = data.isim || "";
+    profilVeri.konum = data.konum || "";
+    localStorage.setItem("profilVeri", JSON.stringify(profilVeri));
+    profilButonFotoGuncelle();
 }
