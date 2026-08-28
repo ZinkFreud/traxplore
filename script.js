@@ -2109,3 +2109,73 @@ async function profilYukleSupabase() {
     localStorage.setItem("profilVeri", JSON.stringify(profilVeri));
     profilButonFotoGuncelle();
 }
+
+// ---- CANLI ARAMA ----
+
+const aramaKutu = document.getElementById("aramaKutu");
+const aramaInput = document.getElementById("aramaInput");
+const aramaSonuc = document.getElementById("aramaSonuc");
+
+// Klavyeden harfe basınca arama kutusunu aç
+document.addEventListener("keydown", function(e) {
+    // Zaten bir input'a yazıyorsa karışma (giriş ekranı, not vs.)
+    if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return;
+    // Giriş ekranı açıksa karışma
+    if (girisEkran && girisEkran.style.display !== "none") return;
+
+    // Sadece harf/rakam ise aramayı aç
+    if (e.key.length === 1 && /[a-zA-Z0-9çğıöşüÇĞİÖŞÜ]/.test(e.key)) {
+        aramaKutu.style.display = "block";
+        aramaInput.focus();
+    }
+    // ESC ile kapat
+    if (e.key === "Escape") {
+        aramaKapat();
+    }
+});
+
+// Yazdıkça filtrele
+aramaInput.addEventListener("input", function() {
+    const metin = aramaInput.value.trim().toLowerCase();
+    aramaSonuc.innerHTML = "";
+    if (metin.length === 0) return;
+
+    const sonuclar = [];
+
+    // Ülkeleri ara
+    for (const ulke in sehirVerisi) {
+        if (ulke.toLowerCase().startsWith(metin)) {
+            sonuclar.push({ tip: "ülke", ulke: ulke, ad: ulke });
+        }
+        // Şehirleri ara
+        sehirVerisi[ulke].forEach(function(s) {
+            if (s.ad.toLowerCase().startsWith(metin)) {
+                sonuclar.push({ tip: "şehir", ulke: ulke, ad: s.ad });
+            }
+        });
+    }
+
+    // İlk 8 sonucu göster
+    sonuclar.slice(0, 8).forEach(function(r) {
+        const satir = document.createElement("div");
+        satir.className = "arama-sonuc-satir";
+        satir.innerHTML = r.ad + "<span class='tur'>" + r.tip + (r.tip === "şehir" ? " · " + r.ulke : "") + "</span>";
+        satir.addEventListener("click", function() {
+            aramaSec(r);
+        });
+        aramaSonuc.appendChild(satir);
+    });
+});
+
+// Sonuca tıklayınca
+function aramaSec(r) {
+    aramaKapat();
+    panelAc(r.ulke); // o ülkenin şehir panelini aç
+}
+
+function aramaKapat() {
+    aramaKutu.style.display = "none";
+    aramaInput.value = "";
+    aramaSonuc.innerHTML = "";
+    
+}

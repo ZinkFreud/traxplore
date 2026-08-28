@@ -693,3 +693,51 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     cursor: pointer;
     font-size: 13px;
 }
+
+/* Canlı arama */
+.arama-kutu {
+    position: fixed;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3000;
+    width: 340px;
+    max-width: 80%;
+    display: none; /* başta gizli, yazınca açılır */
+}
+.arama-kutu input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #1e2a3a;
+    border-radius: 8px;
+    background: #e8e0d0;
+    color: #1e2a3a;
+    font-size: 15px;
+    font-family: 'Black Ops One', cursive;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    outline: none;
+}
+.arama-sonuc {
+    background: #e8e0d0;
+    border-radius: 8px;
+    margin-top: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+.arama-sonuc-satir {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(30,42,58,0.15);
+    color: #1e2a3a;
+    font-size: 14px;
+}
+.arama-sonuc-satir:hover {
+    background: #E67E22;
+    color: white;
+}
+.arama-sonuc-satir .tur {
+    font-size: 11px;
+    opacity: 0.6;
+    margin-left: 6px;
+}
