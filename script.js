@@ -1199,7 +1199,7 @@ function ulkeRenkGuncelle(ulke) {
     katman.setStyle({ fillColor: gezildi ? "#E67E22" : "#1e2a3a" });
 }
 
-function sehirSec(btn, ulke, sehir) {
+async function sehirSec(btn, ulke, sehir) {
     const indeks = gezilenler.findIndex(function(g) {
         return g.ulke === ulke && g.sehir === sehir;
     });
@@ -1211,12 +1211,36 @@ function sehirSec(btn, ulke, sehir) {
         btn.classList.add("aktif");
         btn.textContent = "✓";
         pinEkle(ulke, sehir);
+
+        // Supabase'e YAZ
+        const { data: oturum } = await db.auth.getSession();
+        if (oturum.session) {
+            const kullanici = oturum.session.user.id;
+            const { error } = await db.from("gezilenler").insert({
+                user_id: kullanici,
+                ulke: ulke,
+                sehir: sehir
+            });
+            if (error) console.log("Supabase yazma hatası:", error.message);
+        }
     } else {
         gezilenler.splice(indeks, 1);
         kart.classList.remove("secili");
         btn.classList.remove("aktif");
         btn.textContent = "+";
         pinKaldir(ulke, sehir);
+
+        // Supabase'den SİL
+        const { data: oturum } = await db.auth.getSession();
+        if (oturum.session) {
+            const kullanici = oturum.session.user.id;
+            const { error } = await db.from("gezilenler")
+                .delete()
+                .eq("user_id", kullanici)
+                .eq("ulke", ulke)
+                .eq("sehir", sehir);
+            if (error) console.log("Supabase silme hatası:", error.message);
+        }
     }
     gezileriKaydet();
     istatistikGuncelle();
