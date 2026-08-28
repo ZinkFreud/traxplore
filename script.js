@@ -1905,3 +1905,70 @@ function wikiFotoBul(sehir, ulke, callback) {
         }
     });
 }
+
+// ---- GİRİŞ / KAYIT SİSTEMİ ----
+
+const girisEkran = document.getElementById("girisEkran");
+const girisMesaj = document.getElementById("girisMesaj");
+
+// KAYIT OL
+document.getElementById("kayitBtn").addEventListener("click", async function() {
+    const email = document.getElementById("girisEmail").value.trim();
+    const sifre = document.getElementById("girisSifre").value.trim();
+    if (!email || !sifre) {
+        girisMesaj.textContent = "E-posta ve şifre gir.";
+        return;
+    }
+    girisMesaj.style.color = "#1e2a3a";
+    girisMesaj.textContent = "Kayıt yapılıyor...";
+
+    const { data, error } = await db.auth.signUp({ email: email, password: sifre });
+
+    if (error) {
+        girisMesaj.style.color = "#c0392b";
+        girisMesaj.textContent = "Hata: " + error.message;
+    } else {
+        girisMesaj.style.color = "#27ae60";
+        girisMesaj.textContent = "Kayıt başarılı! E-postanı kontrol et, sonra giriş yap.";
+    }
+});
+
+// GİRİŞ YAP
+document.getElementById("girisBtn").addEventListener("click", async function() {
+    const email = document.getElementById("girisEmail").value.trim();
+    const sifre = document.getElementById("girisSifre").value.trim();
+    if (!email || !sifre) {
+        girisMesaj.textContent = "E-posta ve şifre gir.";
+        return;
+    }
+    girisMesaj.style.color = "#1e2a3a";
+    girisMesaj.textContent = "Giriş yapılıyor...";
+
+    const { data, error } = await db.auth.signInWithPassword({ email: email, password: sifre });
+
+    if (error) {
+        girisMesaj.style.color = "#c0392b";
+        girisMesaj.textContent = "Hata: " + error.message;
+    } else {
+        girisEkran.style.display = "none"; // giriş başarılı → ekranı kapat, haritayı göster
+    }
+});
+
+// AÇILIŞTA: kullanıcı zaten giriş yapmış mı kontrol et
+async function oturumKontrol() {
+    const { data } = await db.auth.getSession();
+    if (data.session) {
+        // Oturum var → giriş ekranını gizle, haritayı göster
+        girisEkran.style.display = "none";
+    } else {
+        // Oturum yok → giriş ekranını göster
+        girisEkran.style.display = "flex";
+    }
+}
+oturumKontrol();
+
+// ÇIKIŞ YAP
+document.getElementById("cikisBtn").addEventListener("click", async function() {
+    await db.auth.signOut();
+    location.reload(); // sayfayı yenile → giriş ekranı geri gelir
+}); 
