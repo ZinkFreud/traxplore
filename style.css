@@ -316,20 +316,19 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
 .gittim-btn.aktif { background: #E67E22; border-color: #fff; }
 .sehir-kart { position: relative; }
 
+/* Şehir detay paneli - sağdan kayan */
 #sehirDetayPanel {
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 0;
+    right: 0;
+    height: 100vh;
     width: 480px;
-    max-width: 90vw;
-    max-height: 85vh;
+    max-width: 85vw;
     background: #1e2a3a;
     color: #eee;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-    transform: translate(-50%, -50%) scale(0);
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    box-shadow: -10px 0 40px rgba(0,0,0,0.4);
+    transform: translateX(100%);
+    transition: transform 0.35s ease;
     overflow-y: auto;
     z-index: 1002;
     padding: 28px;
@@ -337,8 +336,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     pointer-events: none;
 }
 #sehirDetayPanel.acik {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
+    transform: translateX(0);
     pointer-events: auto;
 }
 #sehirDetayBaslik {

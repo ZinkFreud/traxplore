@@ -1647,8 +1647,8 @@ function sehirDetayAc(ulke, sehir) {
             kilitUyari.style.display = "block";
         }
     
+        document.getElementById("panel").classList.remove("acik"); // şehir panelini gizle
         document.getElementById("sehirDetayPanel").classList.add("acik");
-        document.getElementById("ortu").classList.add("acik");
     }
 
 let seciliPuan = 0;
@@ -1717,9 +1717,14 @@ document.getElementById("sehirDetayKaydet").addEventListener("click", async func
 // Kapat
 function sehirDetayKapat() {
     document.getElementById("sehirDetayPanel").classList.remove("acik");
-    document.getElementById("ortu").classList.remove("acik");
+    // şehir panelini geri aç (aktifDetay'daki ülkeyle)
+    if (aktifDetay && aktifDetay.ulke) {
+        panelAc(aktifDetay.ulke);
+    }
     seciliFoto = "";
 }
+    
+
 document.getElementById("sehirDetayKapat").addEventListener("click", sehirDetayKapat);
 
 // Fare koordinatlarını canlı göster
@@ -2118,21 +2123,23 @@ const aramaKutu = document.getElementById("aramaKutu");
 const aramaInput = document.getElementById("aramaInput");
 const aramaSonuc = document.getElementById("aramaSonuc");
 
-// Klavyeden harfe basınca arama kutusunu aç
 document.addEventListener("keydown", function(e) {
-    // Zaten bir input'a yazıyorsa karışma (giriş ekranı, not vs.)
-    if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return;
-    // Giriş ekranı açıksa karışma
-    if (girisEkran && girisEkran.style.display !== "none") return;
-
-    // Sadece harf/rakam ise aramayı aç
-    if (e.key.length === 1 && /[a-zA-Z0-9çğıöşüÇĞİÖŞÜ]/.test(e.key)) {
-        aramaKutu.style.display = "block";
-        aramaInput.focus();
-    }
-    // ESC ile kapat
     if (e.key === "Escape") {
-        aramaKapat();
+        const detay = document.getElementById("sehirDetayPanel");
+        const panel = document.getElementById("panel");
+        const profil = document.getElementById("profilKart");
+        const istat = document.getElementById("istatistikPanel");
+        if (detay.classList.contains("acik")) {
+            sehirDetayKapat();
+        } else if (panel.classList.contains("acik")) {
+            paneliKapat();
+        }
+        if (profil.classList.contains("acik")) {
+            profilKapat();
+        }
+        if (istat.classList.contains("acik")) {
+            istatistikPaneliKapat();
+        }
     }
 });
 
