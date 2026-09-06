@@ -1,4 +1,8 @@
-body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background: #04070c; }
+body {
+    margin: 0;
+    background: #04070c;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+}
 #harita { height: 100vh; width: 100%; background: transparent; cursor: grab; overflow: hidden; }
 #harita canvas { display: block; }
 
@@ -123,7 +127,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     padding: 16px;
     z-index: 900;
     color: #eee;
-    font-family: "Black Ops One", -apple-system, sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
 }
 #gecmisBaslik {
     margin: 0 0 12px;
@@ -170,7 +175,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     box-sizing: border-box;
     background: #1e2a3a;
     color: #E67E22;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     font-size: 26px;
     text-align: center;
     padding: 12px 0;
@@ -240,7 +246,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     margin: 0 0 24px;
     font-size: 22px;
     color: #E67E22;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     letter-spacing: 1px;
 }
 #istatistikKapat {
@@ -279,7 +286,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     box-sizing: border-box;
     background: #1e2a3a;
     color: #E67E22;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     font-size: 15px;
     text-align: center;
     padding: 14px 0;
@@ -343,7 +351,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     margin: 0 0 24px;
     font-size: 24px;
     color: #E67E22;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
 }
 #sehirDetayKapat {
     position: absolute; top: 20px; right: 20px;
@@ -407,7 +416,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     font-weight: 700;
     font-size: 16px;
     cursor: pointer;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     letter-spacing: 1px;
 }
 #sehirDetayKaydet:hover { background: #FF8C1A; }
@@ -427,7 +437,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
 }
 
 #koordinat {
-    font-family: "Black Ops One", monospace;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     font-size: 13px;
     color: #FF8C1A;
     text-align: center;
@@ -462,7 +473,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     color: #fff;
     border: none;
     border-radius: 8px;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     font-size: 12px;
     letter-spacing: 0.5px;
     padding: 4px 10px;
@@ -507,7 +519,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
 #profilYazi {
     flex: 1;
     color: #E67E22;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     font-size: 18px;
     letter-spacing: 1px;
     text-align: center;
@@ -610,7 +623,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     font-weight: 700;
     font-size: 15px;
     cursor: pointer;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     letter-spacing: 1px;
 }
 #profilKaydet { background: #E67E22; color: #1e2a3a; }
@@ -640,7 +654,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     box-shadow: 0 10px 40px rgba(0,0,0,0.4);
 }
 .giris-logo {
-    font-family: 'Black Ops One', cursive;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     color: #1e2a3a;
     text-align: center;
     margin: 0 0 10px 0;
@@ -705,7 +720,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     background: #e8e0d0;
     color: #1e2a3a;
     font-size: 15px;
-    font-family: 'Black Ops One', cursive;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     box-shadow: 0 6px 20px rgba(0,0,0,0.25);
     outline: none;
 }
@@ -762,7 +778,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     letter-spacing: 1px;
     background: #2a3a4e;
     color: #eee;
@@ -780,7 +797,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     color: #fff;
     border: 1px solid #E67E22;
     border-radius: 8px;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     font-size: 13px;
     letter-spacing: 0.5px;
     padding: 6px 12px;
@@ -789,7 +807,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
 }
 .kure-etiket span {
     display: block;
-    font-family: -apple-system, "Segoe UI", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-size: 11px;
     letter-spacing: 0;
     color: #FF8C1A;
@@ -822,7 +840,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     border: 1px dashed #E67E22;
     border-radius: 10px;
     color: #E67E22;
-    font-family: "Black Ops One", sans-serif;
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600;
     font-size: 13px;
     letter-spacing: 1px;
     cursor: pointer;
@@ -853,7 +872,8 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
 
 .kure-hata {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    color: #E67E22; font-family: "Black Ops One", sans-serif; font-size: 15px;
+    color: #E67E22; font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-weight: 600; font-size: 15px;
     text-align: center; line-height: 1.7; letter-spacing: 1px;
 }
 
@@ -867,4 +887,16 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     z-index: -1;
     pointer-events: none;
     display: block;
+}
+
+
+/* =====================================================================
+   YAZI TIPI
+   Arayüzün tamamı Space Grotesk. Tek istisna logolar: onlar
+   Black Ops One kalıyor, marka işareti gibi duruyorlar.
+   ===================================================================== */
+#logo,
+.giris-logo {
+    font-family: "Black Ops One", sans-serif;
+    font-weight: 400;
 }
