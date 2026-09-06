@@ -16,6 +16,7 @@ const RENK_GEZILDI  = "#E67E22";
 const RENK_BOS      = "#1e2a3a";
 const RENK_HOVER    = "#FF8C1A";
 const RENK_KENAR    = "#e8e0d0";
+const PIN_RENK      = "#0f1620";   // gezilen ulkeler turuncu; pin lacivert olunca beliriyor
 
 /* ---------------------------------------------------------------------
    DURUM
@@ -96,7 +97,7 @@ function kureKur() {
     .onPolygonClick(function (d) { panelAc(d.properties.name); })
     .pointsData([])
     .pointLat("lat").pointLng("lng")
-    .pointColor(function () { return "#FFD9A0"; })
+    .pointColor(function () { return PIN_RENK; })
     .pointAltitude(0.045)
     .pointRadius(0.13)
     .pointResolution(6)
@@ -104,7 +105,7 @@ function kureKur() {
     .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); })
     .ringsData([])
     .ringLat("lat").ringLng("lng")
-    .ringColor(function () { return function (t) { return "rgba(255,140,26," + (1 - t) * 0.55 + ")"; }; })
+    .ringColor(function () { return function (t) { return "rgba(15,22,32," + (1 - t) * 0.6 + ")"; }; })
     .ringMaxRadius(2.2)
     .ringPropagationSpeed(0.9)
     .ringRepeatPeriod(1600);
@@ -560,38 +561,63 @@ function kitaChartCiz() {
     const k = ulkeKita[u];
     if (k) sayim[k] = (sayim[k] || 0) + 1;
   }
-  const kitalar = Object.keys(sayim);
+  const kitalar = Object.keys(sayim).sort(function (a, b) { return sayim[b] - sayim[a]; });
   const toplam = kitalar.reduce(function (t, k) { return t + sayim[k]; }, 0);
 
+  const ns = "http://www.w3.org/2000/svg";
+  const MERKEZ = 100, YARICAP = 88;
+
   if (!toplam) {
-    svg.innerHTML = "<circle cx='100' cy='100' r='70' fill='none' stroke='#2a3a4e' stroke-width='26'/>";
+    const bos = document.createElementNS(ns, "circle");
+    bos.setAttribute("cx", MERKEZ); bos.setAttribute("cy", MERKEZ);
+    bos.setAttribute("r", YARICAP);
+    bos.setAttribute("fill", "#16202c");
+    svg.appendChild(bos);
     lejant.innerHTML = "<div class='lejant-satir' style='opacity:.6'>Henüz gezilen yok</div>";
     return;
   }
 
-  let aci = -Math.PI / 2;
-  const ns = "http://www.w3.org/2000/svg";
+  // Tek kita varsa yay komutu ile tam cember cizilemez (baslangic ve bitis
+  // noktasi ayni yere denk gelir), dolu daire ciziyoruz.
+  if (kitalar.length === 1) {
+    const d = document.createElementNS(ns, "circle");
+    d.setAttribute("cx", MERKEZ); d.setAttribute("cy", MERKEZ);
+    d.setAttribute("r", YARICAP);
+    d.setAttribute("fill", kitaRenk[kitalar[0]] || "#888");
+    svg.appendChild(d);
+  } else {
+    let aci = -Math.PI / 2;                       // saat 12'den basla
+    for (let i = 0; i < kitalar.length; i++) {
+      const k = kitalar[i];
+      const pay = sayim[k] / toplam;
+      const bitis = aci + pay * Math.PI * 2;
+      const x1 = MERKEZ + YARICAP * Math.cos(aci),   y1 = MERKEZ + YARICAP * Math.sin(aci);
+      const x2 = MERKEZ + YARICAP * Math.cos(bitis), y2 = MERKEZ + YARICAP * Math.sin(bitis);
+      const buyuk = pay > 0.5 ? 1 : 0;
+      const dilim = document.createElementNS(ns, "path");
+      dilim.setAttribute("d",
+        "M " + MERKEZ + " " + MERKEZ +
+        " L " + x1.toFixed(2) + " " + y1.toFixed(2) +
+        " A " + YARICAP + " " + YARICAP + " 0 " + buyuk + " 1 " +
+        x2.toFixed(2) + " " + y2.toFixed(2) + " Z");
+      dilim.setAttribute("fill", kitaRenk[k] || "#888");
+      dilim.setAttribute("stroke", "#1e2a3a");     // dilimler ayrissin
+      dilim.setAttribute("stroke-width", "2");
+      svg.appendChild(dilim);
+      aci = bitis;
+    }
+  }
+
   for (let i = 0; i < kitalar.length; i++) {
     const k = kitalar[i];
     const pay = sayim[k] / toplam;
-    const bitis = aci + pay * Math.PI * 2;
-    const x1 = 100 + 70 * Math.cos(aci),  y1 = 100 + 70 * Math.sin(aci);
-    const x2 = 100 + 70 * Math.cos(bitis), y2 = 100 + 70 * Math.sin(bitis);
-    const buyuk = pay > 0.5 ? 1 : 0;
-    const yol = document.createElementNS(ns, "path");
-    yol.setAttribute("d", "M " + x1 + " " + y1 + " A 70 70 0 " + buyuk + " 1 " + x2 + " " + y2);
-    yol.setAttribute("fill", "none");
-    yol.setAttribute("stroke", kitaRenk[k] || "#888");
-    yol.setAttribute("stroke-width", "26");
-    svg.appendChild(yol);
-    aci = bitis;
-
     const sat = document.createElement("div");
     sat.className = "lejant-satir";
     sat.innerHTML = "<span class='lejant-renk' style='background:" + (kitaRenk[k] || "#888") + "'></span>" +
                     kacisla(k) + "<span class='lejant-yuzde'>" + Math.round(pay * 100) + "%</span>";
     lejant.appendChild(sat);
   }
+
   svg.classList.remove("donuyor");
   void svg.offsetWidth;
   svg.classList.add("donuyor");
