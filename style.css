@@ -1204,3 +1204,38 @@ body {
     padding: 0 5px;
     box-sizing: border-box;
 }
+
+/* =====================================================================
+   ŞEHİR IŞIKLARI
+   Küre üzerinde duran küçük DOM parçaları. Dış div sıfır boyutlu;
+   globe.gl onu şehrin tam üstüne koyuyor, içteki <i> ise kendi
+   boyutunun yarısı kadar sola/yukarı kayarak ışığı ortalıyor.
+   Boyut --isik-boy değişkeninden geliyor, o da kamera yüksekliğine
+   göre isikBoyutu() tarafından ayarlanıyor.
+   ===================================================================== */
+.sehir-isik {
+    position: absolute;
+    width: 0; height: 0;
+    pointer-events: none;      /* tıklama nokta katmanının işi */
+}
+.sehir-isik i {
+    position: absolute;
+    display: block;
+    width: var(--isik-boy, 46px);
+    height: var(--isik-boy, 46px);
+    left: calc(var(--isik-boy, 46px) / -2);
+    top:  calc(var(--isik-boy, 46px) / -2);
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        rgba(255, 240, 214, 0.95) 0%,
+        rgba(240, 174,  76, 0.42) 13%,
+        rgba(233, 162,  59, 0.20) 32%,
+        rgba(233, 162,  59, 0.00) 70%);
+}
+.sehir-isik.misafir i {
+    background: radial-gradient(circle,
+        rgba(232, 251, 255, 0.95) 0%,
+        rgba(111, 202, 218, 0.42) 13%,
+        rgba( 95, 182, 196, 0.20) 32%,
+        rgba( 95, 182, 196, 0.00) 70%);
+}
