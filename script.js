@@ -124,11 +124,9 @@ function kureKur() {
     .pointsData([])
     .pointLat("lat").pointLng("lng")
     .pointColor(function () { return PIN_RENK; })
-    // Kalinlik ve boy pinBoyutu() tarafindan yakinliga gore ayarlaniyor.
-    // Sabit birakilirsa yaklastikca sismis gorunuyorlar: kalinlik
-    // "acisal derece" cinsinden, yani cografi olarak sabit ama ekranda
-    // buyuyor. 81 il isaretlendiginde ulke gorunmez oluyordu.
-    .pointResolution(8)
+    // Yaricap pinBoyutu() tarafindan yakinliga gore ayarlaniyor.
+    .pointAltitude(0.0141)
+    .pointResolution(14)
     .pointLabel(function (d) { return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>"; })
     .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); });
 
@@ -345,14 +343,17 @@ function yogunlukGuncelle(zorla) {
   pinBoyutu();
 }
 
-/* Pinler igne kalinliginda kalsin. Kalinlik ve boy "acisal derece" ve
-   "kure yaricapi" cinsinden, yani cografi olarak sabit; ekranda sabit
-   gorunmeleri icin kamera yuksekligiyle orantili olmalari gerekiyor. */
+/* Pinler kucuk birer nokta. Iki nokta onemli:
+   1. Yaricap "acisal derece" cinsinden, yani cografi olarak sabit —
+      ekranda sabit gorunmeleri icin kamera yuksekligiyle orantili
+      olmalari gerekiyor. Yoksa yaklastikca sisiyorlar.
+   2. Yukseklik SABIT ve ulke katmaninin (0.013) hemen ustunde. Daha
+      alcak olursa poligonun icinde kalip gorunmuyor, daha yuksek
+      olursa yandan bakinca cubuk gibi uzuyor. */
 function pinBoyutu() {
   if (!kure) return;
   const h = kure.pointOfView().altitude;
-  kure.pointRadius(Math.max(0.020, Math.min(0.16, 0.055 * h)))
-      .pointAltitude(Math.max(0.020, Math.min(0.20, 0.085 * h)));
+  kure.pointRadius(Math.max(0.012, Math.min(0.50, 0.11 * h)));
 }
 
 function pinleriTazele() { yogunlukGuncelle(true); }
