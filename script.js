@@ -100,27 +100,17 @@ function kureKur() {
     .pointsData([])
     .pointLat("lat").pointLng("lng")
     .pointColor(function () { return PIN_RENK; })
-    // Kalinlik "acisal derece" cinsinden; varsayilan 0.25. Onceki 0.13
-    // fazla inceydi, kureye tepeden bakinca kayboluyordu.
-    .pointAltitude(0.055)
-    .pointRadius(0.42)
-    .pointResolution(10)
+    // Kalinlik ve boy pinBoyutu() tarafindan yakinliga gore ayarlaniyor.
+    // Sabit birakilirsa yaklastikca sismis gorunuyorlar: kalinlik
+    // "acisal derece" cinsinden, yani cografi olarak sabit ama ekranda
+    // buyuyor. 81 il isaretlendiginde ulke gorunmez oluyordu.
+    .pointResolution(8)
     .pointLabel(function (d) { return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>"; })
-    .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); })
-    // Isik lekesi. Once globe.gl'in "ring" katmanini kullaniyordum ama
-    // o katman animasyonlu: halka buyuyup soneriyor ve cogu anda ya cok
-    // kucuk ya cok soluk oluyor. Bunun yerine her pinin altina sabit bir
-    // HTML lekesi koyuyoruz; kurenin arkasina gecenleri globe.gl kendi
-    // gizliyor.
-    .htmlElementsData([])
-    .htmlLat("lat").htmlLng("lng")
-    .htmlAltitude(0.02)
-    .htmlTransitionDuration(0)
-    .htmlElement(function () {
-      const el = document.createElement("div");
-      el.className = "pin-isik";
-      return el;
-    });
+    .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); });
+
+  // NOT: pinlerin altina isik lekesi koymayi denedik, iyi olmadi.
+  // Tek tuk sehirde hos duruyor ama 81 il isaretlenince ulke bulanik
+  // bir lekeye donuyor. Igne pinler tek basina daha okunur.
 
   const m = kure.globeMaterial();
   if (m && m.color) { m.color.set("#0b1119"); m.shininess = 4; }
@@ -140,7 +130,7 @@ function kureKur() {
 
   let zamanlayici = null;
   kontrol.addEventListener("change", function () {
-    isikBoyutu();
+    pinBoyutu();
     clearTimeout(zamanlayici);
     zamanlayici = setTimeout(yogunlukGuncelle, 120);
   });
@@ -319,16 +309,17 @@ function yogunlukGuncelle(zorla) {
   }
   pinListesi = secim;
   kure.pointsData(secim);
-  kure.htmlElementsData(secim);
-  isikBoyutu();
+  pinBoyutu();
 }
 
-/* Isik lekesi HTML oldugu icin piksel cinsinden; kureye yaklasinca
-   buyumeli, uzaklasinca kucuk kalmali. */
-function isikBoyutu() {
-  const h = kure ? kure.pointOfView().altitude : 2.5;
-  const boyut = Math.max(14, Math.min(96, Math.round(38 / Math.max(h, 0.25))));
-  document.documentElement.style.setProperty("--pin-isik-boyut", boyut + "px");
+/* Pinler igne kalinliginda kalsin. Kalinlik ve boy "acisal derece" ve
+   "kure yaricapi" cinsinden, yani cografi olarak sabit; ekranda sabit
+   gorunmeleri icin kamera yuksekligiyle orantili olmalari gerekiyor. */
+function pinBoyutu() {
+  if (!kure) return;
+  const h = kure.pointOfView().altitude;
+  kure.pointRadius(Math.max(0.020, Math.min(0.16, 0.055 * h)))
+      .pointAltitude(Math.max(0.020, Math.min(0.20, 0.085 * h)));
 }
 
 function pinleriTazele() { yogunlukGuncelle(true); }

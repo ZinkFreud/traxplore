@@ -868,17 +868,3 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background
     pointer-events: none;
     display: block;
 }
-
-/* Pinin altindaki isik lekesi. Boyutu yakinliga gore script.js
-   tarafindan degistiriliyor. */
-.pin-isik {
-    --b: var(--pin-isik-boyut, 34px);
-    width: var(--b);
-    height: var(--b);
-    border-radius: 50%;
-    pointer-events: none;
-    background: radial-gradient(circle,
-        rgba(255,222,170,0.80) 0%,
-        rgba(255,170,70,0.34) 38%,
-        rgba(255,140,26,0) 70%);
-}
