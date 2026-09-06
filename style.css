@@ -494,7 +494,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
 #profilFoto {
     flex: 0 0 25%;
     aspect-ratio: 1;
-    background: #E67E22 url('idle.png') center/cover no-repeat;
+    background: #E67E22;   /* idle.png yoktu, 404 veriyordu */
     border-radius: 50%;
     max-width: 44px;
 }

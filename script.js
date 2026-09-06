@@ -54,6 +54,7 @@ let ulkeOzellikleri = [];        // GeoJSON feature listesi
 let hoverUlke = null;
 let pinListesi = [];             // kurede gorunen pinler
 let sonYukseklik = 2.5;
+let sonEsik = -1;                // en son uygulanan nufus esigi
 
 function kureKur() {
   if (typeof Globe !== "function") {
@@ -67,12 +68,18 @@ function kureKur() {
     .showAtmosphere(true)
     .atmosphereColor("#E67E22")
     .atmosphereAltitude(0.18)
-    .polygonAltitude(function (d) { return d === hoverUlke ? 0.024 : 0.008; })
+    // Buyuk ulkelerin kapagi kureye teget kaliyordu ve yuzeyle kesisip
+    // taramali bir desen olusturuyordu (Kanada, Rusya, ABD). Cozum:
+    // kapagi daha ince parcalara bolmek (curvatureResolution) ve biraz
+    // yukseltmek.
+    .polygonCapCurvatureResolution(1.5)
+    .polygonsTransitionDuration(0)
+    .polygonAltitude(function (d) { return d === hoverUlke ? 0.030 : 0.013; })
     .polygonCapColor(function (d) {
       if (d === hoverUlke) return RENK_HOVER;
       return ulkeGezildiMi(d.properties.name) ? RENK_GEZILDI : RENK_BOS;
     })
-    .polygonSideColor(function () { return "rgba(20,28,40,0.75)"; })
+    .polygonSideColor(function () { return "#141c28"; })
     .polygonStrokeColor(function () { return RENK_KENAR; })
     .polygonLabel(function (d) {
       const ad = d.properties.name;
@@ -81,7 +88,9 @@ function kureKur() {
              (say ? "<span>" + say + " şehir</span>" : "") + "</div>";
     })
     .onPolygonHover(function (d) {
-      hoverUlke = d || null;
+      const yeni = d || null;
+      if (yeni === hoverUlke) return;
+      hoverUlke = yeni;
       document.getElementById("harita").style.cursor = d ? "pointer" : "grab";
       kure.polygonAltitude(kure.polygonAltitude())
           .polygonCapColor(kure.polygonCapColor());
@@ -162,7 +171,7 @@ function kureRenkTazele() {
 /* Uzaklastikca az, yakinlastikca cok pin.
    Nufus esigi yukseklige gore degisiyor: kureye tepeden bakarken
    sadece buyuk sehirler, yaklasinca hepsi. */
-function yogunlukGuncelle() {
+function yogunlukGuncelle(zorla) {
   if (!kure) return;
   const gorus = kure.pointOfView();
   sonYukseklik = gorus.altitude;
@@ -173,6 +182,13 @@ function yogunlukGuncelle() {
   else if (h > 0.7) esik = 200000;
   else if (h > 0.4) esik = 60000;
   else              esik = 0;
+
+  // Kure kendiliginden donerken "change" olayi saniyede defalarca
+  // tetikleniyor. Esik degismediyse pinlere hic dokunmuyoruz; yoksa
+  // isik halkalarinin animasyonu her seferinde bastan basliyor ve
+  // ekranda titreme olarak gorunuyor.
+  if (!zorla && esik === sonEsik) return;
+  sonEsik = esik;
 
   const tum = [];
   for (let i = 0; i < gezilenler.length; i++) {
@@ -190,7 +206,7 @@ function yogunlukGuncelle() {
   kure.ringsData(secim.slice(0, 40));
 }
 
-function pinleriTazele() { yogunlukGuncelle(); }
+function pinleriTazele() { yogunlukGuncelle(true); }
 
 function kureyeGit(lat, lng, yakin) {
   if (!kure) return;
@@ -618,7 +634,9 @@ function yildizGoster(puan) {
 }
 function sehirDetayKapat() {
   document.getElementById("sehirDetayPanel").classList.remove("acik");
-  document.getElementById("harita").classList.remove("itili");
+  seciliFoto = "";
+  if (aktifDetay && aktifDetay.ulke) panelAc(aktifDetay.ulke);
+  else document.getElementById("harita").classList.remove("itili");
 }
 
 /* =====================================================================
@@ -808,12 +826,19 @@ async function detaylariYukle() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) { sehirDetaylari = yerelOku("sehirDetaylari", {}); return; }
   const { data, error } = await db.from("sehir_detaylari")
-    .select("ulke,sehir,puan,foto,not").eq("user_id", oturum.session.user.id);
+    .select("ulke,sehir,puan,notlar").eq("user_id", oturum.session.user.id);
   if (error) { sehirDetaylari = yerelOku("sehirDetaylari", {}); return; }
+  // Fotograf sunucuda tutulmuyor, tarayicida duruyor; puan ve notu
+  // sunucudan alip fotografi yerelden koruyoruz.
+  const yerel = yerelOku("sehirDetaylari", {});
   sehirDetaylari = {};
   for (let i = 0; i < data.length; i++) {
-    sehirDetaylari[anahtar(data[i].ulke, data[i].sehir)] =
-      { puan: data[i].puan, foto: data[i].foto, not: data[i].not };
+    const a = anahtar(data[i].ulke, data[i].sehir);
+    sehirDetaylari[a] = {
+      puan: data[i].puan || 0,
+      foto: (yerel[a] && yerel[a].foto) || "",
+      not:  data[i].notlar || ""
+    };
   }
   yerelYaz("sehirDetaylari", sehirDetaylari);
 }
@@ -821,10 +846,12 @@ async function detaylariYukle() {
 async function profilYukle() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) { profilVeri = yerelOku("profilVeri", profilVeri); return; }
+  const yerel = yerelOku("profilVeri", { isim: "", konum: "", fotolar: [] });
   const { data, error } = await db.from("profil")
-    .select("isim,konum,fotolar").eq("user_id", oturum.session.user.id).maybeSingle();
-  if (error || !data) { profilVeri = yerelOku("profilVeri", profilVeri); return; }
-  profilVeri = { isim: data.isim || "", konum: data.konum || "", fotolar: data.fotolar || [] };
+    .select("isim,konum").eq("user_id", oturum.session.user.id).maybeSingle();
+  if (error || !data) { profilVeri = yerel; return; }
+  // Profil fotograflari sunucuda degil, tarayicida duruyor.
+  profilVeri = { isim: data.isim || "", konum: data.konum || "", fotolar: yerel.fotolar || [] };
   yerelYaz("profilVeri", profilVeri);
 }
 
@@ -880,7 +907,7 @@ document.getElementById("sehirDetayKaydet").addEventListener("click", async func
   if (oturum.session) {
     const { error } = await db.from("sehir_detaylari").upsert({
       user_id: oturum.session.user.id, ulke: aktifDetay.ulke,
-      sehir: aktifDetay.sehir, puan: seciliPuan, foto: seciliFoto, not: not
+      sehir: aktifDetay.sehir, puan: seciliPuan, notlar: not
     }, { onConflict: "user_id,ulke,sehir" });
     if (error) console.log("detay kaydedilemedi:", error.message);
   }
@@ -909,7 +936,7 @@ document.getElementById("profilKaydet").addEventListener("click", async function
   if (oturum.session) {
     const { error } = await db.from("profil").upsert({
       user_id: oturum.session.user.id, isim: profilVeri.isim,
-      konum: profilVeri.konum, fotolar: profilVeri.fotolar
+      konum: profilVeri.konum
     }, { onConflict: "user_id" });
     if (error) console.log("profil kaydedilemedi:", error.message);
   }
