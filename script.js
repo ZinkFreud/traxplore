@@ -16,7 +16,7 @@ const RENK_GEZILDI  = "#E67E22";
 const RENK_BOS      = "#1e2a3a";
 const RENK_HOVER    = "#FF8C1A";
 const RENK_KENAR    = "#e8e0d0";
-const PIN_RENK      = "#0f1620";   // gezilen ulkeler turuncu; pin lacivert olunca beliriyor
+const PIN_RENK      = "#0a1018";   // gezilen ulkeler turuncu; pin lacivert olunca beliriyor
 
 /* ---------------------------------------------------------------------
    DURUM
@@ -98,17 +98,23 @@ function kureKur() {
     .pointsData([])
     .pointLat("lat").pointLng("lng")
     .pointColor(function () { return PIN_RENK; })
-    .pointAltitude(0.045)
-    .pointRadius(0.13)
-    .pointResolution(6)
+    // Kalinlik "acisal derece" cinsinden; varsayilan 0.25. Onceki 0.13
+    // fazla inceydi, kureye tepeden bakinca kayboluyordu.
+    .pointAltitude(0.055)
+    .pointRadius(0.42)
+    .pointResolution(10)
     .pointLabel(function (d) { return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>"; })
     .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); })
     .ringsData([])
     .ringLat("lat").ringLng("lng")
-    .ringColor(function () { return function (t) { return "rgba(15,22,32," + (1 - t) * 0.6 + ")"; }; })
-    .ringMaxRadius(2.2)
-    .ringPropagationSpeed(0.9)
-    .ringRepeatPeriod(1600);
+    .ringColor(function () { return function (t) { return "rgba(10,16,24," + (1 - t) * 0.75 + ")"; }; })
+    // Halkalarin varsayilan yuksekligi 0.0015; ulke katmani 0.013'te
+    // duruyordu, yani halkalar poligonlarin ALTINDA kaliyor ve hic
+    // gorunmuyordu. Ulkelerin uzerine cikariyoruz.
+    .ringAltitude(0.017)
+    .ringMaxRadius(1.8)
+    .ringPropagationSpeed(0.8)
+    .ringRepeatPeriod(1800);
 
   const m = kure.globeMaterial();
   if (m && m.color) { m.color.set("#0b1119"); m.shininess = 4; }
