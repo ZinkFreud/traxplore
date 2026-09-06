@@ -961,6 +961,8 @@ body {
 .foto-paylas.acik { background: #E67E22; color: #0f1620; }
 .foto-paylas:hover { filter: brightness(1.15); }
 
+.foto-sahip.tiklanir { cursor: pointer; }
+.foto-sahip.tiklanir:hover { color: #48B7C7; text-decoration: underline; }
 .foto-sahip {
     position: absolute;
     left: 0; right: 0; bottom: 0;

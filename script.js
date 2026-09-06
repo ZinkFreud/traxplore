@@ -39,10 +39,26 @@ let panelDurum = { ulke: "", offset: 0, arama: "", toplam: 0 };
    haritamiza donunce tekrar null. */
 let misafir = null;
 
+/* Kita renkleri ve pastadaki SIRA. Ikisi de sabit.
+   Eskiden yedi kita da turuncunun tonlariydi; olctugumuzde en yakin iki
+   renk arasindaki fark, normal goren bir goz icin bile ayirt edilebilir
+   sinirin cok altindaydi, biri de gri gibi okunuyordu. Bunlar koyu zemin
+   icin dogrulanmis bir paletten; halka sirasi da komsu dilimler
+   birbirine benzemeyecek sekilde secildi.
+
+   Sira nufusa gore degil SABIT: renk kitanin kendisine ait, kacinci
+   sirada oldugna degil. Yoksa sen bir sehir ekleyince butun dilimler
+   renk degistiriyor. */
+const KITA_SIRA = ["Avrupa", "Asya", "Afrika", "Kuzey Amerika",
+                   "Güney Amerika", "Okyanusya", "Antarktika"];
 const kitaRenk = {
-  "Avrupa": "#E67E22", "Asya": "#FF8C1A", "Afrika": "#C0562A",
-  "Kuzey Amerika": "#8B4513", "Güney Amerika": "#D2691E",
-  "Okyanusya": "#A0522D", "Antarktika": "#6b7a8f"
+  "Avrupa":        "#d95926",
+  "Asya":          "#3987e5",
+  "Afrika":        "#e66767",
+  "Kuzey Amerika": "#9085e9",
+  "Güney Amerika": "#d55181",
+  "Okyanusya":     "#c98500",
+  "Antarktika":    "#199e70"
 };
 
 function yerelYaz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
@@ -813,7 +829,7 @@ function kitaChartCiz() {
     const k = ulkeKita[u];
     if (k) sayim[k] = (sayim[k] || 0) + 1;
   }
-  const kitalar = Object.keys(sayim).sort(function (a, b) { return sayim[b] - sayim[a]; });
+  const kitalar = KITA_SIRA.filter(function (k) { return sayim[k]; });
   const toplam = kitalar.reduce(function (t, k) { return t + sayim[k]; }, 0);
 
   const ns = "http://www.w3.org/2000/svg";
@@ -886,7 +902,7 @@ function istatistikPaneliDoldur() {
     const k = ulkeKita[u];
     if (k) sayim[k] = (sayim[k] || 0) + 1;
   }
-  const kitalar = Object.keys(kitaToplam).sort();
+  const kitalar = KITA_SIRA.filter(function (k) { return kitaToplam[k]; });
   for (let i = 0; i < kitalar.length; i++) {
     const k = kitalar[i];
     const git = sayim[k] || 0;
@@ -1133,6 +1149,17 @@ function fotoKarti(f, adres, benimMi) {
     const ad = document.createElement("span");
     ad.className = "foto-sahip";
     ad.textContent = f.sahip;
+    // Kullanici adi olmayan biri profil sayfasina sahip degil; sadece
+    // adi olanlar tiklanabilir olsun, yoksa tiklayip hicbir sey olmuyor.
+    if (f.kullanici_adi) {
+      ad.classList.add("tiklanir");
+      ad.title = "@" + f.kullanici_adi + " haritasına git";
+      ad.addEventListener("click", function (e) {
+        e.stopPropagation();
+        hepsiniKapat();
+        gezginiAc(f.kullanici_adi);
+      });
+    }
     kart.appendChild(ad);
   }
   return kart;
