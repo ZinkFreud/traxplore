@@ -1112,3 +1112,89 @@ body {
     color: #E67E22;
     min-height: 14px;
 }
+
+
+/* =====================================================================
+   ARKADAŞLIK
+   ===================================================================== */
+.arkadas-kutu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+.arkadas-etiket {
+    color: #48B7C7;
+    font-size: 13px;
+    margin-right: auto;
+}
+.arkadas-dugme {
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #22303f;
+    color: #cfd8e3;
+}
+.arkadas-dugme.onay { background: #48B7C7; color: #06222a; }
+.arkadas-dugme:hover { filter: brightness(1.12); }
+.arkadas-dugme:disabled { opacity: .5; cursor: default; }
+.arkadas-uyari {
+    flex-basis: 100%;
+    font-size: 12px;
+    color: #E67E22;
+}
+
+.arkadas-satir {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a2330;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #eee;
+}
+.arkadas-satir:hover { background: #22303f; }
+.arkadas-satir.istek { cursor: default; border: 1px solid #48B7C7; }
+.arkadas-ad { flex: 1; color: #48B7C7; }
+.arkadas-sag { opacity: .6; font-size: 12px; }
+.arkadas-bos { font-size: 12px; color: #7d8899; line-height: 1.5; }
+
+.arkadas-mini {
+    border: none;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #2a3a4e;
+    color: #cfd8e3;
+}
+.arkadas-mini.onay { background: #48B7C7; color: #06222a; }
+.arkadas-mini:hover { filter: brightness(1.12); }
+
+#profilBtn { position: fixed; }
+#arkadasRozet {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: #E67E22;
+    color: #0f1620;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 20px;
+    text-align: center;
+    padding: 0 5px;
+    box-sizing: border-box;
+}

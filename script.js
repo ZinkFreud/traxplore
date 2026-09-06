@@ -419,6 +419,7 @@ async function gezginiAc(kullaniciAdi) {
     konum: p.konum,
     kita: p.kita_sayisi, ulke: p.ulke_sayisi, sehirSayisi: p.sehir_sayisi,
     benim: p.benim,
+    arkadaslik: p.arkadaslik || "yok",
     sehirler: harita || [],
     ulkeler: new Set((harita || []).map(function (r) { return r.ulke; })),
     fotolar: fotolar || []
@@ -479,6 +480,8 @@ async function gezginPaneli() {
     "<b>" + misafir.kita + "</b> kıta <b>" + misafir.ulke + "</b> ülke <b>" +
     misafir.sehirSayisi + "</b> şehir";
   liste.appendChild(sayilar);
+
+  if (!misafir.benim) liste.appendChild(arkadaslikDugmesi());
 
   if (misafir.fotolar.length) {
     const bas = document.createElement("div");
@@ -1233,6 +1236,7 @@ function profilKapat() {
 }
 function profilDoldur() {
   kullaniciAdiAlani();
+  arkadasBolumu();
   document.getElementById("profilIsim").value = profilVeri.isim || "";
   document.getElementById("profilKonum").value = profilVeri.konum || "";
   const liste = document.getElementById("profilFotoListe");
@@ -1318,6 +1322,177 @@ function kullaniciAdiAlani() {
   });
   satir.appendChild(gir); satir.appendChild(dgm);
   bolum.appendChild(satir); bolum.appendChild(uyari);
+}
+
+
+/* =====================================================================
+   ARKADASLIK
+   Karsilikli: istek gonderilir, karsi taraf kabul edene kadar
+   arkadaslik kurulmaz.
+   ===================================================================== */
+let arkadasListesi = [];
+let gelenIstekler  = [];
+
+/* Gezginin panelindeki dugme. Dort durum var, dordu de farkli davraniyor. */
+function arkadaslikDugmesi() {
+  const kutu = document.createElement("div");
+  kutu.className = "arkadas-kutu";
+  const d = misafir.arkadaslik;
+  const ad = misafir.kullanici_adi;
+
+  function dugme(yazi, sinif, isle) {
+    const b = document.createElement("button");
+    b.className = "arkadas-dugme " + sinif;
+    b.textContent = yazi;
+    b.addEventListener("click", async function () {
+      b.disabled = true;
+      const { data, error } = await isle();
+      b.disabled = false;
+      if (error) { kutu.querySelector(".arkadas-uyari").textContent = error.message; return; }
+      misafir.arkadaslik = data;
+      arkadasVeriTazele();
+      gezginPaneli();
+    });
+    return b;
+  }
+
+  if (d === "arkadas") {
+    const et = document.createElement("span");
+    et.className = "arkadas-etiket";
+    et.textContent = "✓ arkadaşsınız";
+    kutu.appendChild(et);
+    kutu.appendChild(dugme("çıkar", "sade", function () {
+      return db.rpc("arkadaslikten_cik", { p_kullanici_adi: ad });
+    }));
+  } else if (d === "bekliyor_ben") {
+    const et = document.createElement("span");
+    et.className = "arkadas-etiket";
+    et.textContent = "istek gönderildi";
+    kutu.appendChild(et);
+    kutu.appendChild(dugme("geri al", "sade", function () {
+      return db.rpc("arkadaslikten_cik", { p_kullanici_adi: ad });
+    }));
+  } else if (d === "bekliyor_o") {
+    const et = document.createElement("span");
+    et.className = "arkadas-etiket";
+    et.textContent = "sana istek gönderdi";
+    kutu.appendChild(et);
+    kutu.appendChild(dugme("kabul et", "onay", function () {
+      return db.rpc("arkadas_istegi_yanitla", { p_kullanici_adi: ad, p_kabul: true });
+    }));
+    kutu.appendChild(dugme("reddet", "sade", function () {
+      return db.rpc("arkadas_istegi_yanitla", { p_kullanici_adi: ad, p_kabul: false });
+    }));
+  } else {
+    kutu.appendChild(dugme("arkadaş ekle", "onay", function () {
+      return db.rpc("arkadas_istegi_gonder", { p_kullanici_adi: ad });
+    }));
+  }
+  const uyari = document.createElement("div");
+  uyari.className = "arkadas-uyari";
+  kutu.appendChild(uyari);
+  return kutu;
+}
+
+async function arkadasVeriTazele() {
+  const { data: oturum } = await db.auth.getSession();
+  if (!oturum.session) { arkadasListesi = []; gelenIstekler = []; return; }
+  const [a, i] = await Promise.all([
+    db.rpc("arkadaslarim"),
+    db.rpc("arkadas_istekleri")
+  ]);
+  arkadasListesi = (a && a.data) || [];
+  gelenIstekler  = (i && i.data) || [];
+  arkadasRozeti();
+  if (document.getElementById("profilKart").classList.contains("acik")) profilDoldur();
+}
+
+/* Profil dugmesinde bekleyen istek sayisi */
+function arkadasRozeti() {
+  const btn = document.getElementById("profilBtn");
+  if (!btn) return;
+  let r = document.getElementById("arkadasRozet");
+  if (!gelenIstekler.length) { if (r) r.remove(); return; }
+  if (!r) {
+    r = document.createElement("span");
+    r.id = "arkadasRozet";
+    btn.appendChild(r);
+  }
+  r.textContent = gelenIstekler.length;
+}
+
+/* Profil kartindaki arkadas bolumu: once gelen istekler, sonra liste. */
+function arkadasBolumu() {
+  const kart = document.getElementById("profilKart");
+  let bolum = document.getElementById("arkadasBolum");
+  if (!bolum) {
+    bolum = document.createElement("div");
+    bolum.id = "arkadasBolum";
+    bolum.className = "profil-bolum";
+    const btnlar = document.getElementById("profilButonlar");
+    kart.insertBefore(bolum, btnlar);
+  }
+  bolum.innerHTML = "";
+
+  if (gelenIstekler.length) {
+    const et = document.createElement("label");
+    et.textContent = "GELEN İSTEKLER";
+    bolum.appendChild(et);
+    for (let i = 0; i < gelenIstekler.length; i++) {
+      (function (g) {
+        const sat = document.createElement("div");
+        sat.className = "arkadas-satir istek";
+        const ad = document.createElement("span");
+        ad.className = "arkadas-ad";
+        ad.textContent = "@" + g.kullanici_adi;
+        ad.title = g.isim || "";
+        sat.appendChild(ad);
+        function yanit(kabul) {
+          return async function (e) {
+            e.stopPropagation();
+            await db.rpc("arkadas_istegi_yanitla",
+              { p_kullanici_adi: g.kullanici_adi, p_kabul: kabul });
+            arkadasVeriTazele();
+          };
+        }
+        const kab = document.createElement("button");
+        kab.className = "arkadas-mini onay"; kab.textContent = "kabul";
+        kab.addEventListener("click", yanit(true));
+        const red = document.createElement("button");
+        red.className = "arkadas-mini"; red.textContent = "reddet";
+        red.addEventListener("click", yanit(false));
+        sat.appendChild(kab); sat.appendChild(red);
+        bolum.appendChild(sat);
+      })(gelenIstekler[i]);
+    }
+  }
+
+  const et2 = document.createElement("label");
+  et2.textContent = "ARKADAŞLARIN" +
+    (arkadasListesi.length ? " (" + arkadasListesi.length + ")" : "");
+  bolum.appendChild(et2);
+
+  if (!arkadasListesi.length) {
+    const bos = document.createElement("div");
+    bos.className = "arkadas-bos";
+    bos.textContent = "Henüz arkadaşın yok. Arama kutusundan gezgin bulup ekleyebilirsin.";
+    bolum.appendChild(bos);
+    return;
+  }
+  for (let i = 0; i < arkadasListesi.length; i++) {
+    (function (g) {
+      const sat = document.createElement("div");
+      sat.className = "arkadas-satir";
+      sat.innerHTML = "<span class='arkadas-ad'>@" + kacisla(g.kullanici_adi) + "</span>" +
+                      "<span class='arkadas-sag'>" + g.ulke_sayisi + " ülke</span>";
+      sat.title = g.isim || "";
+      sat.addEventListener("click", function () {
+        profilKapat();
+        gezginiAc(g.kullanici_adi);
+      });
+      bolum.appendChild(sat);
+    })(arkadasListesi[i]);
+  }
 }
 
 function profilKilitle(kilitli) {
@@ -1714,7 +1889,8 @@ document.getElementById("sifirlaBtn").addEventListener("click", function () {
 async function veriYukle() {
   await ulkeleriYukle();
   await gezileriYukle();
-  await Promise.all([koordinatlariYukle(), detaylariYukle(), profilYukle()]);
+  await Promise.all([koordinatlariYukle(), detaylariYukle(), profilYukle(),
+                     arkadasVeriTazele()]);
   istatistikGuncelle();
   gecmisGuncelle();
   kitaChartCiz();
