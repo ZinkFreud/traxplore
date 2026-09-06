@@ -149,13 +149,53 @@ function kureKur() {
   fetch(GEOJSON_URL)
     .then(function (c) { return c.json(); })
     .then(function (v) {
-      ulkeOzellikleri = v.features;
+      ulkeOzellikleri = sarmayiDuzelt(v.features);
       kure.polygonsData(ulkeOzellikleri);
       kureRenkTazele();
     })
     .catch(function () {
       console.log("Ülke sınırları yüklenemedi.");
     });
+}
+
+/* world.geo.json'da 180 ulke sinirindan 179'u bir yone, Bermuda ise
+   ters yone sarilmis. Kurede ters sarilmis bir halka "ic taraf disari"
+   demek: o tek ulke butun gezegeni kapliyor, uzerine gelince her yer
+   turuncu oluyordu. Cogunluk yonunu bulup aykiri olanlari ceviriyoruz. */
+function sarmayiDuzelt(ozellikler) {
+  function isaretliAlan(h) {
+    let s = 0;
+    for (let i = 0, j = h.length - 1; i < h.length; j = i++) {
+      s += (h[j][0] - h[i][0]) * (h[j][1] + h[i][1]);
+    }
+    return s / 2;
+  }
+  function poligonlari(f) {
+    return f.geometry.type === "MultiPolygon"
+      ? f.geometry.coordinates : [f.geometry.coordinates];
+  }
+  let arti = 0, eksi = 0;
+  for (let i = 0; i < ozellikler.length; i++) {
+    const p = poligonlari(ozellikler[i]);
+    for (let j = 0; j < p.length; j++) (isaretliAlan(p[j][0]) > 0 ? arti++ : eksi++);
+  }
+  const dogru = arti > eksi ? 1 : -1;
+  let duzeltilen = 0;
+  const sonuc = ozellikler.map(function (f) {
+    const cok = f.geometry.type === "MultiPolygon";
+    let degisti = false;
+    const yeni = poligonlari(f).map(function (halkalar) {
+      if ((isaretliAlan(halkalar[0]) > 0 ? 1 : -1) === dogru) return halkalar;
+      degisti = true;
+      return [halkalar[0].slice().reverse()].concat(halkalar.slice(1));
+    });
+    if (!degisti) return f;
+    duzeltilen++;
+    return { type: "Feature", properties: f.properties,
+             geometry: { type: f.geometry.type, coordinates: cok ? yeni : yeni[0] } };
+  });
+  if (duzeltilen) console.log("Ters sarılmış " + duzeltilen + " ülke sınırı düzeltildi.");
+  return sonuc;
 }
 
 function ulkeGezildiMi(ad) {
