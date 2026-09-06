@@ -64,8 +64,10 @@ function kureKur() {
       "İnternet bağlantını kontrol edip sayfayı yenile.</div>";
     return;
   }
+  uzayCiz();
   kure = Globe()(document.getElementById("harita"))
-    .backgroundColor("#070b11")
+    // Saydam: arkasindaki yildiz tuvali gorunsun
+    .backgroundColor("rgba(0,0,0,0)")
     .showAtmosphere(true)
     .atmosphereColor("#E67E22")
     .atmosphereAltitude(0.18)
@@ -105,16 +107,20 @@ function kureKur() {
     .pointResolution(10)
     .pointLabel(function (d) { return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>"; })
     .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); })
-    .ringsData([])
-    .ringLat("lat").ringLng("lng")
-    .ringColor(function () { return function (t) { return "rgba(10,16,24," + (1 - t) * 0.75 + ")"; }; })
-    // Halkalarin varsayilan yuksekligi 0.0015; ulke katmani 0.013'te
-    // duruyordu, yani halkalar poligonlarin ALTINDA kaliyor ve hic
-    // gorunmuyordu. Ulkelerin uzerine cikariyoruz.
-    .ringAltitude(0.017)
-    .ringMaxRadius(1.8)
-    .ringPropagationSpeed(0.8)
-    .ringRepeatPeriod(1800);
+    // Isik lekesi. Once globe.gl'in "ring" katmanini kullaniyordum ama
+    // o katman animasyonlu: halka buyuyup soneriyor ve cogu anda ya cok
+    // kucuk ya cok soluk oluyor. Bunun yerine her pinin altina sabit bir
+    // HTML lekesi koyuyoruz; kurenin arkasina gecenleri globe.gl kendi
+    // gizliyor.
+    .htmlElementsData([])
+    .htmlLat("lat").htmlLng("lng")
+    .htmlAltitude(0.02)
+    .htmlTransitionDuration(0)
+    .htmlElement(function () {
+      const el = document.createElement("div");
+      el.className = "pin-isik";
+      return el;
+    });
 
   const m = kure.globeMaterial();
   if (m && m.color) { m.color.set("#0b1119"); m.shininess = 4; }
@@ -134,12 +140,14 @@ function kureKur() {
 
   let zamanlayici = null;
   kontrol.addEventListener("change", function () {
+    isikBoyutu();
     clearTimeout(zamanlayici);
     zamanlayici = setTimeout(yogunlukGuncelle, 120);
   });
 
   window.addEventListener("resize", function () {
     kure.width(window.innerWidth).height(window.innerHeight);
+    uzayCiz();
   });
   kure.width(window.innerWidth).height(window.innerHeight);
 
@@ -207,6 +215,65 @@ function sarmayiDuzelt(ozellikler) {
   return sonuc;
 }
 
+
+/* ---------------------------------------------------------------------
+   UZAY ARKA PLANI
+   Yildizlari hazir bir goruntu dosyasi yerine bir kez tuvale ciziyoruz:
+   ne indirilecek dosya var ne de sayfaya gomulu kocaman veri. Sabit,
+   hicbir animasyon yok; sadece pencere boyutu degisince yeniden ciziliyor.
+   --------------------------------------------------------------------- */
+function uzayCiz() {
+  let tuval = document.getElementById("uzay");
+  if (!tuval) {
+    tuval = document.createElement("canvas");
+    tuval.id = "uzay";
+    document.body.insertBefore(tuval, document.body.firstChild);
+  }
+  const g = tuval.getContext("2d");
+  const e = window.innerWidth, y = window.innerHeight;
+  const oran = Math.min(window.devicePixelRatio || 1, 2);
+  tuval.width = Math.round(e * oran); tuval.height = Math.round(y * oran);
+  g.setTransform(oran, 0, 0, oran, 0, 0);
+
+  // derin zemin
+  const zemin = g.createLinearGradient(0, 0, e, y);
+  zemin.addColorStop(0, "#070b12");
+  zemin.addColorStop(0.55, "#050810");
+  zemin.addColorStop(1, "#03060b");
+  g.fillStyle = zemin; g.fillRect(0, 0, e, y);
+
+  // iki soluk bulutsu
+  function bulutsu(x, b, r, renk) {
+    const d = g.createRadialGradient(x, b, 0, x, b, r);
+    d.addColorStop(0, renk); d.addColorStop(1, "rgba(0,0,0,0)");
+    g.fillStyle = d; g.fillRect(x - r, b - r, r * 2, r * 2);
+  }
+  bulutsu(e * 0.18, y * 0.22, Math.max(e, y) * 0.45, "rgba(60,95,160,0.16)");
+  bulutsu(e * 0.85, y * 0.78, Math.max(e, y) * 0.40, "rgba(165,85,40,0.13)");
+
+  // yildizlar — yogunluk ekran alanina gore
+  const adet = Math.round(e * y / 1300);
+  for (let i = 0; i < adet; i++) {
+    const x = Math.random() * e, b = Math.random() * y;
+    const t = Math.random();
+    const r = t > 0.985 ? 1.6 + Math.random() * 0.6
+            : t > 0.90  ? 0.9 + Math.random() * 0.5
+            :             0.35 + Math.random() * 0.5;
+    const parlaklik = t > 0.90 ? 0.65 + Math.random() * 0.35 : 0.28 + Math.random() * 0.45;
+    // birkacini sicak tonlu birak, hepsi bembeyaz olmasin
+    const renk = Math.random() < 0.07 ? "255,217,160"
+               : Math.random() < 0.12 ? "175,205,255" : "232,240,255";
+    if (r > 1.5) {                       // parlak olanlara hafif hale
+      const h = g.createRadialGradient(x, b, 0, x, b, r * 5);
+      h.addColorStop(0, "rgba(" + renk + ",0.22)");
+      h.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = h; g.beginPath(); g.arc(x, b, r * 5, 0, Math.PI * 2); g.fill();
+    }
+    g.fillStyle = "rgba(" + renk + "," + parlaklik.toFixed(2) + ")";
+    g.beginPath(); g.arc(x, b, r, 0, Math.PI * 2); g.fill();
+  }
+}
+
 function ulkeGezildiMi(ad) {
   for (let i = 0; i < gezilenler.length; i++) if (gezilenler[i].ulke === ad) return true;
   return false;
@@ -252,7 +319,16 @@ function yogunlukGuncelle(zorla) {
   }
   pinListesi = secim;
   kure.pointsData(secim);
-  kure.ringsData(secim.slice(0, 40));
+  kure.htmlElementsData(secim);
+  isikBoyutu();
+}
+
+/* Isik lekesi HTML oldugu icin piksel cinsinden; kureye yaklasinca
+   buyumeli, uzaklasinca kucuk kalmali. */
+function isikBoyutu() {
+  const h = kure ? kure.pointOfView().altitude : 2.5;
+  const boyut = Math.max(14, Math.min(96, Math.round(38 / Math.max(h, 0.25))));
+  document.documentElement.style.setProperty("--pin-isik-boyut", boyut + "px");
 }
 
 function pinleriTazele() { yogunlukGuncelle(true); }
@@ -716,24 +792,42 @@ function sehirDetayKapat() {
 /* =====================================================================
    WIKIPEDIA FOTOĞRAF
    ===================================================================== */
+/* Sehir fotografi. Tek bir denemede cok sehir bos donuyordu: sehir adlari
+   GeoNames'ten geliyor (Xi'an, Québec, Adapazari gibi) ve Turkce Vikipedi'de
+   o baslik olmayabiliyor. Sirayla deniyoruz; ilk bulan kazaniyor. */
 function wikiFotoBul(sehir, ulke, geri) {
-  const dene = function (baslik, sonra) {
-    const u = "https://tr.wikipedia.org/w/api.php?action=query&format=json&origin=*" +
-              "&prop=pageimages&piprop=thumbnail&pithumbsize=600&redirects=1&titles=" +
-              encodeURIComponent(baslik);
+  const denemeler = [
+    ["tr", sehir],
+    ["en", sehir],
+    ["tr", sehir + ", " + ulke],
+    ["en", sehir + ", " + ulke]
+  ];
+
+  function sor(dil, baslik, sonra) {
+    const u = "https://" + dil + ".wikipedia.org/w/api.php?action=query&format=json" +
+              "&origin=*&prop=pageimages&piprop=thumbnail&pithumbsize=600" +
+              "&redirects=1&titles=" + encodeURIComponent(baslik);
     fetch(u).then(function (c) { return c.json(); }).then(function (v) {
       let foto = null;
-      const sy = v && v.query && v.query.pages;
-      for (const id in sy) {
-        if (sy[id].thumbnail && sy[id].thumbnail.source) { foto = sy[id].thumbnail.source; break; }
+      const sayfalar = v && v.query && v.query.pages;
+      for (const id in sayfalar) {
+        const t = sayfalar[id].thumbnail;
+        // Bayrak, arma, konum haritasi gibi gorseller sehri anlatmiyor
+        if (t && t.source && !/Flag_|Coat_of_arms|_map|Locator|\.svg$/i.test(t.source)) {
+          foto = t.source; break;
+        }
       }
       sonra(foto);
     }).catch(function () { sonra(null); });
-  };
-  dene(sehir, function (f) {
-    if (f) return geri(f);
-    dene(sehir + ", " + ulke, function (f2) { geri(f2 || null); });
-  });
+  }
+
+  (function sirayla(i) {
+    if (i >= denemeler.length) return geri(null);
+    sor(denemeler[i][0], denemeler[i][1], function (f) {
+      if (f) return geri(f);
+      sirayla(i + 1);
+    });
+  })(0);
 }
 
 /* =====================================================================

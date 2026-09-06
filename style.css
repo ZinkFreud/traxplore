@@ -1,5 +1,5 @@
-body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
-#harita { height: 100vh; width: 100%; background: #070b11; cursor: grab; overflow: hidden; }
+body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; background: #04070c; }
+#harita { height: 100vh; width: 100%; background: transparent; cursor: grab; overflow: hidden; }
 #harita canvas { display: block; }
 
 /* Panel - sağdan kayan */
@@ -855,4 +855,30 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
     color: #E67E22; font-family: "Black Ops One", sans-serif; font-size: 15px;
     text-align: center; line-height: 1.7; letter-spacing: 1px;
+}
+
+
+/* Uzay tuvali: her seyin arkasinda, sabit. script.js bir kez ciziyor. */
+#uzay {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    display: block;
+}
+
+/* Pinin altindaki isik lekesi. Boyutu yakinliga gore script.js
+   tarafindan degistiriliyor. */
+.pin-isik {
+    --b: var(--pin-isik-boyut, 34px);
+    width: var(--b);
+    height: var(--b);
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle,
+        rgba(255,222,170,0.80) 0%,
+        rgba(255,170,70,0.34) 38%,
+        rgba(255,140,26,0) 70%);
 }
