@@ -12,6 +12,7 @@ const GEOJSON_URL =
   "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
 const SAYFA = 60;            // panelde bir seferde kac sehir
+const ILK_GORUS = { lat: 30, lng: 15, altitude: 2.5 };   // kurenin acilis konumu
 const RENK_GEZILDI  = "#E67E22";
 const RENK_BOS      = "#1e2a3a";
 const RENK_HOVER    = "#FF8C1A";
@@ -115,7 +116,7 @@ function kureKur() {
   const m = kure.globeMaterial();
   if (m && m.color) { m.color.set("#0b1119"); m.shininess = 4; }
 
-  kure.pointOfView({ lat: 30, lng: 15, altitude: 2.5 });
+  kure.pointOfView(ILK_GORUS);
 
   const kontrol = kure.controls();
   kontrol.autoRotate = true;
@@ -930,11 +931,52 @@ aramaInput.addEventListener("input", function () {
   }, 250);
 });
 
+/* Escape'in iki kademesi var:
+   1) Acik panel varsa onu kapatir. Burada sehirDetayKapat() KULLANILMIYOR,
+      cunku o fonksiyon kapatinca ulke listesini geri aciyor (X dugmesi
+      icin dogru davranis). Escape'te kullanilinca panel kapanip aninda
+      yeniden aciliyordu.
+   2) Hicbir sey acik degilse kureyi acilis konumuna geri goturur —
+      cat diye degil, donerek ve uzaklasarak. */
+function acikPanelVarMi() {
+  const idler = ["panel", "sehirDetayPanel", "profilKart", "istatistikPanel"];
+  for (let i = 0; i < idler.length; i++) {
+    const el = document.getElementById(idler[i]);
+    if (el && el.classList.contains("acik")) return true;
+  }
+  return aramaKutu.classList.contains("acik");
+}
+
+function hepsiniKapat() {
+  aramaKapat();
+  document.getElementById("panel").classList.remove("acik");
+  document.getElementById("sehirDetayPanel").classList.remove("acik");
+  document.getElementById("profilKart").classList.remove("acik");
+  document.getElementById("istatistikPanel").classList.remove("acik");
+  document.getElementById("harita").classList.remove("itili");
+  aktifDetay = { ulke: "", sehir: "" };
+  aktifUlke = "";
+  seciliFoto = "";
+  fotoKuyruk = [];
+}
+
+function kureyiSifirla() {
+  if (!kure) return;
+  const g = kure.pointOfView();
+  // Zaten baslangictaysak bosuna animasyon oynatma
+  const uzak = Math.abs(g.altitude - ILK_GORUS.altitude) < 0.05 &&
+               Math.abs(g.lat - ILK_GORUS.lat) < 1;
+  if (uzak) { kure.controls().autoRotate = true; return; }
+  kure.controls().autoRotate = false;
+  kure.pointOfView(ILK_GORUS, 1600);
+  setTimeout(function () { kure.controls().autoRotate = true; }, 1700);
+}
+
 document.addEventListener("keydown", function (e) {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); aramaAc(); }
   if (e.key === "Escape") {
-    aramaKapat(); paneliKapat(); sehirDetayKapat();
-    profilKapat(); istatistikPaneliKapat();
+    if (acikPanelVarMi()) hepsiniKapat();
+    else kureyiSifirla();
   }
 });
 
@@ -1018,9 +1060,7 @@ async function profilYukle() {
    OLAYLAR
    ===================================================================== */
 document.getElementById("kapat").addEventListener("click", paneliKapat);
-document.getElementById("ortu").addEventListener("click", function () {
-  paneliKapat(); istatistikPaneliKapat(); sehirDetayKapat(); profilKapat();
-});
+document.getElementById("ortu").addEventListener("click", hepsiniKapat);
 document.getElementById("sehirDetayKapat").addEventListener("click", sehirDetayKapat);
 document.getElementById("kitaChart").addEventListener("click", istatistikPaneliAc);
 document.getElementById("istatistikKapat").addEventListener("click", istatistikPaneliKapat);
