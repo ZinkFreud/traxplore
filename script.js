@@ -19,11 +19,17 @@ const ILK_GORUS = { lat: 30, lng: 15, altitude: 2.5 };   // kurenin acilis konum
    Ulke poligonlari yerinde duruyor ama neredeyse gorunmez: sadece
    tiklama/hover icin varlar ve gezilen ulkeye soluk bir sicaklik
    veriyorlar. Sehirler ise nokta degil, isik. */
-const RENK_GEZILDI  = "rgba(233,162,59,0.13)";   // gezilen ulke: soluk kehribar yikama
-const RENK_BOS      = "rgba(0,0,0,0)";           // gezilmemis ulke: hic gorunmesin
-const RENK_HOVER    = "rgba(233,162,59,0.26)";   // uzerine gelince biraz belirsin
-const RENK_MIS_ULKE = "rgba(95,182,196,0.13)";   // misafir haritasinda ayni yikama, mavi
-const RENK_MIS_HOV  = "rgba(95,182,196,0.26)";
+/* Gezilen ulkeye soluk bir kehribar yikama koymayi denedik: hangi
+   ulkelerde oldugun uzaktan gorunsun diye. Iyi olmadi -- Rusya,
+   Kazakistan, Cezayir gibi devasa ulkelerde koca bir sari leke gibi
+   duruyor ve sehir isiklarini bastiriyor. Gezilen ulke artik
+   isaretlenmiyor; o bilgi zaten isiklarda ve sol alttaki kita
+   dagiliminda var. Poligonlar sadece hover ve tiklama icin duruyor. */
+const RENK_GEZILDI  = "rgba(0,0,0,0)";
+const RENK_BOS      = "rgba(0,0,0,0)";
+const RENK_HOVER    = "rgba(233,162,59,0.20)";   // sadece fare uzerindeyken
+const RENK_MIS_ULKE = "rgba(0,0,0,0)";
+const RENK_MIS_HOV  = "rgba(95,182,196,0.20)";
 const RENK_KENAR    = "rgba(0,0,0,0)";           // ulke sinir cizgisi yok
 const PIN_RENK      = "#FFF1D6";                 // isigin parlak cekirdegi
 const RENK_MISAFIR  = "#DFF7FF";                 // baska bir gezginin haritasi
