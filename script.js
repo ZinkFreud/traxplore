@@ -1531,12 +1531,15 @@ async function detaylariYukle() {
 async function profilYukle() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) { profilVeri = yerelOku("profilVeri", profilVeri); return; }
-  const yerel = yerelOku("profilVeri", { isim: "", konum: "", fotolar: [] });
+  const yerel = yerelOku("profilVeri", { isim: "", konum: "", fotolar: [], kullanici_adi: "" });
   const { data, error } = await db.from("profil")
-    .select("isim,konum").eq("user_id", oturum.session.user.id).maybeSingle();
+    .select("isim,konum,kullanici_adi").eq("user_id", oturum.session.user.id).maybeSingle();
   if (error || !data) { profilVeri = yerel; return; }
-  // Profil fotograflari sunucuda degil, tarayicida duruyor.
-  profilVeri = { isim: data.isim || "", konum: data.konum || "", fotolar: yerel.fotolar || [] };
+  // Profil fotograflari sunucuda degil, tarayicida duruyor; onlari
+  // yerelden koruyoruz. Kullanici adi ise sunucudan geliyor.
+  profilVeri = { isim: data.isim || "", konum: data.konum || "",
+                 kullanici_adi: data.kullanici_adi || "",
+                 fotolar: yerel.fotolar || [] };
   yerelYaz("profilVeri", profilVeri);
 }
 
