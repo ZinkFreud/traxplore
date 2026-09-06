@@ -37,9 +37,15 @@ const RENK_MISAFIR  = "#DFF7FF";                 // baska bir gezginin haritasi
 const DOKU_EN      = 4096;         // nokta dokusunun genisligi (yukseklik yarisi)
 const DOKU_ZEMIN   = "#060a11";    // okyanus / bos alan
 const NOKTA_RENK   = "#BFD4DA";
-const NOKTA_UZAK   = 0.95;         // uzaktan bakarken nokta araligi (derece)
-const NOKTA_YAKIN  = 0.55;         // yaklasinca daha sik izgara
-const NOKTA_ESIK   = 1.5;          // bu yukseklikten asagida sik izgaraya gecilir
+/* Uc kademe. Kamera yaklastikca izgara sikliyor ki noktalar ekranda
+   hep ayni buyuklukte kalsin. Ucuncu kademenin altina inmiyoruz:
+   4096 pikselli dokuda 0.35 derece zaten nokta basina ~4 piksel demek,
+   daha sik yaparsak noktalar birbirine karisip tarama izine donuyor. */
+const NOKTA_KADEME = [
+  { aralik: 0.95, ustunde: 1.5 },   // ev gorunumu
+  { aralik: 0.55, ustunde: 0.75 },
+  { aralik: 0.35, ustunde: 0    }   // en yakin
+];
 
 /* Nufus yogunlugu: 2 derecelik izgara, hucre basina 1 bayt (0-255).
    33.774 sehrin nufusundan uretildi; noktalarin parlakligini belirliyor.
@@ -199,10 +205,9 @@ function kureKur() {
   kontrol.autoRotate = true;
   kontrol.autoRotateSpeed = 0.28;
   kontrol.enableDamping = true;
-  /* Nokta dokusunun bir cozunurlugu var; cok yaklasinca noktalar
-     kocaman lekelere donuyor. 185 birim, yaklasik 0.85 yukseklige denk
-     geliyor: kure ekrani dolduruyor ama noktalar hala nokta. */
-  kontrol.minDistance = 185;
+  /* En sik kademe 0.35 derece; 0.5 yukseklige kadar noktalar hala nokta
+     gibi duruyor, daha asagida tarama izine donuyor. 150 birim = 0.5. */
+  kontrol.minDistance = 150;
 
   // Kullanici kureye dokununca kendiliginden donmeyi durdur
   const durdur = function () { kontrol.autoRotate = false; };
@@ -243,10 +248,8 @@ function kureKur() {
       kure.polygonsData(ulkeOzellikleri);
       kureRenkTazele();
       karaMaskesiKur(ulkeOzellikleri);
-      dokuAta(NOKTA_UZAK);
+      dokuAta(NOKTA_KADEME[0].aralik);
       isikBoyutu();
-      // Yakin izgarayi bosta uret ki zoom sirasinda takilma olmasin
-      setTimeout(function () { dokuTuvali(NOKTA_YAKIN); }, 1200);
     })
     .catch(function () {
       console.log("Ülke sınırları yüklenemedi.");
@@ -312,8 +315,10 @@ function sarmayiDuzelt(ozellikler) {
         malzemeye dogrudan veriliyor (PNG'ye cevirmeye gerek yok).
    ===================================================================== */
 
-const MASKE_EN = 2048, MASKE_BOY = 1024;
-let karaMaske = null;                  // Uint8ClampedArray, RGBA
+/* Maske 4096x2048. RGBA olarak tutsak 33 MB; hucre basina tek bit
+   yeterli oldugu icin paketliyoruz, 1 MB'a iniyor. */
+const MASKE_EN = 4096, MASKE_BOY = 2048;
+let karaMaske = null;                  // Uint8Array, bit paketli
 let yogunlukTablo = null;              // Uint8Array, 180x90
 const dokuOnbellek = {};               // aralik -> THREE.Texture
 const tuvalOnbellek = {};              // aralik -> canvas
@@ -364,15 +369,37 @@ function karaMaskesiKur(ozellikler) {
       }
     }
   }
-  karaMaske = g.getImageData(0, 0, MASKE_EN, MASKE_BOY).data;
+  const ham = g.getImageData(0, 0, MASKE_EN, MASKE_BOY).data;
+  const paket = new Uint8Array(Math.ceil(MASKE_EN * MASKE_BOY / 8));
+  for (let i = 0, n = MASKE_EN * MASKE_BOY; i < n; i++) {
+    if (ham[i * 4] > 100) paket[i >> 3] |= (1 << (i & 7));
+  }
+  karaMaske = paket;
   console.log("Kara maskesi hazir (" + Math.round(performance.now() - t0) + " ms)");
 }
 
 function karaMi(lat, lon) {
   if (!karaMaske) return false;
-  const x = Math.min(MASKE_EN - 1, Math.max(0, Math.floor((lon + 180) / 360 * MASKE_EN)));
   const y = Math.min(MASKE_BOY - 1, Math.max(0, Math.floor((90 - lat) / 180 * MASKE_BOY)));
-  return karaMaske[(y * MASKE_EN + x) * 4] > 100;
+  const x = ((Math.floor((lon + 180) / 360 * MASKE_EN) % MASKE_EN) + MASKE_EN) % MASKE_EN;
+  const n = y * MASKE_EN + x;
+  return (karaMaske[n >> 3] >> (n & 7)) & 1;
+}
+
+/* Hucrenin SADECE merkezine bakarsak, izgaradan kucuk her sey kayboluyor:
+   Kibris'ta iki nokta kaliyor, Vanuatu ve Solomon Adalari hic cikmiyor --
+   ama ulke poligonu orada durdugu icin fareyle bombos gorunen bir yere
+   gelip ulke adini goruyorsun. Onun yerine hucrenin icinde herhangi bir
+   yerde kara varsa nokta koyuyoruz. Nokta yine izgarada duruyor, yani
+   duzen bozulmuyor; sadece kucuk adalar gorunur oluyor. Olculdu: nokta
+   sayisi %11 artiyor, kitalarin sisme gibi bir etkisi yok. */
+function hucredeKaraVarMi(lat, lon, dLat, dLon) {
+  for (let a = -1; a <= 1; a++) {
+    for (let b = -1; b <= 1; b++) {
+      if (karaMi(lat + a * dLat * 0.34, lon + b * dLon * 0.34)) return true;
+    }
+  }
+  return false;
 }
 
 function yogunlukAc() {
@@ -425,25 +452,36 @@ function dokuTuvali(aralik) {
   g.fillStyle = NOKTA_RENK;
 
   const px = DOKU_EN / 360, py = boy / 180;
+  /* En sik kademede nokta yaricapi 1 pikselin biraz uzerinde. O boyutta
+     daire ile kare arasindaki fark ekranda gorunmuyor ama maliyet farki
+     buyuk: 102 bin daire cizmek 230 ms, ayni sayida kare 23 ms.
+     Olculdu; goruntude fark yok. */
+  const kare = aralik < 0.45;
   let sayi = 0;
   for (let lat = -83; lat <= 83; lat += aralik) {
     const ck = Math.max(0.12, Math.cos(lat * Math.PI / 180));
     const adim = aralik / ck;
     const gerilme = Math.min(6, 1 / ck);
     for (let lon = -180; lon < 180; lon += adim) {
-      if (!karaMi(lat, lon)) continue;
+      if (!hucredeKaraVarMi(lat, lon, aralik, adim)) continue;
       const y = yogunlukOku(lat, lon);
       const ry = Math.max(0.65, aralik * py * (0.24 + 0.16 * y));
       const rx = ry * gerilme;
+      const ex = (lon + 180) * px, ey = (90 - lat) * py;
       g.globalAlpha = 0.30 + 0.55 * y;
-      g.beginPath();
-      g.ellipse((lon + 180) * px, (90 - lat) * py, rx, ry, 0, 0, 6.2831853);
-      g.fill();
+      if (kare) {
+        g.fillRect(ex - rx, ey - ry, rx * 2, ry * 2);
+      } else {
+        g.beginPath();
+        g.ellipse(ex, ey, rx, ry, 0, 0, 6.2831853);
+        g.fill();
+      }
       sayi++;
     }
   }
   g.globalAlpha = 1;
   tuvalOnbellek[aralik] = tuval;
+  onbellegiBudama(aralik);
   console.log("Nokta dokusu " + aralik + "°: " + sayi + " nokta, " +
               Math.round(performance.now() - t0) + " ms");
   return tuval;
@@ -453,6 +491,24 @@ function dokuTuvali(aralik) {
    PNG'ye cevirip sonra geri yuklerdi; ayni sonuc icin ~150 ms fazladan
    is ve bir goz kirpmasi demek. Ilk seferde bir doku nesnesi elde
    etmek icin yine de o yoldan gecmek gerekiyor. */
+/* Her kademe 4096x2048'lik bir tuval ve bir doku demek; ucu birden
+   bellekte dursa 200 MB'a yaklasiyor. Kafedeki eski makineler icin cok.
+   En son kullanilan iki kademeyi tutuyoruz, gerisini birakiyoruz. */
+const kademeSirasi = [];
+function onbellegiBudama(kullanilan) {
+  const i = kademeSirasi.indexOf(kullanilan);
+  if (i >= 0) kademeSirasi.splice(i, 1);
+  kademeSirasi.push(kullanilan);
+  while (kademeSirasi.length > 2) {
+    const at = kademeSirasi.shift();
+    if (dokuOnbellek[at]) {
+      if (dokuOnbellek[at].dispose) dokuOnbellek[at].dispose();
+      delete dokuOnbellek[at];
+    }
+    delete tuvalOnbellek[at];
+  }
+}
+
 function malzemeyiDuzelt(doku) {
   const m = kure.globeMaterial();
   if (!m) return;
@@ -473,6 +529,7 @@ function malzemeyiDuzelt(doku) {
 function dokuAta(aralik) {
   if (!karaMaske || !kure) return;
   if (dokuOnbellek[aralik]) {
+    onbellegiBudama(aralik);
     malzemeyiDuzelt(dokuOnbellek[aralik]);
     aktifAralik = aralik;
     return;
@@ -486,6 +543,7 @@ function dokuAta(aralik) {
       d.colorSpace = m.map.colorSpace;
       d.needsUpdate = true;
       dokuOnbellek[aralik] = d;
+      onbellegiBudama(aralik);
       malzemeyiDuzelt(d);
       aktifAralik = aralik;
       return;
@@ -505,11 +563,21 @@ function dokuAta(aralik) {
   }, 500);
 }
 
+/* Kamera hareket ederken degil, DURDUKTAN sonra kademe degistiriyoruz.
+   Bir sehre ucarken 900 ms boyunca butun kademelerden geciliyor; her
+   birini uretmek bosuna is ve hareket sirasinda takilma demek. */
+let kademeZaman = null;
 function dokuSeviyesiniSec() {
   if (!kure || !karaMaske) return;
-  const h = kure.pointOfView().altitude;
-  const istenen = h < NOKTA_ESIK ? NOKTA_YAKIN : NOKTA_UZAK;
-  if (istenen !== aktifAralik) dokuAta(istenen);
+  clearTimeout(kademeZaman);
+  kademeZaman = setTimeout(function () {
+    const h = kure.pointOfView().altitude;
+    let istenen = NOKTA_KADEME[NOKTA_KADEME.length - 1].aralik;
+    for (let i = 0; i < NOKTA_KADEME.length; i++) {
+      if (h >= NOKTA_KADEME[i].ustunde) { istenen = NOKTA_KADEME[i].aralik; break; }
+    }
+    if (istenen !== aktifAralik) dokuAta(istenen);
+  }, 260);
 }
 
 /* Isiklar ekranda sabit boyutta durursa, uzaklasinca 85 il tek bir
@@ -657,7 +725,7 @@ function pinleriTazele() { yogunlukGuncelle(true); }
 function kureyeGit(lat, lng, yakin) {
   if (!kure) return;
   kure.controls().autoRotate = false;
-  kure.pointOfView({ lat: lat, lng: lng, altitude: yakin ? 0.95 : 1.7 }, 900);
+  kure.pointOfView({ lat: lat, lng: lng, altitude: yakin ? 0.6 : 1.7 }, 900);
 }
 
 /* =====================================================================
