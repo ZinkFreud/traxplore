@@ -27,9 +27,13 @@ const ILK_GORUS = { lat: 30, lng: 15, altitude: 2.5 };   // kurenin acilis konum
    dagiliminda var. Poligonlar sadece hover ve tiklama icin duruyor. */
 const RENK_GEZILDI  = "rgba(0,0,0,0)";
 const RENK_BOS      = "rgba(0,0,0,0)";
-const RENK_HOVER    = "rgba(233,162,59,0.20)";   // sadece fare uzerindeyken
+/* Hover vurgusu noktalarin kendi renginin acik tonu (#BFD4DA -> #D6E9F0).
+   Once kehribardi ama kehribar bu haritada "senin gittigin sehir"
+   demek; fareyi gezdirirken ayni rengin cikmasi yaniltiyordu. Vurgu
+   sahiplik degil, sadece "su an buradasin" bilgisi -- o yuzden kendi
+   haritanda da baskasinin haritasinda da ayni renk. */
+const RENK_HOVER    = "rgba(214,233,240,0.22)";
 const RENK_MIS_ULKE = "rgba(0,0,0,0)";
-const RENK_MIS_HOV  = "rgba(95,182,196,0.20)";
 const RENK_KENAR    = "rgba(0,0,0,0)";           // ulke sinir cizgisi yok
 const PIN_RENK      = "#FFF1D6";                 // isigin parlak cekirdegi
 const RENK_MISAFIR  = "#DFF7FF";                 // baska bir gezginin haritasi
@@ -135,7 +139,7 @@ function kureKur() {
     // yakaliyor -- olculdu: hover ve tiklama calismaya devam ediyor,
     // altindaki nokta dokusunu de kapatmiyor.
     .polygonCapColor(function (d) {
-      if (d === hoverUlke) return misafir ? RENK_MIS_HOV : RENK_HOVER;
+      if (d === hoverUlke) return RENK_HOVER;
       if (!ulkeGezildiMi(d.properties.name)) return RENK_BOS;
       return misafir ? RENK_MIS_ULKE : RENK_GEZILDI;
     })
