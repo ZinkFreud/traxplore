@@ -68,13 +68,12 @@ function kureKur() {
     .showAtmosphere(true)
     .atmosphereColor("#E67E22")
     .atmosphereAltitude(0.18)
-    // Buyuk ulkelerin kapagi kureye teget kaliyordu ve yuzeyle kesisip
-    // taramali bir desen olusturuyordu (Kanada, Rusya, ABD). Cozum:
-    // kapagi daha ince parcalara bolmek (curvatureResolution) ve biraz
-    // yukseltmek.
-    .polygonCapCurvatureResolution(1.5)
+    // Yukseklik SABIT. Fareyle uzerine gelince yukseltmek cazip ama
+    // pahali: globe.gl yukseklik degisince 180 ulkenin geometrisini
+    // bastan kuruyor ve bu her ulke gecisinde tekrarlaniyor. Vurgu icin
+    // sadece rengi degistiriyoruz, o geometriye dokunmuyor.
     .polygonsTransitionDuration(0)
-    .polygonAltitude(function (d) { return d === hoverUlke ? 0.030 : 0.013; })
+    .polygonAltitude(0.013)
     .polygonCapColor(function (d) {
       if (d === hoverUlke) return RENK_HOVER;
       return ulkeGezildiMi(d.properties.name) ? RENK_GEZILDI : RENK_BOS;
@@ -92,8 +91,7 @@ function kureKur() {
       if (yeni === hoverUlke) return;
       hoverUlke = yeni;
       document.getElementById("harita").style.cursor = d ? "pointer" : "grab";
-      kure.polygonAltitude(kure.polygonAltitude())
-          .polygonCapColor(kure.polygonCapColor());
+      kure.polygonCapColor(kure.polygonCapColor());
     })
     .onPolygonClick(function (d) { panelAc(d.properties.name); })
     .pointsData([])
@@ -138,9 +136,13 @@ function kureKur() {
   });
   kure.width(window.innerWidth).height(window.innerHeight);
 
-  // Fare koordinati
+  // Fare koordinati. toGlobeCoords sahneye isin gonderip kesisim ariyor;
+  // her fare hareketinde cagirmak bosuna yuk. Saniyede ~10 kez yetiyor.
+  let koordZaman = 0;
   document.getElementById("harita").addEventListener("mousemove", function (e) {
-    if (!kure.toGlobeCoords) return;
+    const simdi = performance.now();
+    if (simdi - koordZaman < 100 || !kure.toGlobeCoords) return;
+    koordZaman = simdi;
     const k = kure.toGlobeCoords(e.clientX, e.clientY);
     document.getElementById("koordinat").textContent =
       k ? k.lat.toFixed(2) + " , " + k.lng.toFixed(2) : "— , —";
@@ -911,10 +913,22 @@ document.getElementById("profilDegistir").addEventListener("click", function () 
   profilDuzenleme = true; profilKilitle(false);
 });
 
-document.addEventListener("mousemove", function (e) {
-  document.getElementById("crosshairX").style.top = e.clientY + "px";
-  document.getElementById("crosshairY").style.left = e.clientX + "px";
-});
+// Nisangah: fare olayi saniyede yuzlerce kez gelebiliyor, ama ekran
+// zaten kare basina bir kez ciziliyor. Konumu kareye baglayip
+// gereksiz yerlesim hesabini onluyoruz.
+(function () {
+  let x = 0, y = 0, bekleyen = false;
+  document.addEventListener("mousemove", function (e) {
+    x = e.clientX; y = e.clientY;
+    if (bekleyen) return;
+    bekleyen = true;
+    requestAnimationFrame(function () {
+      bekleyen = false;
+      document.getElementById("crosshairX").style.top = y + "px";
+      document.getElementById("crosshairY").style.left = x + "px";
+    });
+  });
+})();
 
 const yildizlar = document.querySelectorAll("#yildizlar .yildiz");
 for (let i = 0; i < yildizlar.length; i++) {
