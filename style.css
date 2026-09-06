@@ -1,5 +1,6 @@
 body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
-#harita { height: 100vh; width: 100%; background: #e8e0d0; }
+#harita { height: 100vh; width: 100%; background: #070b11; cursor: grab; overflow: hidden; }
+#harita canvas { display: block; }
 
 /* Panel - sağdan kayan */
 #panel {
@@ -57,7 +58,7 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     overflow: hidden;
     margin-bottom: 14px;
 }
-.sehir-kart img { width: 100%; height: 90px; object-fit: cover; display: block; }
+.sehir-kart img { width: 100%; height: 78px; object-fit: cover; display: block; }
 .sehir-bilgi { padding: 10px 14px; }
 .sehir-ad { font-weight: 600; font-size: 16px; }
 .sehir-aciklama { color: #999; font-size: 13px; margin-top: 2px; }
@@ -74,7 +75,6 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 .ulke-etiket::before { display: none; }
-.leaflet-tooltip.ulke-etiket { white-space: nowrap; }
 #istatistik {
     position: fixed;
     top: 20px;
@@ -770,3 +770,89 @@ body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }
 .profil-ayar-btn:hover { background: #354a63; }
 .profil-ayar-btn.tehlike { background: #6e2020; color: #ffd0d0; }
 .profil-ayar-btn.tehlike:hover { background: #8e2a2a; }
+
+/* =====================================================================
+   KÜRE (globe.gl) — Leaflet'ten kalan etiket stilleri yerine
+   ===================================================================== */
+.scene-tooltip { pointer-events: none; }
+.kure-etiket {
+    background: #1e2a3a;
+    color: #fff;
+    border: 1px solid #E67E22;
+    border-radius: 8px;
+    font-family: "Black Ops One", sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    padding: 6px 12px;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.55);
+}
+.kure-etiket span {
+    display: block;
+    font-family: -apple-system, "Segoe UI", sans-serif;
+    font-size: 11px;
+    letter-spacing: 0;
+    color: #FF8C1A;
+    margin-top: 2px;
+}
+
+/* Panel içi arama kutusu ------------------------------------------------ */
+#panelArama {
+    width: 100%;
+    box-sizing: border-box;
+    background: #0f1620;
+    border: 1px solid #2a3a4e;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 14px;
+    padding: 11px 14px;
+    margin-bottom: 16px;
+    outline: none;
+}
+#panelArama:focus { border-color: #E67E22; }
+#panelArama::placeholder { color: #667; }
+
+/* "Daha fazla" ---------------------------------------------------------- */
+#dahaFazla {
+    display: block;
+    width: 100%;
+    margin: 18px 0 4px;
+    padding: 13px;
+    background: transparent;
+    border: 1px dashed #E67E22;
+    border-radius: 10px;
+    color: #E67E22;
+    font-family: "Black Ops One", sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+#dahaFazla:hover { background: #E67E22; color: #0f1620; }
+#dahaFazla:disabled { opacity: .5; cursor: default; }
+
+.panel-durum { color: #7d8899; font-size: 14px; padding: 8px 2px; }
+
+/* Şehir listesi: sabit sütun sayısı yerine esnek ızgara.
+   Eskiden sütun sayısı şehir sayısına göre hesaplanıyordu; 400 şehirde
+   400 sütunluk bir ızgara çıkıyordu ve panel donuyordu. */
+#sehirListe {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+}
+
+/* Arama sonuç satırı ---------------------------------------------------- */
+.arama-satir {
+    padding: 11px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #eee;
+}
+.arama-satir:hover { background: #22303f; }
+
+.kure-hata {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    color: #E67E22; font-family: "Black Ops One", sans-serif; font-size: 15px;
+    text-align: center; line-height: 1.7; letter-spacing: 1px;
+}
