@@ -34,7 +34,15 @@ const RENK_BOS      = "rgba(0,0,0,0)";
    haritanda da baskasinin haritasinda da ayni renk. */
 const RENK_HOVER    = "rgba(214,233,240,0.22)";
 const RENK_MIS_ULKE = "rgba(0,0,0,0)";
-const RENK_KENAR    = "rgba(0,0,0,0)";           // ulke sinir cizgisi yok
+/* Ulke sinirlari. Uzaktayken kapali, yaklastikca beliriyor.
+   Ev gorunumunde acik olsalari nokta haritasinin uzerine ince bir ag
+   seriyor ve o sade goruntuyu bozuyor; ama yaklasinca hangi ulkeye
+   baktigini ayirt etmek icin gerekli. 1.8 yukseklikte hic yok,
+   0.7'de tam gorunur. Sifir yaparsan sinirlar tamamen kapanir. */
+const SINIR_RENK    = "190,212,218";
+const SINIR_EN_KOYU = 0.30;
+const SINIR_BASLA   = 1.8;   // bu yukseklikten yukarida hic cizilmiyor
+const SINIR_TAM     = 0.7;   // bu yukseklikte tam gorunur
 const PIN_RENK      = "#FFF1D6";                 // isigin parlak cekirdegi
 const RENK_MISAFIR  = "#DFF7FF";                 // baska bir gezginin haritasi
 
@@ -134,7 +142,11 @@ function kureKur() {
     // bastan kuruyor ve bu her ulke gecisinde tekrarlaniyor. Vurgu icin
     // sadece rengi degistiriyoruz, o geometriye dokunmuyor.
     .polygonsTransitionDuration(0)
-    .polygonAltitude(0.013)
+    /* 0.013'te poligon katmani kurenin epey ustunde duruyordu. Kapaklar
+       saydamken bu gorunmuyor ama sinir cizgileri acilinca kenarlarda
+       kureden ayrilip bosluga tasiyorlardi. 0.003'te cizgiler yuzeye
+       yapisiyor. */
+    .polygonAltitude(0.003)
     // Kapaklar artik saydam. Tamamen saydam bir kapak da fare isinini
     // yakaliyor -- olculdu: hover ve tiklama calismaya devam ediyor,
     // altindaki nokta dokusunu de kapatmiyor.
@@ -144,7 +156,7 @@ function kureKur() {
       return misafir ? RENK_MIS_ULKE : RENK_GEZILDI;
     })
     .polygonSideColor(function () { return "rgba(0,0,0,0)"; })
-    .polygonStrokeColor(function () { return RENK_KENAR; })
+    .polygonStrokeColor(function () { return sinirRengi; })
     .polygonLabel(function (d) {
       const ad = d.properties.name;
       const say = misafir
@@ -254,6 +266,7 @@ function kureKur() {
       karaMaskesiKur(ulkeOzellikleri);
       dokuAta(NOKTA_KADEME[0].aralik);
       isikBoyutu();
+      sinirGuncelle(kure.pointOfView().altitude);
     })
     .catch(function () {
       console.log("Ülke sınırları yüklenemedi.");
@@ -570,12 +583,28 @@ function dokuAta(aralik) {
 /* Kamera hareket ederken degil, DURDUKTAN sonra kademe degistiriyoruz.
    Bir sehre ucarken 900 ms boyunca butun kademelerden geciliyor; her
    birini uretmek bosuna is ve hareket sirasinda takilma demek. */
+let sinirRengi = "rgba(0,0,0,0)";
+let sinirSonAlfa = -1;
+
+function sinirGuncelle(h) {
+  let a;
+  if (h >= SINIR_BASLA) a = 0;
+  else if (h <= SINIR_TAM) a = SINIR_EN_KOYU;
+  else a = SINIR_EN_KOYU * (SINIR_BASLA - h) / (SINIR_BASLA - SINIR_TAM);
+  a = Math.round(a * 50) / 50;          // 0.02'lik adimlar: gereksiz guncelleme olmasin
+  if (a === sinirSonAlfa) return;
+  sinirSonAlfa = a;
+  sinirRengi = a > 0 ? "rgba(" + SINIR_RENK + "," + a + ")" : "rgba(0,0,0,0)";
+  kure.polygonStrokeColor(kure.polygonStrokeColor());
+}
+
 let kademeZaman = null;
 function dokuSeviyesiniSec() {
   if (!kure || !karaMaske) return;
   clearTimeout(kademeZaman);
   kademeZaman = setTimeout(function () {
     const h = kure.pointOfView().altitude;
+    sinirGuncelle(h);
     let istenen = NOKTA_KADEME[NOKTA_KADEME.length - 1].aralik;
     for (let i = 0; i < NOKTA_KADEME.length; i++) {
       if (h >= NOKTA_KADEME[i].ustunde) { istenen = NOKTA_KADEME[i].aralik; break; }
