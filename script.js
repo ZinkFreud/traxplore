@@ -736,7 +736,6 @@ function istatistikPaneliKapat() {
    ŞEHİR DETAY
    ===================================================================== */
 let seciliPuan = 0;
-let seciliFoto = "";
 
 async function sehirDetayAc(ulke, sehir) {
   aktifDetay = { ulke: ulke, sehir: sehir };
@@ -752,13 +751,15 @@ async function sehirDetayAc(ulke, sehir) {
       }
     });
 
-  const d = sehirDetaylari[anahtar(ulke, sehir)] || { puan: 0, foto: "", not: "" };
+  const d = sehirDetaylari[anahtar(ulke, sehir)] || { puan: 0, not: "" };
   yildizGoster(d.puan || 0);
-  seciliFoto = d.foto || "";
-  const onizle = document.getElementById("sehirFotoOnizle");
-  onizle.innerHTML = "";
-  if (d.foto) { const i = document.createElement("img"); i.src = d.foto; onizle.appendChild(i); }
   document.getElementById("sehirNot").value = d.not || "";
+  fotoAlaniHazirla();
+  document.getElementById("sehirFotoOnizle").innerHTML = "";
+  const dk = document.getElementById("digerFotolar");
+  if (dk) dk.innerHTML = "";
+  fotoDurum("");
+  fotolariGoster();
 
   const gitti = gezildiMi(ulke, sehir);
   document.getElementById("detayGovde").style.display = gitti ? "block" : "none";
@@ -769,6 +770,196 @@ async function sehirDetayAc(ulke, sehir) {
   document.getElementById("harita").classList.add("itili");
 }
 
+
+/* =====================================================================
+   GEZGIN FOTOGRAFLARI
+   Dosya Storage kovasinda, kayit sehir_fotolari tablosunda. Kova kapali
+   oldugu icin gostermek icin sureli "imzali adres" aliyoruz — boylece
+   "gizli" gercekten gizli, adresi bilen bile goremiyor.
+   ===================================================================== */
+const KOVA = "sehir-fotolari";
+const FOTO_SINIR = 3;
+let fotoMesgul = false;
+
+/* Telefon fotografi 4-8 MB olabiliyor. Yuklemeden once tarayicida
+   kucultuyoruz: uzun kenar 1600 px, JPEG. Sonuc ~300 KB. */
+function fotoKucult(dosya) {
+  return new Promise(function (coz, hata) {
+    const oku = new FileReader();
+    oku.onerror = function () { hata(new Error("Dosya okunamadi")); };
+    oku.onload = function (e) {
+      const im = new Image();
+      im.onerror = function () { hata(new Error("Gorsel acilamadi")); };
+      im.onload = function () {
+        const EN_BUYUK = 1600;
+        let g = im.width, y = im.height;
+        if (Math.max(g, y) > EN_BUYUK) {
+          const k = EN_BUYUK / Math.max(g, y);
+          g = Math.round(g * k); y = Math.round(y * k);
+        }
+        const tuval = document.createElement("canvas");
+        tuval.width = g; tuval.height = y;
+        tuval.getContext("2d").drawImage(im, 0, 0, g, y);
+        tuval.toBlob(function (blob) {
+          if (blob) coz(blob); else hata(new Error("Donusturulemedi"));
+        }, "image/jpeg", 0.82);
+      };
+      im.src = e.target.result;
+    };
+    oku.readAsDataURL(dosya);
+  });
+}
+
+function fotoDurum(metin) {
+  const el = document.getElementById("fotoDurum");
+  if (el) el.textContent = metin || "";
+}
+
+async function fotoEkle(dosya) {
+  if (fotoMesgul) return;
+  const { data: oturum } = await db.auth.getSession();
+  if (!oturum.session) { fotoDurum("Once giris yapmalisin."); return; }
+  const ulke = aktifDetay.ulke, sehir = aktifDetay.sehir;
+
+  fotoMesgul = true;
+  fotoDurum("Fotograf hazirlaniyor…");
+  let blob;
+  try { blob = await fotoKucult(dosya); }
+  catch (e) { fotoMesgul = false; fotoDurum("Bu dosya acilamadi."); return; }
+
+  const yol = oturum.session.user.id + "/" +
+              (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2)) +
+              ".jpg";
+
+  fotoDurum("Yukleniyor…");
+  const { error: yuklemeHatasi } = await db.storage.from(KOVA)
+    .upload(yol, blob, { contentType: "image/jpeg", upsert: false });
+  if (yuklemeHatasi) {
+    fotoMesgul = false; fotoDurum("Yuklenemedi: " + yuklemeHatasi.message); return;
+  }
+
+  const { error: kayitHatasi } = await db.from("sehir_fotolari")
+    .insert({ user_id: oturum.session.user.id, ulke: ulke, sehir: sehir, yol: yol });
+  if (kayitHatasi) {
+    // Kayit tutmadiysa (ornegin 3 sinirina takildiysa) dosyayi geri al,
+    // yoksa kovada sahipsiz dosya kalir.
+    await db.storage.from(KOVA).remove([yol]);
+    fotoMesgul = false;
+    fotoDurum(/en fazla 3/i.test(kayitHatasi.message)
+      ? "Bir sehre en fazla 3 fotograf ekleyebilirsin."
+      : "Kaydedilemedi: " + kayitHatasi.message);
+    return;
+  }
+
+  fotoMesgul = false; fotoDurum("");
+  if (aktifDetay.ulke === ulke && aktifDetay.sehir === sehir) fotolariGoster();
+}
+
+async function fotoSil(id, yol) {
+  if (!confirm("Bu fotograf silinsin mi?")) return;
+  // Once kaydi siliyoruz: kullanici aninda kaybolmus gormeli. Dosya
+  // silinemezse kovada sahipsiz kalir, zararsiz; temizlik sorgusu var.
+  const { error } = await db.from("sehir_fotolari").delete().eq("id", id);
+  if (error) { fotoDurum("Silinemedi: " + error.message); return; }
+  await db.storage.from(KOVA).remove([yol]);
+  fotolariGoster();
+}
+
+async function fotoGorunurluk(id, yeni) {
+  const { error } = await db.from("sehir_fotolari")
+    .update({ gorunurluk: yeni }).eq("id", id);
+  if (error) { fotoDurum("Degistirilemedi: " + error.message); return; }
+  fotolariGoster();
+}
+
+/* Kapali kovadaki dosyalar icin toplu imzali adres. Tek istek, hepsi
+   birden — fotograf basina ayri istek atmiyoruz. */
+async function imzaliAdresler(yollar) {
+  const harita = {};
+  if (!yollar.length) return harita;
+  const { data, error } = await db.storage.from(KOVA).createSignedUrls(yollar, 3600);
+  if (error || !data) return harita;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i].signedUrl) harita[data[i].path] = data[i].signedUrl;
+  }
+  return harita;
+}
+
+async function fotolariGoster() {
+  const ulke = aktifDetay.ulke, sehir = aktifDetay.sehir;
+  const kutu = document.getElementById("sehirFotoOnizle");
+  const digerKutu = document.getElementById("digerFotolar");
+  if (!kutu) return;
+
+  const { data, error } = await db.rpc("sehir_fotograflari", { p_ulke: ulke, p_sehir: sehir });
+  if (aktifDetay.ulke !== ulke || aktifDetay.sehir !== sehir) return;   // baska sehre gecti
+  if (error) { fotoDurum("Fotograflar yuklenemedi."); return; }
+
+  const benim  = data.filter(function (f) { return f.benim; });
+  const diger  = data.filter(function (f) { return !f.benim; });
+  const adres  = await imzaliAdresler(data.map(function (f) { return f.yol; }));
+  if (aktifDetay.ulke !== ulke || aktifDetay.sehir !== sehir) return;
+
+  kutu.innerHTML = "";
+  for (let i = 0; i < benim.length; i++) kutu.appendChild(fotoKarti(benim[i], adres, true));
+  const ekleEtiketi = document.getElementById("sehirFotoLabel");
+  if (ekleEtiketi) {
+    ekleEtiketi.style.display = benim.length >= FOTO_SINIR ? "none" : "";
+  }
+  const sayac = document.getElementById("fotoSayac");
+  if (sayac) sayac.textContent = benim.length + "/" + FOTO_SINIR;
+
+  if (digerKutu) {
+    digerKutu.innerHTML = "";
+    if (diger.length) {
+      const bas = document.createElement("label");
+      bas.textContent = "DİĞER GEZGİNLER";
+      digerKutu.appendChild(bas);
+      const izgara = document.createElement("div");
+      izgara.className = "foto-izgara";
+      for (let i = 0; i < diger.length; i++) izgara.appendChild(fotoKarti(diger[i], adres, false));
+      digerKutu.appendChild(izgara);
+    }
+  }
+}
+
+function fotoKarti(f, adres, benimMi) {
+  const kart = document.createElement("div");
+  kart.className = "foto-kart";
+
+  const im = document.createElement("img");
+  im.loading = "lazy";
+  im.alt = "";
+  if (adres[f.yol]) im.src = adres[f.yol];
+  kart.appendChild(im);
+
+  if (benimMi) {
+    const sil = document.createElement("button");
+    sil.className = "foto-sil";
+    sil.title = "Sil";
+    sil.textContent = "×";
+    sil.addEventListener("click", function () { fotoSil(f.id, f.yol); });
+    kart.appendChild(sil);
+
+    const acik = f.gorunurluk === "herkes";
+    const dgm = document.createElement("button");
+    dgm.className = "foto-paylas" + (acik ? " acik" : "");
+    dgm.textContent = acik ? "herkese açık" : "gizli";
+    dgm.title = acik ? "Herkese açık — gizlemek için tıkla"
+                     : "Sadece sen görüyorsun — paylaşmak için tıkla";
+    dgm.addEventListener("click", function () {
+      fotoGorunurluk(f.id, acik ? "gizli" : "herkes");
+    });
+    kart.appendChild(dgm);
+  } else {
+    const ad = document.createElement("span");
+    ad.className = "foto-sahip";
+    ad.textContent = f.sahip;
+    kart.appendChild(ad);
+  }
+  return kart;
+}
+
 function yildizGoster(puan) {
   seciliPuan = puan;
   const y = document.querySelectorAll("#yildizlar .yildiz");
@@ -776,7 +967,6 @@ function yildizGoster(puan) {
 }
 function sehirDetayKapat() {
   document.getElementById("sehirDetayPanel").classList.remove("acik");
-  seciliFoto = "";
   if (aktifDetay && aktifDetay.ulke) panelAc(aktifDetay.ulke);
   else document.getElementById("harita").classList.remove("itili");
 }
@@ -956,7 +1146,6 @@ function hepsiniKapat() {
   document.getElementById("harita").classList.remove("itili");
   aktifDetay = { ulke: "", sehir: "" };
   aktifUlke = "";
-  seciliFoto = "";
   fotoKuyruk = [];
 }
 
@@ -1029,17 +1218,10 @@ async function detaylariYukle() {
   const { data, error } = await db.from("sehir_detaylari")
     .select("ulke,sehir,puan,notlar").eq("user_id", oturum.session.user.id);
   if (error) { sehirDetaylari = yerelOku("sehirDetaylari", {}); return; }
-  // Fotograf sunucuda tutulmuyor, tarayicida duruyor; puan ve notu
-  // sunucudan alip fotografi yerelden koruyoruz.
-  const yerel = yerelOku("sehirDetaylari", {});
   sehirDetaylari = {};
   for (let i = 0; i < data.length; i++) {
-    const a = anahtar(data[i].ulke, data[i].sehir);
-    sehirDetaylari[a] = {
-      puan: data[i].puan || 0,
-      foto: (yerel[a] && yerel[a].foto) || "",
-      not:  data[i].notlar || ""
-    };
+    sehirDetaylari[anahtar(data[i].ulke, data[i].sehir)] =
+      { puan: data[i].puan || 0, not: data[i].notlar || "" };
   }
   yerelYaz("sehirDetaylari", sehirDetaylari);
 }
@@ -1096,23 +1278,37 @@ for (let i = 0; i < yildizlar.length; i++) {
 
 document.getElementById("sehirFotoInput").addEventListener("change", function (e) {
   const dosya = e.target.files[0];
-  if (!dosya) return;
-  const oku = new FileReader();
-  oku.onload = function (ev) {
-    seciliFoto = ev.target.result;
-    const o = document.getElementById("sehirFotoOnizle");
-    o.innerHTML = "";
-    const im = document.createElement("img"); im.src = seciliFoto; o.appendChild(im);
-  };
-  oku.readAsDataURL(dosya);
+  e.target.value = "";                 // ayni dosya tekrar secilebilsin
+  if (dosya) fotoEkle(dosya);
 });
+
+/* Fotograf bolumune sayac, durum satiri ve "diger gezginler" kutusunu
+   bir kez ekliyoruz; index.html'e dokunmaya gerek kalmiyor. */
+function fotoAlaniHazirla() {
+  const etiket = document.getElementById("sehirFotoLabel");
+  if (!etiket || document.getElementById("fotoSayac")) return;
+  const bolum = etiket.parentElement;
+  const baslik = bolum.querySelector("label");
+  if (baslik) {
+    const sayac = document.createElement("span");
+    sayac.id = "fotoSayac";
+    baslik.appendChild(sayac);
+  }
+  const durum = document.createElement("div");
+  durum.id = "fotoDurum";
+  bolum.appendChild(durum);
+  const diger = document.createElement("div");
+  diger.id = "digerFotolar";
+  bolum.parentElement.insertBefore(diger, bolum.nextSibling);
+}
 
 document.getElementById("sehirDetayKaydet").addEventListener("click", async function () {
   const btn = this;
   btn.disabled = true;
   const not = document.getElementById("sehirNot").value;
   const a = anahtar(aktifDetay.ulke, aktifDetay.sehir);
-  sehirDetaylari[a] = { puan: seciliPuan, foto: seciliFoto, not: not };
+  // Fotograflar artik burada degil, sehir_fotolari tablosunda.
+  sehirDetaylari[a] = { puan: seciliPuan, not: not };
   yerelYaz("sehirDetaylari", sehirDetaylari);
   const { data: oturum } = await db.auth.getSession();
   if (oturum.session) {
