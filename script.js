@@ -18,6 +18,7 @@ const RENK_BOS      = "#1e2a3a";
 const RENK_HOVER    = "#FF8C1A";
 const RENK_KENAR    = "#e8e0d0";
 const PIN_RENK      = "#0a1018";   // gezilen ulkeler turuncu; pin lacivert olunca beliriyor
+const RENK_MISAFIR  = "#48B7C7";   // baska bir gezginin haritasi
 
 /* ---------------------------------------------------------------------
    DURUM
@@ -29,11 +30,14 @@ const kitaToplam = {};                     // kitada kac ulke var
 let gezilenler = [];                       // [{ulke, sehir}]
 let gezilenKoord = {};                     // "ulke|sehir" -> {lat,lng,nufus}
 let sehirDetaylari = {};                   // "ulke|sehir" -> {puan,foto,not}
-let profilVeri = { isim: "", konum: "", fotolar: [] };
+let profilVeri = { isim: "", konum: "", fotolar: [], kullanici_adi: "" };
 let profilDuzenleme = false;
 let aktifDetay = { ulke: "", sehir: "" };
 let aktifUlke  = "";
 let panelDurum = { ulke: "", offset: 0, arama: "", toplam: 0 };
+/* Baska birinin haritasina bakiliyorsa burasi dolu olur. Kendi
+   haritamiza donunce tekrar null. */
+let misafir = null;
 
 const kitaRenk = {
   "Avrupa": "#E67E22", "Asya": "#FF8C1A", "Afrika": "#C0562A",
@@ -80,13 +84,16 @@ function kureKur() {
     .polygonAltitude(0.013)
     .polygonCapColor(function (d) {
       if (d === hoverUlke) return RENK_HOVER;
-      return ulkeGezildiMi(d.properties.name) ? RENK_GEZILDI : RENK_BOS;
+      if (!ulkeGezildiMi(d.properties.name)) return RENK_BOS;
+      return misafir ? RENK_MISAFIR : RENK_GEZILDI;
     })
     .polygonSideColor(function () { return "#141c28"; })
     .polygonStrokeColor(function () { return RENK_KENAR; })
     .polygonLabel(function (d) {
       const ad = d.properties.name;
-      const say = gezilenler.filter(function (g) { return g.ulke === ad; }).length;
+      const say = misafir
+        ? misafir.sehirler.filter(function (g) { return g.ulke === ad; }).length
+        : gezilenler.filter(function (g) { return g.ulke === ad; }).length;
       return "<div class='kure-etiket'>" + kacisla(ad) +
              (say ? "<span>" + say + " şehir</span>" : "") + "</div>";
     })
@@ -266,6 +273,7 @@ function uzayCiz() {
 }
 
 function ulkeGezildiMi(ad) {
+  if (misafir) return misafir.ulkeler.has(ad);
   for (let i = 0; i < gezilenler.length; i++) if (gezilenler[i].ulke === ad) return true;
   return false;
 }
@@ -298,10 +306,18 @@ function yogunlukGuncelle(zorla) {
   sonEsik = esik;
 
   const tum = [];
-  for (let i = 0; i < gezilenler.length; i++) {
-    const g = gezilenler[i];
-    const k = gezilenKoord[anahtar(g.ulke, g.sehir)];
-    if (k) tum.push({ ulke: g.ulke, sehir: g.sehir, lat: k.lat, lng: k.lng, nufus: k.nufus });
+  if (misafir) {
+    for (let i = 0; i < misafir.sehirler.length; i++) {
+      const s = misafir.sehirler[i];
+      if (s.enlem == null) continue;
+      tum.push({ ulke: s.ulke, sehir: s.sehir, lat: s.enlem, lng: s.boylam, nufus: s.nufus || 0 });
+    }
+  } else {
+    for (let i = 0; i < gezilenler.length; i++) {
+      const g = gezilenler[i];
+      const k = gezilenKoord[anahtar(g.ulke, g.sehir)];
+      if (k) tum.push({ ulke: g.ulke, sehir: g.sehir, lat: k.lat, lng: k.lng, nufus: k.nufus });
+    }
   }
   let secim = tum.filter(function (p) { return p.nufus >= esik; });
   // Cok az kaldiysa yine de en buyuk 12 tanesini goster
@@ -361,7 +377,156 @@ async function ulkeleriYukle() {
 /* =====================================================================
    PANEL — bir ülkenin şehirleri
    ===================================================================== */
+
+/* =====================================================================
+   BASKA BIR GEZGININ HARITASI
+   Kure gecici olarak onun gezdiklerini gosteriyor (farkli renkte),
+   ustte kimin haritasina baktigini yazan bir bar cikiyor. Cikinca
+   her sey kendi haritana donuyor.
+   ===================================================================== */
+async function gezginiAc(kullaniciAdi) {
+  const [{ data: profil, error: ph },
+         { data: harita, error: hh },
+         { data: fotolar }] = await Promise.all([
+    db.rpc("gezgin_profil",      { p_kullanici_adi: kullaniciAdi }),
+    db.rpc("gezgin_haritasi",    { p_kullanici_adi: kullaniciAdi }),
+    db.rpc("gezgin_fotograflari",{ p_kullanici_adi: kullaniciAdi })
+  ]);
+  if (ph || hh || !profil || !profil.length) {
+    console.log("Gezgin acilamadi", ph || hh);
+    return;
+  }
+  const p = profil[0];
+  misafir = {
+    kullanici_adi: p.kullanici_adi,
+    isim: p.isim,
+    konum: p.konum,
+    kita: p.kita_sayisi, ulke: p.ulke_sayisi, sehirSayisi: p.sehir_sayisi,
+    benim: p.benim,
+    sehirler: harita || [],
+    ulkeler: new Set((harita || []).map(function (r) { return r.ulke; })),
+    fotolar: fotolar || []
+  };
+  misafirBariGoster();
+  kureRenkTazele();
+  pinleriTazele();
+  gezginPaneli();
+}
+
+function misafirdenCik() {
+  if (!misafir) return;
+  misafir = null;
+  const bar = document.getElementById("misafirBar");
+  if (bar) bar.remove();
+  hepsiniKapat();
+  kureRenkTazele();
+  pinleriTazele();
+  kureyiSifirla();
+}
+
+function misafirBariGoster() {
+  let bar = document.getElementById("misafirBar");
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.id = "misafirBar";
+    document.body.appendChild(bar);
+  }
+  bar.innerHTML = "";
+  const yazi = document.createElement("span");
+  yazi.textContent = "@" + misafir.kullanici_adi + " haritasına bakıyorsun";
+  const cik = document.createElement("button");
+  cik.textContent = "kendi haritama dön";
+  cik.addEventListener("click", misafirdenCik);
+  bar.appendChild(yazi); bar.appendChild(cik);
+}
+
+/* Gezginin profili sagdaki panele ciziliyor: sayilar, herkese acik
+   fotograflari ve gittigi ulkeler. */
+async function gezginPaneli() {
+  if (!misafir) return;
+  document.getElementById("panelBaslik").textContent = "@" + misafir.kullanici_adi;
+  document.getElementById("panelAltBaslik").textContent =
+    (misafir.isim || "") + (misafir.konum ? " — " + misafir.konum : "");
+
+  const arama = document.getElementById("panelArama");
+  if (arama) arama.style.display = "none";
+  const eski = document.getElementById("dahaFazla");
+  if (eski) eski.remove();
+
+  const liste = document.getElementById("sehirListe");
+  liste.innerHTML = "";
+  liste.style.display = "block";
+
+  const sayilar = document.createElement("div");
+  sayilar.className = "gezgin-sayilar";
+  sayilar.innerHTML =
+    "<b>" + misafir.kita + "</b> kıta <b>" + misafir.ulke + "</b> ülke <b>" +
+    misafir.sehirSayisi + "</b> şehir";
+  liste.appendChild(sayilar);
+
+  if (misafir.fotolar.length) {
+    const bas = document.createElement("div");
+    bas.className = "gezgin-baslik"; bas.textContent = "FOTOĞRAFLARI";
+    liste.appendChild(bas);
+    const izgara = document.createElement("div");
+    izgara.className = "foto-izgara";
+    liste.appendChild(izgara);
+    const adres = await imzaliAdresler(misafir.fotolar.map(function (f) { return f.yol; }));
+    if (!misafir) return;
+    for (let i = 0; i < misafir.fotolar.length; i++) {
+      const f = misafir.fotolar[i];
+      const kart = document.createElement("div");
+      kart.className = "foto-kart";
+      const im = document.createElement("img");
+      im.loading = "lazy";
+      if (adres[f.yol]) im.src = adres[f.yol];
+      kart.appendChild(im);
+      const yer = document.createElement("span");
+      yer.className = "foto-sahip";
+      yer.textContent = f.sehir;
+      kart.appendChild(yer);
+      kart.addEventListener("click", function () {
+        const s = misafir.sehirler.find(function (x) {
+          return x.ulke === f.ulke && x.sehir === f.sehir; });
+        if (s && s.enlem != null) kureyeGit(s.enlem, s.boylam, true);
+      });
+      izgara.appendChild(kart);
+    }
+  }
+
+  const bas2 = document.createElement("div");
+  bas2.className = "gezgin-baslik"; bas2.textContent = "GEZDİĞİ ÜLKELER";
+  liste.appendChild(bas2);
+
+  const sayim = {};
+  for (let i = 0; i < misafir.sehirler.length; i++) {
+    const u = misafir.sehirler[i].ulke;
+    sayim[u] = (sayim[u] || 0) + 1;
+  }
+  const kutu = document.createElement("div");
+  kutu.className = "gezgin-ulkeler";
+  Object.keys(sayim).sort(function (a, b) { return sayim[b] - sayim[a]; })
+    .forEach(function (u) {
+      const sat = document.createElement("div");
+      sat.className = "gezgin-ulke";
+      sat.innerHTML = "<span>" + kacisla(u) + "</span><b>" + sayim[u] + "</b>";
+      sat.addEventListener("click", function () {
+        const s = misafir.sehirler.find(function (x) { return x.ulke === u && x.enlem != null; });
+        if (s) kureyeGit(s.enlem, s.boylam, false);
+        panelAc(u);
+      });
+      kutu.appendChild(sat);
+    });
+  liste.appendChild(kutu);
+
+  document.getElementById("panel").classList.add("acik");
+  document.getElementById("harita").classList.add("itili");
+}
+
 function panelAc(ulkeAdi) {
+  const arama = document.getElementById("panelArama");
+  if (arama) arama.style.display = "";
+  document.getElementById("sehirListe").style.display = "";
   aktifUlke = ulkeAdi;
   panelDurum = { ulke: ulkeAdi, offset: 0, arama: "", toplam: 0 };
   document.getElementById("panelBaslik").textContent = ulkeAdi;
@@ -442,19 +607,32 @@ async function sehirleriGetir(bastan) {
 }
 
 function sehirKarti(ulkeAdi, s) {
-  const secili = gezildiMi(ulkeAdi, s.ad);
+  // Misafir modunda "gittim" dugmesi yok; onun gittigi sehirler
+  // isaretli gorunuyor, kimse baskasinin haritasini degistiremiyor.
+  const secili = misafir
+    ? misafir.sehirler.some(function (x) { return x.ulke === ulkeAdi && x.sehir === s.ad; })
+    : gezildiMi(ulkeAdi, s.ad);
   const kart = document.createElement("div");
   kart.className = "sehir-kart" + (secili ? " secili" : "");
-  kart.addEventListener("click", function () { sehirDetayAc(ulkeAdi, s.ad); });
+  if (!misafir) kart.addEventListener("click", function () { sehirDetayAc(ulkeAdi, s.ad); });
 
-  const btn = document.createElement("button");
-  btn.className = "gittim-btn" + (secili ? " aktif" : "");
-  btn.textContent = secili ? "✓" : "+";
-  btn.addEventListener("click", function (e) {
-    e.stopPropagation();
-    sehirSec(btn, ulkeAdi, s);
-  });
-  kart.appendChild(btn);
+  if (misafir) {
+    if (secili) {
+      const im = document.createElement("span");
+      im.className = "gittim-btn aktif misafir";
+      im.textContent = "✓";
+      kart.appendChild(im);
+    }
+  } else {
+    const btn = document.createElement("button");
+    btn.className = "gittim-btn" + (secili ? " aktif" : "");
+    btn.textContent = secili ? "✓" : "+";
+    btn.addEventListener("click", function (e) {
+      e.stopPropagation();
+      sehirSec(btn, ulkeAdi, s);
+    });
+    kart.appendChild(btn);
+  }
 
   const d = sehirDetaylari[anahtar(ulkeAdi, s.ad)];
   if (d && d.puan) {
@@ -1027,6 +1205,7 @@ function profilKapat() {
   document.getElementById("harita").classList.remove("itili");
 }
 function profilDoldur() {
+  kullaniciAdiAlani();
   document.getElementById("profilIsim").value = profilVeri.isim || "";
   document.getElementById("profilKonum").value = profilVeri.konum || "";
   const liste = document.getElementById("profilFotoListe");
@@ -1060,6 +1239,60 @@ function profilDoldur() {
   }
   profilButonFotoGuncelle();
 }
+
+/* Kullanici adi bolumu. Bir kez alindiktan sonra degistirilmiyor —
+   baskalari o adla profiline gidiyor. index.html'e dokunmamak icin
+   alani buradan olusturuyoruz. */
+function kullaniciAdiAlani() {
+  const kart = document.getElementById("profilKart");
+  let bolum = document.getElementById("kullaniciAdiBolum");
+  if (!bolum) {
+    bolum = document.createElement("div");
+    bolum.id = "kullaniciAdiBolum";
+    bolum.className = "profil-bolum";
+    const ilk = kart.querySelector(".profil-bolum");
+    kart.insertBefore(bolum, ilk);
+  }
+  bolum.innerHTML = "";
+  const et = document.createElement("label");
+  et.textContent = "KULLANICI ADI";
+  bolum.appendChild(et);
+
+  if (profilVeri.kullanici_adi) {
+    const ad = document.createElement("div");
+    ad.className = "kullanici-adi";
+    ad.textContent = "@" + profilVeri.kullanici_adi;
+    bolum.appendChild(ad);
+    return;
+  }
+
+  const not = document.createElement("div");
+  not.className = "kullanici-adi-not";
+  not.textContent = "Diğer gezginlerin seni bulabilmesi için bir kullanıcı adı seç. Sonradan değiştirilemiyor.";
+  bolum.appendChild(not);
+
+  const satir = document.createElement("div");
+  satir.className = "kullanici-adi-satir";
+  const gir = document.createElement("input");
+  gir.type = "text"; gir.placeholder = "cihan"; gir.maxLength = 20;
+  const dgm = document.createElement("button");
+  dgm.textContent = "AL";
+  const uyari = document.createElement("div");
+  uyari.className = "kullanici-adi-uyari";
+
+  dgm.addEventListener("click", async function () {
+    dgm.disabled = true; uyari.textContent = "";
+    const { data, error } = await db.rpc("kullanici_adi_al", { p_ad: gir.value });
+    dgm.disabled = false;
+    if (error) { uyari.textContent = error.message; return; }
+    profilVeri.kullanici_adi = data;
+    yerelYaz("profilVeri", profilVeri);
+    profilDoldur();
+  });
+  satir.appendChild(gir); satir.appendChild(dgm);
+  bolum.appendChild(satir); bolum.appendChild(uyari);
+}
+
 function profilKilitle(kilitli) {
   document.getElementById("profilIsim").disabled = kilitli;
   document.getElementById("profilKonum").disabled = kilitli;
@@ -1097,25 +1330,59 @@ aramaInput.addEventListener("input", function () {
   const metin = aramaInput.value.trim();
   if (metin.length < 2) { aramaSonuc.innerHTML = ""; return; }
   aramaBekle = setTimeout(async function () {
-    const { data, error } = await db.rpc("sehir_ara", { p_metin: metin, p_limit: 20 });
+    const [sehirler, gezginler] = await Promise.all([
+      db.rpc("sehir_ara",  { p_metin: metin, p_limit: 15 }),
+      db.rpc("gezgin_ara", { p_metin: metin, p_limit: 6 })
+    ]);
     aramaSonuc.innerHTML = "";
-    if (error || !data || !data.length) {
+    const parca = document.createDocumentFragment();
+
+    const kisiler = (gezginler && gezginler.data) || [];
+    if (kisiler.length) {
+      const bas = document.createElement("div");
+      bas.className = "arama-baslik"; bas.textContent = "GEZGİNLER";
+      parca.appendChild(bas);
+      for (let i = 0; i < kisiler.length; i++) {
+        (function (g) {
+          const sat = document.createElement("div");
+          sat.className = "arama-satir";
+          sat.innerHTML = "<b>@" + kacisla(g.kullanici_adi) + "</b> " +
+            "<span style='opacity:.6'>" + kacisla(g.isim || "") + "</span>" +
+            "<span class='arama-sag'>" + g.ulke_sayisi + " ülke</span>";
+          sat.addEventListener("click", function () {
+            aramaKapat();
+            gezginiAc(g.kullanici_adi);
+          });
+          parca.appendChild(sat);
+        })(kisiler[i]);
+      }
+    }
+
+    const yerler = (sehirler && sehirler.data) || [];
+    if (yerler.length) {
+      if (kisiler.length) {
+        const bas = document.createElement("div");
+        bas.className = "arama-baslik"; bas.textContent = "YERLER";
+        parca.appendChild(bas);
+      }
+      for (let i = 0; i < yerler.length; i++) {
+        (function (r) {
+          const sat = document.createElement("div");
+          sat.className = "arama-satir";
+          sat.innerHTML = "<b>" + kacisla(r.ad) + "</b> <span style='opacity:.6'>" + kacisla(r.ulke) + "</span>";
+          sat.addEventListener("click", function () {
+            aramaKapat();
+            kureyeGit(r.enlem, r.boylam, true);
+            panelAc(r.ulke);
+          });
+          parca.appendChild(sat);
+        })(yerler[i]);
+      }
+    }
+
+    if (!kisiler.length && !yerler.length) {
       aramaSonuc.innerHTML = "<div class='arama-satir' style='opacity:.6'>Sonuç yok</div>";
       return;
-    }
-    const parca = document.createDocumentFragment();
-    for (let i = 0; i < data.length; i++) {
-      (function (r) {
-        const sat = document.createElement("div");
-        sat.className = "arama-satir";
-        sat.innerHTML = "<b>" + kacisla(r.ad) + "</b> <span style='opacity:.6'>" + kacisla(r.ulke) + "</span>";
-        sat.addEventListener("click", function () {
-          aramaKapat();
-          kureyeGit(r.enlem, r.boylam, true);
-          panelAc(r.ulke);
-        });
-        parca.appendChild(sat);
-      })(data[i]);
     }
     aramaSonuc.appendChild(parca);
   }, 250);
@@ -1149,6 +1416,13 @@ function hepsiniKapat() {
   fotoKuyruk = [];
 }
 
+/* Escape misafir modundayken once kendi haritana dondursun. */
+function misafirdeysemCik() {
+  if (!misafir) return false;
+  misafirdenCik();
+  return true;
+}
+
 function kureyiSifirla() {
   if (!kure) return;
   const g = kure.pointOfView();
@@ -1165,6 +1439,7 @@ document.addEventListener("keydown", function (e) {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); aramaAc(); }
   if (e.key === "Escape") {
     if (acikPanelVarMi()) hepsiniKapat();
+    else if (misafirdeysemCik()) { /* kendi haritana donuldu */ }
     else kureyiSifirla();
   }
 });

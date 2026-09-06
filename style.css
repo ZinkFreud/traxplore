@@ -990,3 +990,123 @@ body {
     color: #7d8899;
     margin-bottom: 4px;
 }
+
+
+/* =====================================================================
+   BAŞKA BİR GEZGİNİN HARİTASI
+   ===================================================================== */
+#misafirBar {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #12303a;
+    border: 1px solid #48B7C7;
+    border-radius: 12px;
+    padding: 10px 16px;
+    color: #cfeef4;
+    font-size: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+#misafirBar button {
+    background: #48B7C7;
+    color: #06222a;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+#misafirBar button:hover { filter: brightness(1.1); }
+
+.gezgin-sayilar {
+    background: #0f1620;
+    border: 1px solid #2a3a4e;
+    border-radius: 10px;
+    padding: 14px;
+    text-align: center;
+    color: #9aa7b8;
+    font-size: 14px;
+}
+.gezgin-sayilar b { color: #48B7C7; font-size: 20px; margin: 0 3px; }
+
+.gezgin-baslik {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #7d8899;
+    margin: 22px 0 8px;
+}
+.gezgin-ulkeler { display: flex; flex-direction: column; gap: 6px; }
+.gezgin-ulke {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a2330;
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    color: #eee;
+    font-size: 14px;
+}
+.gezgin-ulke:hover { background: #22303f; }
+.gezgin-ulke b { color: #48B7C7; }
+
+/* Misafir modunda "gittim" işareti tıklanamaz */
+.gittim-btn.misafir { cursor: default; pointer-events: none; }
+
+/* Arama sonuçları: bölüm başlıkları */
+.arama-baslik {
+    font-size: 10px;
+    letter-spacing: 1.2px;
+    color: #7d8899;
+    padding: 10px 14px 4px;
+}
+.arama-sag { float: right; opacity: .6; font-size: 12px; }
+
+/* Kullanıcı adı */
+.kullanici-adi {
+    font-size: 18px;
+    color: #E67E22;
+    font-weight: 600;
+}
+.kullanici-adi-not {
+    font-size: 12px;
+    color: #7d8899;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+.kullanici-adi-satir { display: flex; gap: 8px; }
+.kullanici-adi-satir input {
+    flex: 1;
+    background: #0f1620;
+    border: 1px solid #2a3a4e;
+    border-radius: 8px;
+    color: #fff;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+}
+.kullanici-adi-satir input:focus { border-color: #E67E22; }
+.kullanici-adi-satir button {
+    background: #E67E22;
+    color: #0f1620;
+    border: none;
+    border-radius: 8px;
+    padding: 0 18px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+.kullanici-adi-uyari {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #E67E22;
+    min-height: 14px;
+}
