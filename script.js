@@ -1638,12 +1638,26 @@ function kureyiSifirla() {
 }
 
 document.addEventListener("keydown", function (e) {
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); aramaAc(); }
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault(); aramaAc(); return;
+  }
   if (e.key === "Escape") {
     if (acikPanelVarMi()) hepsiniKapat();
     else if (misafirdeysemCik()) { /* kendi haritana donuldu */ }
     else kureyiSifirla();
+    return;
   }
+
+  /* Bir harfe basinca arama kendiliginden acilsin — kutuyu aramaya
+     gerek kalmasin. Basilan harf kaybolmuyor, kutuya yaziliyor. */
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const h = e.target;
+  if (h && (h.tagName === "INPUT" || h.tagName === "TEXTAREA" || h.isContentEditable)) return;
+  if (e.key.length !== 1 || !/\S/.test(e.key)) return;   // Shift, oklar, bosluk...
+  e.preventDefault();
+  aramaAc();
+  aramaInput.value = e.key;
+  aramaInput.dispatchEvent(new Event("input"));
 });
 
 /* =====================================================================
