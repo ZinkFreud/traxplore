@@ -1715,6 +1715,7 @@ function wikiFotoBul(sehir, ulke, geri) {
 function profilAc() {
   profilDuzenleme = false;
   profilDoldur();
+  arkadasNabiz(true);            // istek gelmis olabilir, bakalim
   profilKilitle(true);
   sadeceBuPanel("profilKart", true);
 }
@@ -1881,6 +1882,33 @@ function arkadaslikDugmesi() {
   kutu.appendChild(uyari);
   return kutu;
 }
+
+/* Arkadaslik verisi acilista bir kez yukleniyordu. Yani sen sayfayi
+   acikken sana istek gelirse hicbir sey degismiyor: rozet cikmiyor,
+   liste guncellenmiyor, karsi taraf "gonderdim" diyor ama sen
+   goremiyorsun. Olan tam olarak buydu.
+
+   Uc yerden tazeliyoruz:
+     1. Dakikada bir (sekme onde degilse atlanıyor, bosuna istek yok)
+     2. Sekmeye geri donuldugunde -- telefonda asil ise yarayan bu
+     3. Profil karti acilirken
+   Gercek zamanli bir baglanti kurmak da mumkun ama bu kadar seyrek bir
+   olay icin surekli acik bir baglanti tasimaya degmez. */
+let sonTazeleme = 0;
+async function arkadasNabiz(zorla) {
+  const simdi = Date.now();
+  if (!zorla && simdi - sonTazeleme < 20000) return;   // ust uste cagirmayi engelle
+  sonTazeleme = simdi;
+  try { await arkadasVeriTazele(); } catch (e) {}
+}
+
+setInterval(function () {
+  if (!document.hidden) arkadasNabiz(false);
+}, 60000);
+
+document.addEventListener("visibilitychange", function () {
+  if (!document.hidden) arkadasNabiz(false);
+});
 
 async function arkadasVeriTazele() {
   const { data: oturum } = await db.auth.getSession();
