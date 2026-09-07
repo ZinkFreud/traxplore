@@ -2022,8 +2022,8 @@ const aramaInput  = document.getElementById("aramaInput");
 const aramaSonuc  = document.getElementById("aramaSonuc");
 let aramaBekle = null;
 
-function aramaAc()   { aramaKutu.classList.add("acik"); aramaInput.focus(); }
-function aramaKapat() { aramaKutu.classList.remove("acik"); aramaInput.value = ""; aramaSonuc.innerHTML = ""; }
+function aramaAc()   { aramaKutu.classList.add("acik"); aramaInput.focus(); mobilSeritTazele(); }
+function aramaKapat() { aramaKutu.classList.remove("acik"); aramaInput.value = ""; aramaSonuc.innerHTML = ""; mobilSeritTazele(); }
 
 aramaInput.addEventListener("input", function () {
   clearTimeout(aramaBekle);
@@ -2122,6 +2122,9 @@ function mobilBolumAc(id) {
   const el = document.getElementById(id);
   if (!el) return;
   if (el.classList.contains("acik")) { hepsiniKapat(); return; }
+  /* Masaustunde aramayi herhangi bir harfe basarak aciyoruz; telefonda
+     klavye yok, bir dugme gerekiyor. */
+  if (id === "aramaKutu") { hepsiniKapat(); aramaAc(); mobilSeritTazele(); return; }
   if (id === "profilKart") { profilAc(); return; }
   if (id === "istatistikPanel") { istatistikPaneliAc(); return; }
   sadeceBuPanel(id, false);
@@ -2436,6 +2439,61 @@ document.getElementById("sifreUnuttum").addEventListener("click", async function
     : "Bağlantı gönderildi. E-postanı kontrol et (spam klasörüne de bak).";
 });
 
+/* Kullanici adi olmadan haritaya birakmiyoruz. Sebep: profil satiri
+   ancak ad alininca olusuyor; adsiz kullanici aramada cikmiyor,
+   arkadas eklenemiyor, fotografinin altinda kimlik gorunmuyor.
+   Kayitta ad sordugumuz icin yeni kullanicilar buraya hic dusmuyor;
+   bu kapi eski adsiz hesaplar ve yarim kalmis kayitlar icin. */
+function adSecimEkraniniAc(hazir) {
+  document.querySelector(".giris-kutu").classList.add("adsecim");
+  document.getElementById("adSecimGiris").value = hazir || "";
+  girisEkran.style.display = "flex";
+  girisMesaj.textContent = "Devam etmek için bir kullanıcı adı seç. Sonradan değiştirilemiyor.";
+  document.getElementById("adSecimGiris").focus();
+}
+
+function adSecimEkraniniKapat() {
+  document.querySelector(".giris-kutu").classList.remove("adsecim");
+  girisEkran.style.display = "none";
+  girisMesaj.textContent = "";
+}
+
+document.getElementById("adSecimKaydet").addEventListener("click", async function () {
+  const k = kullaniciAdiTemizle(document.getElementById("adSecimGiris").value);
+  if (!/^[a-z0-9_]{3,20}$/.test(k)) {
+    girisMesaj.textContent =
+      "Kullanıcı adı 3-20 karakter olmalı; sadece küçük harf, rakam ve alt çizgi.";
+    return;
+  }
+  this.disabled = true;
+  const { data, error } = await db.rpc("kullanici_adi_al", { p_ad: k });
+  this.disabled = false;
+  if (error) { girisMesaj.textContent = hataYaz(error.message); return; }
+  profilVeri.kullanici_adi = data;
+  yerelYaz("profilVeri", profilVeri);
+  yerelYaz("bekleyenKullaniciAdi", "");
+  adSecimEkraniniKapat();
+});
+
+/* Girisden sonra cagriliyor. Adi varsa hicbir sey yapmiyor.
+   Yoksa once kayitta secilen adi sessizce almayi deniyor; o ad bu arada
+   baskasina gitmisse kullaniciya soruyor. */
+async function kullaniciAdiKapisi() {
+  if (profilVeri.kullanici_adi) return false;
+  const bekleyen = kullaniciAdiTemizle(yerelOku("bekleyenKullaniciAdi", ""));
+  if (/^[a-z0-9_]{3,20}$/.test(bekleyen)) {
+    const { data, error } = await db.rpc("kullanici_adi_al", { p_ad: bekleyen });
+    if (!error && data) {
+      profilVeri.kullanici_adi = data;
+      yerelYaz("profilVeri", profilVeri);
+      yerelYaz("bekleyenKullaniciAdi", "");
+      return false;
+    }
+  }
+  adSecimEkraniniAc(bekleyen);
+  return true;
+}
+
 function kurtarmaEkraniniAc() {
   document.querySelector(".giris-kutu").classList.add("kurtarma");
   document.getElementById("yeniSifreAlani").classList.add("acik");
@@ -2468,15 +2526,60 @@ if (typeof db.auth.onAuthStateChange === "function") {
   });
 }
 
+/* Giris / kayit kipi. Ayni kutu iki isi goruyor; kayit kipinde
+   kullanici adi alani aciliyor. */
+function kayitKipi(acik) {
+  document.querySelector(".giris-kutu").classList.toggle("kayit", acik);
+  document.getElementById("modDegistir").textContent = acik
+    ? "Zaten hesabın var mı? Giriş yap"
+    : "Hesabın yok mu? Kayıt ol";
+  girisMesaj.textContent = "";
+}
+document.getElementById("modDegistir").addEventListener("click", function () {
+  kayitKipi(!document.querySelector(".giris-kutu").classList.contains("kayit"));
+});
+
+function kullaniciAdiTemizle(ad) {
+  return String(ad || "").trim().toLowerCase().replace(/\s+/g, "");
+}
+
+/* Kayitta kullanici adi ZORUNLU. Once boyleydi degildi: adsiz kayit
+   olan kullanicinin profil satiri hic olusmuyordu, yani kimse onu
+   arayamiyor, veritabaninda bile gorunmuyordu. */
 document.getElementById("kayitBtn").addEventListener("click", async function () {
   const e = document.getElementById("girisEmail").value.trim();
   const s = document.getElementById("girisSifre").value;
+  const k = kullaniciAdiTemizle(document.getElementById("girisKullanici").value);
   if (!e || !s) { girisMesaj.textContent = "E-posta ve şifre gerekli."; return; }
+  if (!/^[a-z0-9_]{3,20}$/.test(k)) {
+    girisMesaj.textContent =
+      "Kullanıcı adı 3-20 karakter olmalı; sadece küçük harf, rakam ve alt çizgi.";
+    return;
+  }
   this.disabled = true;
-  const { error } = await db.auth.signUp({ email: e, password: s });
+  girisMesaj.textContent = "Kontrol ediliyor…";
+
+  const musait = await db.rpc("kullanici_adi_musait", { p_ad: k });
+  if (musait.error) {
+    this.disabled = false;
+    girisMesaj.textContent = hataYaz(musait.error.message); return;
+  }
+  if (musait.data === false) {
+    this.disabled = false;
+    girisMesaj.textContent = "Bu kullanıcı adı alınmış, başka bir tane dene."; return;
+  }
+
+  const { error } = await db.auth.signUp({
+    email: e, password: s, options: { data: { kullanici_adi: k } }
+  });
   this.disabled = false;
-  girisMesaj.textContent = error ? hataYaz(error.message)
-    : "Kayıt tamam. E-postana doğrulama bağlantısı gönderildi.";
+  if (error) { girisMesaj.textContent = hataYaz(error.message); return; }
+  /* Adi burada yazamiyoruz: hesap daha dogrulanmadi, oturum yok.
+     Ilk girisde otomatik almak icin saklıyoruz. */
+  yerelYaz("bekleyenKullaniciAdi", k);
+  girisMesaj.textContent =
+    "Kayıt tamam. E-postana doğrulama bağlantısı gönderildi. " +
+    "Doğrulayıp giriş yapınca @" + k + " adı hesabına bağlanacak.";
 });
 
 document.getElementById("girisBtn").addEventListener("click", async function () {
@@ -2489,6 +2592,7 @@ document.getElementById("girisBtn").addEventListener("click", async function () 
   if (error) { girisMesaj.textContent = hataYaz(error.message); return; }
   girisEkran.style.display = "none";
   await veriYukle();
+  await kullaniciAdiKapisi();
 });
 
 async function cikisYap() {
@@ -2555,6 +2659,7 @@ async function veriYukle() {
   if (oturum.session) {
     girisEkran.style.display = "none";
     await veriYukle();
+    await kullaniciAdiKapisi();
   } else {
     girisEkran.style.display = "flex";
     await ulkeleriYukle();

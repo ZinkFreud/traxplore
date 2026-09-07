@@ -719,10 +719,12 @@ body {
     width: 100%;
     box-sizing: border-box;
     padding: 13px 16px;
-    border: 1px solid #5FB6C4;
-    border-radius: 10px;
-    background: #0B1119;
-    color: #fff;
+    border: 1px solid var(--kil-guclu);
+    border-radius: 6px;
+    background: var(--yuzey-koyu);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: var(--yazi);
     font-size: 15px;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
@@ -730,9 +732,11 @@ body {
     outline: none;
 }
 .arama-sonuc {
-    background: #0B1119;
-    border: 1px solid #222B35;
-    border-radius: 10px;
+    background: var(--yuzey-koyu);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--kil);
+    border-radius: 6px;
     margin-top: 6px;
     max-height: 46vh;
     overflow-y: auto;
@@ -1572,8 +1576,13 @@ body {
         border-top: 1px solid var(--kil);
         padding-bottom: env(safe-area-inset-bottom);
     }
+    /* Dört düğme oldu; yazılar dar ekranda taşmasın */
     #mobilAlt button {
         flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
         background: none;
         border: none;
         border-right: 1px solid var(--kil);
@@ -1642,6 +1651,17 @@ body {
 
     /* Şehir kartları tek sütun sığmıyor, iki sütun kalsın ama daha dar */
     #sehirListe { gap: 10px; }
+
+    /* Arama kutusu: masaüstünde ortada duran dar bir kutu, telefonda
+       üst şeridin altında tam genişlik. */
+    .arama-kutu {
+        top: calc(52px + env(safe-area-inset-top));
+        left: 10px; right: 10px;
+        width: auto;
+        max-width: none;
+        transform: none;
+    }
+    .arama-sonuc { max-height: 52vh; }
 }
 
 /* --- "ana ekrana ekle" ipucu (yalnız iPhone'da, bir kez) ----------- */
@@ -1669,3 +1689,26 @@ body {
     background: none; border: none; color: var(--yazi-soluk);
     font-size: 22px; line-height: 1; cursor: pointer; padding: 0 4px;
 }
+
+/* --- giriş ekranı: giriş / kayıt / kullanıcı adı seçme kipleri ------
+   Aynı kutu üç iş görüyor. Hangi kipteysek gereksiz alanları
+   gizliyoruz; ayrı sayfa açmaktansa bu daha sade. */
+#girisKullanici, #adSecimAlani { display: none; }
+.giris-kutu.kayit #girisKullanici { display: block; }
+.giris-kutu.kayit #girisBtn,
+.giris-kutu.kayit #sifreUnuttum { display: none; }
+.giris-kutu:not(.kayit) #kayitBtn { display: none; }
+
+.giris-kutu.adsecim #girisEmail,
+.giris-kutu.adsecim #girisSifre,
+.giris-kutu.adsecim #girisKullanici,
+.giris-kutu.adsecim #girisBtn,
+.giris-kutu.adsecim #kayitBtn,
+.giris-kutu.adsecim #modDegistir,
+.giris-kutu.adsecim #sifreUnuttum { display: none; }
+.giris-kutu.adsecim #adSecimAlani { display: flex; flex-direction: column; gap: 12px; }
+
+/* kurtarma kipi kayıt alanlarını da kapatsın */
+.giris-kutu.kurtarma #girisKullanici,
+.giris-kutu.kurtarma #modDegistir,
+.giris-kutu.kurtarma #adSecimAlani { display: none; }

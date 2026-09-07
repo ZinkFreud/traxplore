@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260907c">
+    <link rel="stylesheet" href="style.css?v=20260907d">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -28,9 +28,17 @@
         <p id="girisMesaj" class="giris-mesaj"></p>
         <input type="email" id="girisEmail" placeholder="E-posta" />
         <input type="password" id="girisSifre" placeholder="Şifre" />
+        <input type="text" id="girisKullanici" placeholder="Kullanıcı adı" maxlength="20"
+               autocomplete="off" autocapitalize="none" spellcheck="false" />
         <button id="girisBtn" class="giris-btn">Giriş Yap</button>
         <button id="kayitBtn" class="kayit-btn">Kayıt Ol</button>
+        <button id="modDegistir" class="metin-btn">Hesabın yok mu? Kayıt ol</button>
         <button id="sifreUnuttum" class="metin-btn">Şifremi unuttum</button>
+        <div id="adSecimAlani">
+            <input type="text" id="adSecimGiris" placeholder="kullanıcı adı" maxlength="20"
+                   autocomplete="off" autocapitalize="none" spellcheck="false" />
+            <button id="adSecimKaydet" class="giris-btn">Kullanıcı Adını Al</button>
+        </div>
         <div id="yeniSifreAlani">
             <input type="password" id="yeniSifre" placeholder="Yeni şifre (en az 6 karakter)" />
             <button id="yeniSifreKaydet" class="giris-btn">Şifreyi Değiştir</button>
@@ -54,6 +62,7 @@
         <span id="mobilSayac">0 ülke · 0 şehir</span>
     </div>
     <nav id="mobilAlt">
+        <button id="mobilAra" data-bolum="aramaKutu">Ara</button>
         <button id="mobilProfil" data-bolum="profilKart">Profil</button>
         <button id="mobilGecmis" data-bolum="gecmisPanel">Son Gezdiklerin</button>
         <button id="mobilIstatistik" data-bolum="istatistikPanel">İstatistikler</button>
@@ -163,7 +172,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260907c"></script>
+    <script src="script.js?v=20260907d"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
