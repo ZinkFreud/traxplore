@@ -1486,3 +1486,24 @@ body {
 .kayit-btn { background: rgba(255,255,255,0.04); color: var(--yazi); }
 .kayit-btn:hover { background: rgba(255,255,255,0.08); }
 .giris-mesaj { color: var(--yazi-soluk); }
+
+/* --- şifremi unuttum ------------------------------------------------ */
+.metin-btn {
+    background: none;
+    border: none;
+    color: var(--yazi-soluk);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.metin-btn:hover { color: var(--yazi); }
+#yeniSifreAlani { display: none; flex-direction: column; gap: 12px; }
+#yeniSifreAlani.acik { display: flex; }
+.giris-kutu.kurtarma #girisEmail,
+.giris-kutu.kurtarma #girisSifre,
+.giris-kutu.kurtarma #girisBtn,
+.giris-kutu.kurtarma #kayitBtn,
+.giris-kutu.kurtarma #sifreUnuttum { display: none; }

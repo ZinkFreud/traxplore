@@ -8,6 +8,12 @@ const SUPABASE_URL = "https://nfmbutrdhdomgaltneuq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_VHpyi0vznoFhj2RaXewyig_Rk0v07tG";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+/* Sifre sifirlama baglantisi adresin # kismindan geliyor
+   (…#access_token=…&type=recovery). supabase-js baglantiyi isleyip o
+   kismi TEMIZLIYOR, o yuzden bayragi burada, betigin ilk satirlarinda
+   yakaliyoruz. Sonra bakarsak gec kalmis oluyoruz. */
+const SIFRE_KURTARMA = /type=recovery/.test(location.hash);
+
 const GEOJSON_URL =
   "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
@@ -2300,6 +2306,78 @@ document.getElementById("profilKaydet").addEventListener("click", async function
 const girisEkran = document.getElementById("girisEkran");
 const girisMesaj = document.getElementById("girisMesaj");
 
+/* Supabase hatalari Ingilizce donuyor. Sik gorulenleri cevirip
+   gerisini oldugu gibi birakiyoruz -- bilmedigimiz bir hatayi
+   "bir sorun oldu" diye yutmak, sorunu bulmayi zorlastirir. */
+function hataYaz(mesaj) {
+  const cevap = {
+    "Invalid login credentials": "E-posta ya da şifre yanlış.",
+    "Email not confirmed": "Önce e-postandaki doğrulama bağlantısına tıkla.",
+    "User already registered": "Bu e-posta zaten kayıtlı.",
+    "Password should be at least 6 characters":
+      "Şifre en az 6 karakter olmalı.",
+    "For security purposes, you can only request this after 60 seconds.":
+      "Güvenlik için 60 saniye bekleyip tekrar dene.",
+    "Unable to validate email address: invalid format":
+      "E-posta adresi geçersiz."
+  };
+  return cevap[mesaj] || mesaj;
+}
+
+/* --- Sifremi unuttum ---------------------------------------------------
+   Iki adimli: once e-postaya baglanti gonderiliyor, sonra o baglantiyla
+   donen kullaniciya yeni sifre sorulyor. Ikinci adim ayni ekranda
+   aciliyor, ayri sayfa yok. */
+document.getElementById("sifreUnuttum").addEventListener("click", async function () {
+  const e = document.getElementById("girisEmail").value.trim();
+  if (!e) {
+    girisMesaj.textContent = "Önce e-posta adresini yaz, bağlantıyı oraya göndereyim.";
+    document.getElementById("girisEmail").focus();
+    return;
+  }
+  this.disabled = true;
+  girisMesaj.textContent = "Gönderiliyor…";
+  const { error } = await db.auth.resetPasswordForEmail(e, {
+    redirectTo: location.origin + location.pathname
+  });
+  this.disabled = false;
+  girisMesaj.textContent = error
+    ? hataYaz(error.message)
+    : "Bağlantı gönderildi. E-postanı kontrol et (spam klasörüne de bak).";
+});
+
+function kurtarmaEkraniniAc() {
+  document.querySelector(".giris-kutu").classList.add("kurtarma");
+  document.getElementById("yeniSifreAlani").classList.add("acik");
+  girisEkran.style.display = "flex";
+  girisMesaj.textContent = "Yeni şifreni belirle.";
+  document.getElementById("yeniSifre").focus();
+}
+
+document.getElementById("yeniSifreKaydet").addEventListener("click", async function () {
+  const s = document.getElementById("yeniSifre").value;
+  if (s.length < 6) { girisMesaj.textContent = "Şifre en az 6 karakter olmalı."; return; }
+  this.disabled = true;
+  const { error } = await db.auth.updateUser({ password: s });
+  this.disabled = false;
+  if (error) { girisMesaj.textContent = hataYaz(error.message); return; }
+  document.querySelector(".giris-kutu").classList.remove("kurtarma");
+  document.getElementById("yeniSifreAlani").classList.remove("acik");
+  document.getElementById("yeniSifre").value = "";
+  girisEkran.style.display = "none";
+  history.replaceState(null, "", location.origin + location.pathname);
+  await veriYukle();
+});
+
+/* Baglanti tiklanip donuldugunde supabase bu olayi tetikliyor. Yukaridaki
+   adres bayragi yetmezse (tarayici # kismini erken temizlerse) burasi
+   yakaliyor. */
+if (typeof db.auth.onAuthStateChange === "function") {
+  db.auth.onAuthStateChange(function (olay) {
+    if (olay === "PASSWORD_RECOVERY") kurtarmaEkraniniAc();
+  });
+}
+
 document.getElementById("kayitBtn").addEventListener("click", async function () {
   const e = document.getElementById("girisEmail").value.trim();
   const s = document.getElementById("girisSifre").value;
@@ -2307,7 +2385,8 @@ document.getElementById("kayitBtn").addEventListener("click", async function () 
   this.disabled = true;
   const { error } = await db.auth.signUp({ email: e, password: s });
   this.disabled = false;
-  girisMesaj.textContent = error ? error.message : "Kayıt tamam, e-postanı doğrula.";
+  girisMesaj.textContent = error ? hataYaz(error.message)
+    : "Kayıt tamam. E-postana doğrulama bağlantısı gönderildi.";
 });
 
 document.getElementById("girisBtn").addEventListener("click", async function () {
@@ -2317,7 +2396,7 @@ document.getElementById("girisBtn").addEventListener("click", async function () 
   this.disabled = true;
   const { error } = await db.auth.signInWithPassword({ email: e, password: s });
   this.disabled = false;
-  if (error) { girisMesaj.textContent = error.message; return; }
+  if (error) { girisMesaj.textContent = hataYaz(error.message); return; }
   girisEkran.style.display = "none";
   await veriYukle();
 });
@@ -2362,6 +2441,15 @@ async function veriYukle() {
 
 (async function baslat() {
   kureKur();
+  if (SIFRE_KURTARMA) {
+    // Baglanti gecerli bir oturum aciyor ama kullaniciyi dogruca haritaya
+    // birakmak yanlis olurdu: buraya sifresini degistirmeye geldi.
+    await ulkeleriYukle();
+    kitaChartCiz();
+    istatistikGuncelle();
+    kurtarmaEkraniniAc();
+    return;
+  }
   const { data: oturum } = await db.auth.getSession();
   if (oturum.session) {
     girisEkran.style.display = "none";
