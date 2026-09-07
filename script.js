@@ -936,8 +936,7 @@ async function gezginPaneli() {
     });
   liste.appendChild(kutu);
 
-  document.getElementById("panel").classList.add("acik");
-  document.getElementById("harita").classList.add("itili");
+  sadeceBuPanel("panel", true);
 }
 
 function panelAc(ulkeAdi) {
@@ -950,8 +949,7 @@ function panelAc(ulkeAdi) {
   const liste = document.getElementById("sehirListe");
   liste.innerHTML = "<p class='panel-durum'>Yükleniyor…</p>";
   panelAramaKutusu();
-  document.getElementById("panel").classList.add("acik");
-  document.getElementById("harita").classList.add("itili");
+  sadeceBuPanel("panel", true);
   sehirleriGetir(true);
 }
 
@@ -1349,7 +1347,7 @@ function istatistikPaneliDoldur() {
 }
 function istatistikPaneliAc() {
   istatistikPaneliDoldur();
-  document.getElementById("istatistikPanel").classList.add("acik");
+  sadeceBuPanel("istatistikPanel", false);
 }
 function istatistikPaneliKapat() {
   document.getElementById("istatistikPanel").classList.remove("acik");
@@ -1388,9 +1386,7 @@ async function sehirDetayAc(ulke, sehir) {
   document.getElementById("detayGovde").style.display = gitti ? "block" : "none";
   document.getElementById("kilitUyari").style.display = gitti ? "none" : "block";
 
-  document.getElementById("panel").classList.remove("acik");
-  document.getElementById("sehirDetayPanel").classList.add("acik");
-  document.getElementById("harita").classList.add("itili");
+  sadeceBuPanel("sehirDetayPanel", true);
 }
 
 
@@ -1653,8 +1649,7 @@ function profilAc() {
   profilDuzenleme = false;
   profilDoldur();
   profilKilitle(true);
-  document.getElementById("profilKart").classList.add("acik");
-  document.getElementById("harita").classList.add("itili");
+  sadeceBuPanel("profilKart", true);
 }
 function profilKapat() {
   document.getElementById("profilKart").classList.remove("acik");
@@ -2030,6 +2025,24 @@ function acikPanelVarMi() {
     if (el && el.classList.contains("acik")) return true;
   }
   return aramaKutu.classList.contains("acik");
+}
+
+/* Sagdan acilan dort panel ayni yerde duruyor: ulke listesi, sehir
+   detayi, profil karti ve istatistikler. Ikisi ayni anda acik olursa
+   alttaki tamamen gizli kaliyor -- profil acikken kureden bir ulkeye
+   tiklayinca ulke paneli profilin ALTINA aciliyordu ve hicbir sey
+   olmamis gibi gorunuyordu. Her acilista otekileri kapatiyoruz.
+   "itili" haritayi sola kaydiran sinif; istatistik paneli haritayi
+   itmiyor, digerleri itiyor. */
+const SAG_PANELLER = ["panel", "sehirDetayPanel", "profilKart", "istatistikPanel"];
+function sadeceBuPanel(id, itsin) {
+  for (let i = 0; i < SAG_PANELLER.length; i++) {
+    const el = document.getElementById(SAG_PANELLER[i]);
+    if (!el) continue;
+    if (SAG_PANELLER[i] === id) el.classList.add("acik");
+    else el.classList.remove("acik");
+  }
+  document.getElementById("harita").classList.toggle("itili", !!itsin);
 }
 
 function hepsiniKapat() {
