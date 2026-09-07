@@ -1517,7 +1517,10 @@ body {
    ===================================================================== */
 #mobilUst, #mobilAlt { display: none; }
 
-@media (max-width: 720px) {
+/* Olcut sadece genislik olamaz: telefon yan cevrilince genislik 870
+   pikseli buluyor ama yukseklik 400'e dusuyor, masaustu yerlesimi
+   dikeyde hic sigmiyor. Ikisinden biri yeterse mobil duzene geciyoruz. */
+@media (max-width: 720px), (max-height: 520px) {
 
     /* --- masaüstüne ait olanlar --- */
     #logo, #istatistik, #kitaChart, #sifirlaBtn, #profilBtn,
