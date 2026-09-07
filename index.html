@@ -2,14 +2,23 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <!-- Ana ekrana eklenince uygulama gibi acilsin -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#060a11">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Traxplore">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Traxplore</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260907b">
+    <link rel="stylesheet" href="style.css?v=20260907c">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -148,6 +157,41 @@
     </div>
     <button id="sifirlaBtn">HARİTAYI SIFIRLA</button>
 
-    <script src="script.js?v=20260907b"></script>
+    <!-- iPhone'da "ana ekrana ekle" adimini kimse kendiliginden bulmuyor -->
+    <div id="ekleIpucu">
+        <span>Uygulama gibi kullanmak için: paylaş <b>&#8593;</b> → <b>Ana Ekrana Ekle</b></span>
+        <button id="ipucuKapat">&times;</button>
+    </div>
+
+    <script src="script.js?v=20260907c"></script>
+    <script>
+    /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
+       hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("sw.js").catch(function (e) {
+          console.log("Servis iscisi kaydedilemedi:", e.message);
+        });
+      });
+    }
+
+    /* iOS'ta tarayici "yukle" diye sormuyor, kullanicinin paylas
+       menusunden eklemesi gerekiyor. Bir kez soyluyoruz, kapatinca
+       bir daha cikmiyor. */
+    (function ekleIpucu() {
+      const el = document.getElementById("ekleIpucu");
+      if (!el) return;
+      const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      const uygulamada = window.navigator.standalone === true ||
+                         window.matchMedia("(display-mode: standalone)").matches;
+      let gizli = false;
+      try { gizli = localStorage.getItem("ipucuKapali") === "1"; } catch (e) {}
+      if (iOS && !uygulamada && !gizli) el.classList.add("acik");
+      document.getElementById("ipucuKapat").addEventListener("click", function () {
+        el.classList.remove("acik");
+        try { localStorage.setItem("ipucuKapali", "1"); } catch (e) {}
+      });
+    })();
+    </script>
 </body>
 </html>
