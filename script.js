@@ -74,18 +74,30 @@ const SINIR_TAM     = 0.7;   // bu yukseklikte tam gorunur
 const PIN_RENK      = "#FFF1D6";                 // isigin parlak cekirdegi
 const RENK_MISAFIR  = "#DFF7FF";                 // baska bir gezginin haritasi
 
-const DOKU_EN      = 4096;         // nokta dokusunun genisligi (yukseklik yarisi)
+/* Telefon mu? Dar ekran, basik ekran ya da dokunmatik. Kure WebGL ile
+   ciziliyor ve telefon GPU'lari masaustununkinin yaninda cok zayif;
+   asagida birkac seyi buna gore kisiyoruz. */
+const MOBIL = window.matchMedia(
+  "(max-width: 720px), (max-height: 520px), (pointer: coarse)").matches;
+
+/* Doku ne kadar buyukse ekran karti o kadar yoruluyor. Telefonda
+   4096x2048 (33 MB) yerine 3072x1536 (18 MB). */
+const DOKU_EN      = MOBIL ? 3072 : 4096;
 const DOKU_ZEMIN   = "#060a11";    // okyanus / bos alan
 const NOKTA_RENK   = "#BFD4DA";
 /* Uc kademe. Kamera yaklastikca izgara sikliyor ki noktalar ekranda
    hep ayni buyuklukte kalsin. Ucuncu kademenin altina inmiyoruz:
    4096 pikselli dokuda 0.35 derece zaten nokta basina ~4 piksel demek,
    daha sik yaparsak noktalar birbirine karisip tarama izine donuyor. */
-const NOKTA_KADEME = [
-  { aralik: 0.95, ustunde: 1.5 },   // ev gorunumu
-  { aralik: 0.55, ustunde: 0.75 },
-  { aralik: 0.35, ustunde: 0    }   // en yakin
-];
+const NOKTA_KADEME = MOBIL
+  /* Telefonda en sik kademe yok: doku daha kucuk oldugu icin 0.35
+     derecede noktalar zaten birbirine giriyor, ustelik her kademe ayri
+     bir doku demek. Yakinlasma siniri da buna gore. */
+  ? [ { aralik: 0.95, ustunde: 1.5 },
+      { aralik: 0.55, ustunde: 0    } ]
+  : [ { aralik: 0.95, ustunde: 1.5 },
+      { aralik: 0.55, ustunde: 0.75 },
+      { aralik: 0.35, ustunde: 0    } ];
 
 /* Nufus yogunlugu: 2 derecelik izgara, hucre basina 1 bayt (0-255).
    33.774 sehrin nufusundan uretildi; noktalarin parlakligini belirliyor.
@@ -206,7 +218,7 @@ function kureKur() {
     .pointColor(function () { return misafir ? RENK_MISAFIR : PIN_RENK; })
     // Yaricap pinBoyutu() tarafindan yakinliga gore ayarlaniyor.
     .pointAltitude(0.0141)
-    .pointResolution(14)
+    .pointResolution(MOBIL ? 8 : 14)
     .pointLabel(function (d) { return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>"; })
     .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); });
 
@@ -232,6 +244,19 @@ function kureKur() {
      tarafi karanlik kaliyor; nokta haritasinda bu, dunyanin yarisini
      okunmaz hale getiriyor. Dokuyu emissive olarak verince her yer
      esit parlaklikta. */
+  /* En buyuk kazanc burada. Telefonun ekran yogunlugu 2.5-3 kat; kure
+     tum ekrani kapladigi icin her karede milyonlarca piksel boyaniyor.
+     Oran 1.5'e cekilince islenen piksel ucte bire iniyor, goruntude
+     fark ise cok az -- noktali harita zaten yumusak. */
+  if (MOBIL && typeof kure.renderer === "function") {
+    try {
+      const r = kure.renderer();
+      if (r && r.setPixelRatio) {
+        r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+      }
+    } catch (e) { console.log("Piksel orani ayarlanamadi:", e.message); }
+  }
+
   const m = kure.globeMaterial();
   if (m) {
     try {
@@ -251,7 +276,7 @@ function kureKur() {
   kontrol.enableDamping = true;
   /* En sik kademe 0.35 derece; 0.5 yukseklige kadar noktalar hala nokta
      gibi duruyor, daha asagida tarama izine donuyor. 150 birim = 0.5. */
-  kontrol.minDistance = 150;
+  kontrol.minDistance = MOBIL ? 185 : 150;   // telefonda en sik kademe yok
   /* Uzaklasmanin da bir siniri olmali. Iki sebep:
      1. Kure 1.37 yukseklikte ekrani zaten tam dolduruyor; ondan sonrasi
         bilgi katmiyor, sadece bosluk ekliyor.
@@ -513,7 +538,7 @@ function dokuTuvali(aralik) {
      daire ile kare arasindaki fark ekranda gorunmuyor ama maliyet farki
      buyuk: 102 bin daire cizmek 230 ms, ayni sayida kare 23 ms.
      Olculdu; goruntude fark yok. */
-  const kare = aralik < 0.45;
+  const kare = aralik * py * 0.32 < 1.6;
   let sayi = 0;
   for (let lat = -83; lat <= 83; lat += aralik) {
     const ck = Math.max(0.12, Math.cos(lat * Math.PI / 180));
@@ -556,7 +581,7 @@ function onbellegiBudama(kullanilan) {
   const i = kademeSirasi.indexOf(kullanilan);
   if (i >= 0) kademeSirasi.splice(i, 1);
   kademeSirasi.push(kullanilan);
-  while (kademeSirasi.length > 2) {
+  while (kademeSirasi.length > (MOBIL ? 1 : 2)) {
     const at = kademeSirasi.shift();
     if (dokuOnbellek[at]) {
       if (dokuOnbellek[at].dispose) dokuOnbellek[at].dispose();
@@ -2478,6 +2503,8 @@ async function cikisYap() {
     });
   }
 })();
+
+document.getElementById("gecmisKapat").addEventListener("click", hepsiniKapat);
 
 document.getElementById("cikisBtn").addEventListener("click", cikisYap);
 document.getElementById("profilCikis").addEventListener("click", cikisYap);

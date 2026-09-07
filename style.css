@@ -1508,6 +1508,12 @@ body {
 .giris-kutu.kurtarma #kayitBtn,
 .giris-kutu.kurtarma #sifreUnuttum { display: none; }
 
+/* Son gezdiklerin panelinin masaüstünde kapatma düğmesi yok — orada
+   hep açık duran bir pencere. Mobilde alttan açılan sayfaya dönüşüyor
+   ve kapatılabilmesi gerekiyor. Bu kural mobil blogundan ÖNCE duruyor:
+   aynı özgüllükteki iki kuraldan dosyada sonra gelen kazanıyor. */
+#gecmisKapat { display: none; }
+
 /* =====================================================================
    MOBİL
    Masaüstünde dört köşede sabit duran pencereler var. Telefonda o
@@ -1618,7 +1624,17 @@ body {
     #harita.itili { transform: none; }
 
     /* Kapat düğmeleri parmakla basılacak kadar büyük olsun */
-    #panelKapat, #sehirDetayKapat, #istatistikKapat, #profilKapat {
+    #gecmisPanel { position: fixed; }
+    #gecmisKapat {
+        display: block;
+        position: absolute;
+        background: none;
+        border: none;
+        color: var(--yazi-soluk);
+        cursor: pointer;
+        z-index: 3;
+    }
+    #panelKapat, #sehirDetayKapat, #istatistikKapat, #profilKapat, #gecmisKapat {
         top: 14px; right: 14px;
         font-size: 30px;
         padding: 6px 10px;
