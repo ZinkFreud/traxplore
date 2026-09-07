@@ -1788,13 +1788,15 @@ function kullaniciAdiAlani() {
 
   const not = document.createElement("div");
   not.className = "kullanici-adi-not";
-  not.textContent = "Diğer gezginlerin seni bulabilmesi için bir kullanıcı adı seç. Sonradan değiştirilemiyor.";
+  not.textContent = "Diğer gezginlerin seni bulabilmesi için bir kullanıcı adı seç. " +
+                    "Küçük harf, rakam ve alt çizgi; 3-20 karakter. Sonradan değiştirilemiyor.";
   bolum.appendChild(not);
 
   const satir = document.createElement("div");
   satir.className = "kullanici-adi-satir";
   const gir = document.createElement("input");
-  gir.type = "text"; gir.placeholder = "cihan"; gir.maxLength = 20;
+  gir.type = "text"; gir.placeholder = "kullanıcı adı"; gir.maxLength = 20;
+  gir.autocapitalize = "none"; gir.spellcheck = false; gir.autocomplete = "off";
   const dgm = document.createElement("button");
   dgm.textContent = "AL";
   const uyari = document.createElement("div");
@@ -2476,7 +2478,8 @@ function adSecimEkraniniAc(hazir) {
   document.querySelector(".giris-kutu").classList.add("adsecim");
   document.getElementById("adSecimGiris").value = hazir || "";
   girisEkran.style.display = "flex";
-  girisMesaj.textContent = "Devam etmek için bir kullanıcı adı seç. Sonradan değiştirilemiyor.";
+  girisMesaj.textContent = "Devam etmek için bir kullanıcı adı seç. " +
+    "Küçük harf, rakam ve alt çizgi; 3-20 karakter. Sonradan değiştirilemiyor.";
   document.getElementById("adSecimGiris").focus();
 }
 
