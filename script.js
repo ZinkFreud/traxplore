@@ -19,6 +19,28 @@ const GEOJSON_URL =
 
 const SAYFA = 60;            // panelde bir seferde kac sehir
 const ILK_GORUS = { lat: 30, lng: 15, altitude: 2.5 };   // kurenin acilis konumu
+
+/* Kameranin gorus acisi DIKEY olcduluyor. Genis bir ekranda kure rahat
+   siginiyor, ama telefon dikey tutuldugunda ekran dar ve uzun: kure
+   ekran yuksekliginin belli bir oranini kaplayacak sekilde ayarlaninca
+   genisligi asiyor ve yanlardan kesiliyor. Bu yuzden acilis mesafesini
+   sabit vermek yerine en-boy oranindan hesapliyoruz; dar ekranda kamera
+   kendiliginden geri cekiliyor. Genis ekranda hesap 2.5'in altinda
+   ciktigi icin masaustunde hicbir sey degismiyor. */
+function sigacakYukseklik(temel) {
+  const R = 100;
+  const dikeyYari = (50 / 2) * Math.PI / 180;
+  const oran = Math.max(0.2, window.innerWidth / window.innerHeight);
+  const yatayYari = Math.atan(Math.tan(dikeyYari) * oran);
+  const dar = Math.min(dikeyYari, yatayYari) * 0.80;   // kenar payi
+  const gerekli = R / Math.sin(dar);
+  return Math.max(temel, gerekli / R - 1);
+}
+
+function acilisGorusu() {
+  return { lat: ILK_GORUS.lat, lng: ILK_GORUS.lng,
+           altitude: sigacakYukseklik(ILK_GORUS.altitude) };
+}
 /* --- Kure temasi -------------------------------------------------------
    Kure artik dolu renkli ulkelerden degil, karayi kaplayan noktalardan
    olusuyor. Noktalarin parlakligi nufus yogunluguna gore degisiyor.
@@ -221,7 +243,7 @@ function kureKur() {
     } catch (e) { console.log("Kure malzemesi ayarlanamadi:", e.message); }
   }
 
-  kure.pointOfView(ILK_GORUS);
+  kure.pointOfView(acilisGorusu());
 
   const kontrol = kure.controls();
   kontrol.autoRotate = true;
@@ -238,7 +260,7 @@ function kureKur() {
         gorunuyor.
      450 birim = 3.5 yukseklik: kure ekran yuksekliginin yarisi kadar.
      Acilis gorunumu 2.5, yani geri cekilecek yer hala var. */
-  kontrol.maxDistance = 450;
+  kontrol.maxDistance = Math.max(450, 100 * (1 + sigacakYukseklik(ILK_GORUS.altitude)) * 1.15);
 
   // Kullanici kureye dokununca kendiliginden donmeyi durdur
   const durdur = function () { kontrol.autoRotate = false; };
@@ -257,6 +279,9 @@ function kureKur() {
   window.addEventListener("resize", function () {
     kure.width(window.innerWidth).height(window.innerHeight);
     uzayCiz();
+    // Telefon yan cevrilince en-boy orani degisiyor, siniri tazeleyelim
+    kure.controls().maxDistance =
+      Math.max(450, 100 * (1 + sigacakYukseklik(ILK_GORUS.altitude)) * 1.15);
   });
   kure.width(window.innerWidth).height(window.innerHeight);
 
@@ -1180,6 +1205,8 @@ function istatistikGuncelle() {
   }
   document.getElementById("istatistik").textContent =
     kitalar.length + " Kıta — " + ulkeler.length + " Ülke — " + gezilenler.length + " Şehir gezdin";
+  const kisa = document.getElementById("mobilSayac");
+  if (kisa) kisa.textContent = ulkeler.length + " ülke · " + gezilenler.length + " şehir";
 }
 
 /* =====================================================================
@@ -1840,6 +1867,7 @@ async function arkadasVeriTazele() {
   arkadasListesi = (a && a.data) || [];
   gelenIstekler  = (i && i.data) || [];
   arkadasRozeti();
+  mobilRozetTazele();
   if (document.getElementById("profilKart").classList.contains("acik")) profilDoldur();
 }
 
@@ -1855,6 +1883,15 @@ function arkadasRozeti() {
     btn.appendChild(r);
   }
   r.textContent = gelenIstekler.length;
+}
+
+/* Mobilde profil dugmesi alt seritte; rozet de oraya tasiniyor.
+   arkadasRozeti() masaustundeki dugmeye yaziyor, o dugme telefonda
+   gizli oldugu icin rozet gorunmez kaliyordu. */
+function mobilRozetTazele() {
+  const btn = document.getElementById("mobilProfil");
+  if (!btn) return;
+  btn.classList.toggle("rozetli", gelenIstekler.length > 0);
 }
 
 /* Profil kartindaki arkadas bolumu: once gelen istekler, sonra liste. */
@@ -2049,7 +2086,31 @@ function acikPanelVarMi() {
    olmamis gibi gorunuyordu. Her acilista otekileri kapatiyoruz.
    "itili" haritayi sola kaydiran sinif; istatistik paneli haritayi
    itmiyor, digerleri itiyor. */
-const SAG_PANELLER = ["panel", "sehirDetayPanel", "profilKart", "istatistikPanel"];
+/* gecmisPanel masaustunde sag ustte hep duran bir pencere; "acik"
+   sinifinin orada bir karsiligi yok. Mobilde ise alttan acilan bir
+   sayfaya donusuyor, o yuzden listeye onu da katiyoruz. */
+const SAG_PANELLER = ["panel", "sehirDetayPanel", "profilKart",
+                      "istatistikPanel", "gecmisPanel"];
+/* Alt seritteki uc dugme. Acik olana tekrar basinca kapaniyor --
+   gecmis panelinin kapatma dugmesi yok, kapanmanin baska yolu olmali. */
+function mobilBolumAc(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.classList.contains("acik")) { hepsiniKapat(); return; }
+  if (id === "profilKart") { profilAc(); return; }
+  if (id === "istatistikPanel") { istatistikPaneliAc(); return; }
+  sadeceBuPanel(id, false);
+}
+
+function mobilSeritTazele() {
+  const dugmeler = document.querySelectorAll("#mobilAlt button");
+  for (let i = 0; i < dugmeler.length; i++) {
+    const hedef = document.getElementById(dugmeler[i].dataset.bolum);
+    dugmeler[i].classList.toggle("secili",
+      !!(hedef && hedef.classList.contains("acik")));
+  }
+}
+
 function sadeceBuPanel(id, itsin) {
   for (let i = 0; i < SAG_PANELLER.length; i++) {
     const el = document.getElementById(SAG_PANELLER[i]);
@@ -2058,6 +2119,7 @@ function sadeceBuPanel(id, itsin) {
     else el.classList.remove("acik");
   }
   document.getElementById("harita").classList.toggle("itili", !!itsin);
+  mobilSeritTazele();
 }
 
 function hepsiniKapat() {
@@ -2067,9 +2129,11 @@ function hepsiniKapat() {
   document.getElementById("profilKart").classList.remove("acik");
   document.getElementById("istatistikPanel").classList.remove("acik");
   document.getElementById("harita").classList.remove("itili");
+  document.getElementById("gecmisPanel").classList.remove("acik");
   aktifDetay = { ulke: "", sehir: "" };
   aktifUlke = "";
   fotoKuyruk = [];
+  mobilSeritTazele();
 }
 
 /* Escape misafir modundayken once kendi haritana dondursun. */
@@ -2082,12 +2146,13 @@ function misafirdeysemCik() {
 function kureyiSifirla() {
   if (!kure) return;
   const g = kure.pointOfView();
+  const hedef = acilisGorusu();
   // Zaten baslangictaysak bosuna animasyon oynatma
-  const uzak = Math.abs(g.altitude - ILK_GORUS.altitude) < 0.05 &&
-               Math.abs(g.lat - ILK_GORUS.lat) < 1;
+  const uzak = Math.abs(g.altitude - hedef.altitude) < 0.05 &&
+               Math.abs(g.lat - hedef.lat) < 1;
   if (uzak) { kure.controls().autoRotate = true; return; }
   kure.controls().autoRotate = false;
-  kure.pointOfView(ILK_GORUS, 1600);
+  kure.pointOfView(hedef, 1600);
   setTimeout(function () { kure.controls().autoRotate = true; }, 1700);
 }
 
@@ -2405,6 +2470,15 @@ async function cikisYap() {
   await db.auth.signOut();
   location.reload();
 }
+(function mobilSeridiBagla() {
+  const dugmeler = document.querySelectorAll("#mobilAlt button");
+  for (let i = 0; i < dugmeler.length; i++) {
+    dugmeler[i].addEventListener("click", function () {
+      mobilBolumAc(this.dataset.bolum);
+    });
+  }
+})();
+
 document.getElementById("cikisBtn").addEventListener("click", cikisYap);
 document.getElementById("profilCikis").addEventListener("click", cikisYap);
 
