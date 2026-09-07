@@ -224,6 +224,15 @@ function kureKur() {
   /* En sik kademe 0.35 derece; 0.5 yukseklige kadar noktalar hala nokta
      gibi duruyor, daha asagida tarama izine donuyor. 150 birim = 0.5. */
   kontrol.minDistance = 150;
+  /* Uzaklasmanin da bir siniri olmali. Iki sebep:
+     1. Kure 1.37 yukseklikte ekrani zaten tam dolduruyor; ondan sonrasi
+        bilgi katmiyor, sadece bosluk ekliyor.
+     2. Kure kucculdukce komsu noktalar ayni piksele dusuyor ve donerken
+        titrek bir tarama deseni (moire) cikiyor. Kucuk degil, bozuk
+        gorunuyor.
+     450 birim = 3.5 yukseklik: kure ekran yuksekliginin yarisi kadar.
+     Acilis gorunumu 2.5, yani geri cekilecek yer hala var. */
+  kontrol.maxDistance = 450;
 
   // Kullanici kureye dokununca kendiliginden donmeyi durdur
   const durdur = function () { kontrol.autoRotate = false; };
