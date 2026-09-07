@@ -1234,48 +1234,76 @@ function kitaChartCiz() {
   const toplam = kitalar.reduce(function (t, k) { return t + sayim[k]; }, 0);
 
   const ns = "http://www.w3.org/2000/svg";
-  const MERKEZ = 100, YARICAP = 88;
+  /* Dolu pasta yerine ince halka. Renkler ayni -- onlar renk korlugu
+     icin olculup secilmisti, degistirmek o dogrulamayi bozardi. Degisen
+     tek sey kapladiklari ALAN: dolu daire panelin en gurultulu ogesiydi,
+     halka ayni bilgiyi ucte bir murekkeple veriyor. Ortadaki bosluga da
+     toplam ulke sayisi giriyor. */
+  const MERKEZ = 100, HALKA = 70, KALINLIK = 20;
+
+  function yay(baslangic, bitis, renk) {
+    const x1 = MERKEZ + HALKA * Math.cos(baslangic), y1 = MERKEZ + HALKA * Math.sin(baslangic);
+    const x2 = MERKEZ + HALKA * Math.cos(bitis),     y2 = MERKEZ + HALKA * Math.sin(bitis);
+    const buyuk = (bitis - baslangic) > Math.PI ? 1 : 0;
+    const p = document.createElementNS(ns, "path");
+    p.setAttribute("d", "M " + x1.toFixed(2) + " " + y1.toFixed(2) +
+                        " A " + HALKA + " " + HALKA + " 0 " + buyuk + " 1 " +
+                        x2.toFixed(2) + " " + y2.toFixed(2));
+    p.setAttribute("fill", "none");
+    p.setAttribute("stroke", renk);
+    p.setAttribute("stroke-width", KALINLIK);
+    svg.appendChild(p);
+  }
+
+  function ortaYazi(metin, altMetin) {
+    const t = document.createElementNS(ns, "text");
+    t.setAttribute("x", MERKEZ); t.setAttribute("y", MERKEZ + 4);
+    t.setAttribute("text-anchor", "middle");
+    t.setAttribute("class", "halka-sayi");
+    t.textContent = metin;
+    svg.appendChild(t);
+    if (altMetin) {
+      const a = document.createElementNS(ns, "text");
+      a.setAttribute("x", MERKEZ); a.setAttribute("y", MERKEZ + 24);
+      a.setAttribute("text-anchor", "middle");
+      a.setAttribute("class", "halka-alt");
+      a.textContent = altMetin;
+      svg.appendChild(a);
+    }
+  }
 
   if (!toplam) {
     const bos = document.createElementNS(ns, "circle");
     bos.setAttribute("cx", MERKEZ); bos.setAttribute("cy", MERKEZ);
-    bos.setAttribute("r", YARICAP);
-    bos.setAttribute("fill", "#16202c");
+    bos.setAttribute("r", HALKA);
+    bos.setAttribute("fill", "none");
+    bos.setAttribute("stroke", "#151C24");
+    bos.setAttribute("stroke-width", KALINLIK);
     svg.appendChild(bos);
     lejant.innerHTML = "<div class='lejant-satir' style='opacity:.6'>Henüz gezilen yok</div>";
     return;
   }
 
-  // Tek kita varsa yay komutu ile tam cember cizilemez (baslangic ve bitis
-  // noktasi ayni yere denk gelir), dolu daire ciziyoruz.
   if (kitalar.length === 1) {
+    // Tek kita: yay komutuyla tam cember cizilemez, dolu halka ciziyoruz
     const d = document.createElementNS(ns, "circle");
     d.setAttribute("cx", MERKEZ); d.setAttribute("cy", MERKEZ);
-    d.setAttribute("r", YARICAP);
-    d.setAttribute("fill", kitaRenk[kitalar[0]] || "#888");
+    d.setAttribute("r", HALKA);
+    d.setAttribute("fill", "none");
+    d.setAttribute("stroke", kitaRenk[kitalar[0]] || "#888");
+    d.setAttribute("stroke-width", KALINLIK);
     svg.appendChild(d);
   } else {
     let aci = -Math.PI / 2;                       // saat 12'den basla
+    const bosluk = 0.028;                         // dilimler arasi ince ayirac
     for (let i = 0; i < kitalar.length; i++) {
-      const k = kitalar[i];
-      const pay = sayim[k] / toplam;
+      const pay = sayim[kitalar[i]] / toplam;
       const bitis = aci + pay * Math.PI * 2;
-      const x1 = MERKEZ + YARICAP * Math.cos(aci),   y1 = MERKEZ + YARICAP * Math.sin(aci);
-      const x2 = MERKEZ + YARICAP * Math.cos(bitis), y2 = MERKEZ + YARICAP * Math.sin(bitis);
-      const buyuk = pay > 0.5 ? 1 : 0;
-      const dilim = document.createElementNS(ns, "path");
-      dilim.setAttribute("d",
-        "M " + MERKEZ + " " + MERKEZ +
-        " L " + x1.toFixed(2) + " " + y1.toFixed(2) +
-        " A " + YARICAP + " " + YARICAP + " 0 " + buyuk + " 1 " +
-        x2.toFixed(2) + " " + y2.toFixed(2) + " Z");
-      dilim.setAttribute("fill", kitaRenk[k] || "#888");
-      dilim.setAttribute("stroke", "#1e2a3a");     // dilimler ayrissin
-      dilim.setAttribute("stroke-width", "2");
-      svg.appendChild(dilim);
+      yay(aci + bosluk / 2, bitis - bosluk / 2, kitaRenk[kitalar[i]] || "#888");
       aci = bitis;
     }
   }
+  ortaYazi(String(toplam), toplam === 1 ? "ÜLKE" : "ÜLKE");
 
   for (let i = 0; i < kitalar.length; i++) {
     const k = kitalar[i];

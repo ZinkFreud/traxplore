@@ -15,7 +15,7 @@ body {
     width: 420px;
     max-width: 85vw;
     background: #111;
-    color: #eee;
+    color: #DEE7EB;
     box-shadow: -10px 0 40px rgba(0,0,0,0.4);
     transform: translateX(100%);
     transition: transform 0.35s ease;
@@ -57,7 +57,7 @@ body {
     gap: 12px;
 }
 .sehir-kart {
-    background: #1a1a1a;
+    background: #0E141B;
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 14px;
@@ -66,10 +66,10 @@ body {
 .sehir-bilgi { padding: 10px 14px; }
 .sehir-ad { font-weight: 600; font-size: 16px; }
 .sehir-aciklama { color: #999; font-size: 13px; margin-top: 2px; }
-.sehir-kart.secili { background: #E67E22; }
-.sehir-kart.secili .sehir-aciklama { color: #ffe8d0; }
+.sehir-kart.secili { background: #E9A23B; }
+.sehir-kart.secili .sehir-aciklama { color: #F0DFC6; }
 .ulke-etiket {
-    background: #E67E22;
+    background: #E9A23B;
     color: #fff;
     border: none;
     border-radius: 20px;
@@ -85,11 +85,11 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 1000;
-    color: #FF8C1A;
+    color: #F3BE73;
     font-size: 30px;
     font-weight: 800;
     letter-spacing: 0.5px;
-    background: #1e2a3a;
+    background: #101720;
     padding: 12px 28px;
     border-radius: 14px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.4);
@@ -97,7 +97,7 @@ body {
 }
 #crosshairX, #crosshairY {
     position: fixed;
-    background: rgba(230, 126, 34, 0.5);
+    background: rgba(233,162,59, 0.5);
     z-index: 1500;
     pointer-events: none;
 }
@@ -122,18 +122,18 @@ body {
     box-sizing: border-box;
     max-height: 70vh;
     overflow-y: auto;
-    background: #1e2a3a;
+    background: #101720;
     border-radius: 12px;
     padding: 16px;
     z-index: 900;
-    color: #eee;
+    color: #DEE7EB;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
 }
 #gecmisBaslik {
     margin: 0 0 12px;
     font-size: 15px;
-    color: #E67E22;
+    color: #E9A23B;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
@@ -143,7 +143,7 @@ body {
 .gecmis-ulke-ad {
     cursor: pointer;
     padding: 8px 10px;
-    background: #1a1a1a;
+    background: #0E141B;
     border-radius: 8px;
     font-weight: 600;
     display: flex;
@@ -173,8 +173,8 @@ body {
     right: 20px;
     width: 240px;
     box-sizing: border-box;
-    background: #1e2a3a;
-    color: #E67E22;
+    background: #101720;
+    color: #E9A23B;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
     font-size: 26px;
@@ -189,7 +189,7 @@ body {
     position: fixed;
     bottom: 20px;
     left: 20px;
-    background: #1e2a3a;
+    background: #101720;
     border-radius: 16px;
     padding: 16px;
     z-index: 1000;
@@ -209,7 +209,7 @@ body {
     align-items: center;
     gap: 8px;
     margin-bottom: 6px;
-    color: #eee;
+    color: #DEE7EB;
     font-size: 13px;
 }
 .lejant-renk {
@@ -217,7 +217,7 @@ body {
     border-radius: 3px;
     flex-shrink: 0;
 }
-.lejant-yuzde { color: #FF8C1A; font-weight: 700; margin-left: auto; }
+.lejant-yuzde { color: #F3BE73; font-weight: 700; margin-left: auto; }
 
 /* İstatistik paneli - sağdan kayan */
 #istatistikPanel {
@@ -227,8 +227,8 @@ body {
     height: 100vh;
     width: 460px;
     max-width: 85vw;
-    background: #1e2a3a;
-    color: #eee;
+    background: #101720;
+    color: #DEE7EB;
     box-shadow: -10px 0 40px rgba(0,0,0,0.4);
     transform: translateX(100%);
     transition: transform 0.35s ease;
@@ -245,7 +245,7 @@ body {
 #istatistikBaslik {
     margin: 0 0 24px;
     font-size: 22px;
-    color: #E67E22;
+    color: #E9A23B;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
     letter-spacing: 1px;
@@ -263,9 +263,9 @@ body {
     font-size: 14px;
     font-weight: 600;
 }
-.bar-yuzde { color: #FF8C1A; }
+.bar-yuzde { color: #F3BE73; }
 .bar-dis {
-    background: #0f1620;
+    background: #080D14;
     border-radius: 8px;
     height: 16px;
     overflow: hidden;
@@ -284,8 +284,8 @@ body {
     bottom: 20px;
     width: 240px;
     box-sizing: border-box;
-    background: #1e2a3a;
-    color: #E67E22;
+    background: #101720;
+    color: #E9A23B;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
     font-size: 15px;
@@ -298,8 +298,8 @@ body {
     letter-spacing: 1px;
     transition: background 0.2s;
 }
-#sifirlaBtn:hover { background: #E67E22; color: #1e2a3a; }
-#sifirlaBtn:hover { background: #E67E22; color: #1e2a3a; }
+#sifirlaBtn:hover { background: #E9A23B; color: #101720; }
+#sifirlaBtn:hover { background: #E9A23B; color: #101720; }
 
 .gittim-btn {
     position: absolute;
@@ -321,7 +321,7 @@ body {
     justify-content: center;
     box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
-.gittim-btn.aktif { background: #E67E22; border-color: #fff; }
+.gittim-btn.aktif { background: #E9A23B; border-color: #fff; }
 .sehir-kart { position: relative; }
 
 /* Şehir detay paneli - sağdan kayan */
@@ -332,8 +332,8 @@ body {
     height: 100vh;
     width: 480px;
     max-width: 85vw;
-    background: #1e2a3a;
-    color: #eee;
+    background: #101720;
+    color: #DEE7EB;
     box-shadow: -10px 0 40px rgba(0,0,0,0.4);
     transform: translateX(100%);
     transition: transform 0.35s ease;
@@ -350,7 +350,7 @@ body {
 #sehirDetayBaslik {
     margin: 0 0 24px;
     font-size: 24px;
-    color: #E67E22;
+    color: #E9A23B;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
 }
@@ -375,7 +375,7 @@ body {
     transition: color 0.15s, transform 0.15s;
 }
 .yildiz:hover { transform: scale(1.15); }
-.yildiz.dolu { color: #FF8C1A; }
+.yildiz.dolu { color: #F3BE73; }
 #sehirFotoLabel {
     display: inline-block;
     border: 2px dashed #555;
@@ -386,7 +386,7 @@ body {
     font-size: 14px;
     transition: all 0.15s;
 }
-#sehirFotoLabel:hover { border-color: #E67E22; color: #E67E22; }
+#sehirFotoLabel:hover { border-color: #E9A23B; color: #E9A23B; }
 #sehirFotoOnizle { margin-top: 12px; }
 #sehirFotoOnizle img {
     max-width: 100%;
@@ -396,10 +396,10 @@ body {
 #sehirNot {
     width: 100%;
     min-height: 80px;
-    background: #0f1620;
-    border: 2px solid #2a3a4a;
+    background: #080D14;
+    border: 2px solid #202932;
     border-radius: 8px;
-    color: #eee;
+    color: #DEE7EB;
     padding: 12px;
     font-family: inherit;
     font-size: 14px;
@@ -408,8 +408,8 @@ body {
 }
 #sehirDetayKaydet {
     width: 100%;
-    background: #E67E22;
-    color: #1e2a3a;
+    background: #E9A23B;
+    color: #101720;
     border: none;
     border-radius: 8px;
     padding: 14px;
@@ -420,14 +420,14 @@ body {
     font-weight: 600;
     letter-spacing: 1px;
 }
-#sehirDetayKaydet:hover { background: #FF8C1A; }
+#sehirDetayKaydet:hover { background: #F3BE73; }
 
 .kart-puan {
     position: absolute;
     top: 8px;
     left: 8px;
     background: rgba(0,0,0,0.65);
-    color: #FF8C1A;
+    color: #F3BE73;
     padding: 3px 8px;
     border-radius: 12px;
     font-size: 13px;
@@ -440,7 +440,7 @@ body {
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
     font-size: 13px;
-    color: #FF8C1A;
+    color: #F3BE73;
     text-align: center;
     margin-bottom: 12px;
     letter-spacing: 1px;
@@ -457,8 +457,8 @@ body {
 
 #kilitUyari {
     display: none;
-    background: #0f1620;
-    border: 2px dashed #E67E22;
+    background: #080D14;
+    border: 2px dashed #E9A23B;
     color: #ccc;
     padding: 20px;
     border-radius: 10px;
@@ -466,10 +466,10 @@ body {
     font-size: 14px;
     line-height: 1.5;
 }
-#kilitUyari b { color: #E67E22; }
+#kilitUyari b { color: #E9A23B; }
 
 .pin-etiket {
-    background: #1e2a3a;
+    background: #101720;
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -481,7 +481,7 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 .pin-etiket::before {
-    border-top-color: #1e2a3a !important;
+    border-top-color: #101720 !important;
 }
 
 #profilBtn {
@@ -490,7 +490,7 @@ body {
     right: 20px;
     width: 240px;
     box-sizing: border-box;
-    background: #1e2a3a;
+    background: #101720;
     border: none;
     border-radius: 12px;
     padding: 12px 16px;
@@ -501,24 +501,24 @@ body {
     gap: 12px;
     transition: background 0.2s;
 }
-#profilBtn:hover { background: #2a3a4e; }
+#profilBtn:hover { background: #222B35; }
 
 #profilFoto {
     flex: 0 0 25%;
     aspect-ratio: 1;
-    background: #E67E22;   /* idle.png yoktu, 404 veriyordu */
+    background: #E9A23B;   /* idle.png yoktu, 404 veriyordu */
     border-radius: 50%;
     max-width: 44px;
 }
 #profilCizgi {
     width: 2px;
     align-self: stretch;
-    background: #E67E22;
+    background: #E9A23B;
     opacity: 0.5;
 }
 #profilYazi {
     flex: 1;
-    color: #E67E22;
+    color: #E9A23B;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
     font-size: 18px;
@@ -534,8 +534,8 @@ body {
     height: 100vh;
     width: 440px;
     max-width: 85vw;
-    background: #1e2a3a;
-    color: #eee;
+    background: #101720;
+    color: #DEE7EB;
     box-shadow: -10px 0 40px rgba(0,0,0,0.4);
     transform: translateX(100%);
     transition: transform 0.35s ease;
@@ -571,7 +571,7 @@ body {
     height: 80px;
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid #E67E22;
+    border: 2px solid #E9A23B;
 }
 .profil-foto-kutu img { width: 100%; height: 100%; object-fit: cover; }
 .profil-foto-sil {
@@ -589,7 +589,7 @@ body {
     color: #aaa; cursor: pointer;
     font-size: 12px; text-align: center;
 }
-#profilFotoEkle:hover { border-color: #E67E22; color: #E67E22; }
+#profilFotoEkle:hover { border-color: #E9A23B; color: #E9A23B; }
 
 /* Bölümler */
 .profil-bolum { margin-bottom: 20px; }
@@ -599,15 +599,15 @@ body {
 }
 .profil-bolum input {
     width: 100%; box-sizing: border-box;
-    background: #0f1620; border: 2px solid #2a3a4a;
-    border-radius: 8px; color: #eee;
+    background: #080D14; border: 2px solid #202932;
+    border-radius: 8px; color: #DEE7EB;
     padding: 12px; font-family: inherit; font-size: 15px;
 }
 .profil-bolum input:disabled { color: #ccc; border-color: #1a2530; }
 
 #profilSonGezilen { display: flex; flex-direction: column; gap: 6px; }
 .profil-gezi-satir {
-    background: #0f1620;
+    background: #080D14;
     padding: 8px 12px;
     border-radius: 8px;
     font-size: 14px;
@@ -627,24 +627,24 @@ body {
     font-weight: 600;
     letter-spacing: 1px;
 }
-#profilKaydet { background: #E67E22; color: #1e2a3a; }
-#profilKaydet:hover { background: #FF8C1A; }
-#profilDegistir { background: #2a3a4e; color: #eee; }
-#profilDegistir:hover { background: #354a63; }
+#profilKaydet { background: #E9A23B; color: #101720; }
+#profilKaydet:hover { background: #F3BE73; }
+#profilDegistir { background: #222B35; color: #DEE7EB; }
+#profilDegistir:hover { background: #2A3540; }
 
 /* Giriş / Kayıt ekranı */
 .giris-ekran {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: #1e2a3a;
+    background: #101720;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
 }
 .giris-kutu {
-    background: #e8e0d0;
+    background: #DEE7EB;
     padding: 40px;
     border-radius: 12px;
     width: 300px;
@@ -656,14 +656,14 @@ body {
 .giris-logo {
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
-    color: #1e2a3a;
+    color: #101720;
     text-align: center;
     margin: 0 0 10px 0;
     font-size: 28px;
 }
 .giris-kutu input {
     padding: 12px;
-    border: 2px solid #1e2a3a;
+    border: 2px solid #101720;
     border-radius: 6px;
     font-size: 14px;
 }
@@ -675,8 +675,8 @@ body {
     cursor: pointer;
     font-size: 14px;
 }
-.giris-btn { background: #E67E22; color: white; }
-.kayit-btn { background: #1e2a3a; color: white; }
+.giris-btn { background: #E9A23B; color: white; }
+.kayit-btn { background: #101720; color: white; }
 .giris-mesaj {
     color: #c0392b;
     text-align: center;
@@ -691,7 +691,7 @@ body {
     top: 20px;
     left: 20px;
     z-index: 1000;
-    background: #1e2a3a;
+    background: #101720;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -719,9 +719,9 @@ body {
     width: 100%;
     box-sizing: border-box;
     padding: 13px 16px;
-    border: 1px solid #48B7C7;
+    border: 1px solid #5FB6C4;
     border-radius: 10px;
-    background: #131c28;
+    background: #0B1119;
     color: #fff;
     font-size: 15px;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
@@ -730,8 +730,8 @@ body {
     outline: none;
 }
 .arama-sonuc {
-    background: #131c28;
-    border: 1px solid #2a3a4e;
+    background: #0B1119;
+    border: 1px solid #222B35;
     border-radius: 10px;
     margin-top: 6px;
     max-height: 46vh;
@@ -742,12 +742,12 @@ body {
 .arama-sonuc-satir {
     padding: 10px 16px;
     cursor: pointer;
-    border-bottom: 1px solid rgba(30,42,58,0.15);
-    color: #1e2a3a;
+    border-bottom: 1px solid rgba(16,23,32,0.15);
+    color: #101720;
     font-size: 14px;
 }
 .arama-sonuc-satir:hover {
-    background: #E67E22;
+    background: #E9A23B;
     color: white;
 }
 .arama-sonuc-satir .tur {
@@ -775,7 +775,7 @@ body {
     gap: 10px;
     margin-top: 20px;
     padding-top: 20px;
-    border-top: 1px solid rgba(230,126,34,0.25);
+    border-top: 1px solid rgba(233,162,59,0.25);
 }
 .profil-ayar-btn {
     border: none;
@@ -787,10 +787,10 @@ body {
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
     letter-spacing: 1px;
-    background: #2a3a4e;
-    color: #eee;
+    background: #222B35;
+    color: #DEE7EB;
 }
-.profil-ayar-btn:hover { background: #354a63; }
+.profil-ayar-btn:hover { background: #2A3540; }
 .profil-ayar-btn.tehlike { background: #6e2020; color: #ffd0d0; }
 .profil-ayar-btn.tehlike:hover { background: #8e2a2a; }
 
@@ -799,9 +799,9 @@ body {
    ===================================================================== */
 .scene-tooltip { pointer-events: none; }
 .kure-etiket {
-    background: #1e2a3a;
+    background: #101720;
     color: #fff;
-    border: 1px solid #E67E22;
+    border: 1px solid #E9A23B;
     border-radius: 8px;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
@@ -816,7 +816,7 @@ body {
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-size: 11px;
     letter-spacing: 0;
-    color: #FF8C1A;
+    color: #F3BE73;
     margin-top: 2px;
 }
 
@@ -824,8 +824,8 @@ body {
 #panelArama {
     width: 100%;
     box-sizing: border-box;
-    background: #0f1620;
-    border: 1px solid #2a3a4e;
+    background: #080D14;
+    border: 1px solid #222B35;
     border-radius: 10px;
     color: #fff;
     font-size: 14px;
@@ -833,7 +833,7 @@ body {
     margin-bottom: 16px;
     outline: none;
 }
-#panelArama:focus { border-color: #E67E22; }
+#panelArama:focus { border-color: #E9A23B; }
 #panelArama::placeholder { color: #667; }
 
 /* "Daha fazla" ---------------------------------------------------------- */
@@ -843,19 +843,19 @@ body {
     margin: 18px 0 4px;
     padding: 13px;
     background: transparent;
-    border: 1px dashed #E67E22;
+    border: 1px dashed #E9A23B;
     border-radius: 10px;
-    color: #E67E22;
+    color: #E9A23B;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600;
     font-size: 13px;
     letter-spacing: 1px;
     cursor: pointer;
 }
-#dahaFazla:hover { background: #E67E22; color: #0f1620; }
+#dahaFazla:hover { background: #E9A23B; color: #080D14; }
 #dahaFazla:disabled { opacity: .5; cursor: default; }
 
-.panel-durum { color: #7d8899; font-size: 14px; padding: 8px 2px; }
+.panel-durum { color: #818C95; font-size: 14px; padding: 8px 2px; }
 
 /* Şehir listesi: sabit sütun sayısı yerine esnek ızgara.
    Eskiden sütun sayısı şehir sayısına göre hesaplanıyordu; 400 şehirde
@@ -872,13 +872,13 @@ body {
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    color: #eee;
+    color: #DEE7EB;
 }
-.arama-satir:hover { background: #22303f; }
+.arama-satir:hover { background: #1A222B; }
 
 .kure-hata {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    color: #E67E22; font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    color: #E9A23B; font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
     font-weight: 600; font-size: 15px;
     text-align: center; line-height: 1.7; letter-spacing: 1px;
 }
@@ -925,8 +925,8 @@ body {
     aspect-ratio: 1;
     border-radius: 10px;
     overflow: hidden;
-    background: #0f1620;
-    border: 1px solid #2a3a4e;
+    background: #080D14;
+    border: 1px solid #222B35;
 }
 .foto-kart img {
     width: 100%;
@@ -962,32 +962,32 @@ body {
     letter-spacing: 0.4px;
     cursor: pointer;
     background: rgba(0,0,0,0.7);
-    color: #9aa7b8;
+    color: #8C97A1;
 }
-.foto-paylas.acik { background: #E67E22; color: #0f1620; }
+.foto-paylas.acik { background: #E9A23B; color: #080D14; }
 .foto-paylas:hover { filter: brightness(1.15); }
 
 .foto-sahip.tiklanir { cursor: pointer; }
-.foto-sahip.tiklanir:hover { color: #48B7C7; text-decoration: underline; }
+.foto-sahip.tiklanir:hover { color: #5FB6C4; text-decoration: underline; }
 .foto-sahip {
     position: absolute;
     left: 0; right: 0; bottom: 0;
     padding: 4px 6px;
     font-size: 10px;
-    color: #eee;
+    color: #DEE7EB;
     background: linear-gradient(transparent, rgba(0,0,0,0.8));
     text-align: center;
 }
 
 #fotoSayac {
     float: right;
-    color: #7d8899;
+    color: #818C95;
     letter-spacing: 0;
 }
 #fotoDurum {
     margin-top: 8px;
     font-size: 12px;
-    color: #E67E22;
+    color: #E9A23B;
     min-height: 14px;
 }
 #digerFotolar { margin-bottom: 24px; }
@@ -995,7 +995,7 @@ body {
     display: block;
     font-size: 11px;
     letter-spacing: 1px;
-    color: #7d8899;
+    color: #818C95;
     margin-bottom: 4px;
 }
 
@@ -1013,16 +1013,16 @@ body {
     align-items: center;
     gap: 14px;
     background: #12303a;
-    border: 1px solid #48B7C7;
+    border: 1px solid #5FB6C4;
     border-radius: 12px;
     padding: 10px 16px;
-    color: #cfeef4;
+    color: #CFEAF0;
     font-size: 14px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
 #misafirBar button {
-    background: #48B7C7;
-    color: #06222a;
+    background: #5FB6C4;
+    color: #0A1A1F;
     border: none;
     border-radius: 8px;
     padding: 6px 12px;
@@ -1034,20 +1034,20 @@ body {
 #misafirBar button:hover { filter: brightness(1.1); }
 
 .gezgin-sayilar {
-    background: #0f1620;
-    border: 1px solid #2a3a4e;
+    background: #080D14;
+    border: 1px solid #222B35;
     border-radius: 10px;
     padding: 14px;
     text-align: center;
-    color: #9aa7b8;
+    color: #8C97A1;
     font-size: 14px;
 }
-.gezgin-sayilar b { color: #48B7C7; font-size: 20px; margin: 0 3px; }
+.gezgin-sayilar b { color: #5FB6C4; font-size: 20px; margin: 0 3px; }
 
 .gezgin-baslik {
     font-size: 11px;
     letter-spacing: 1px;
-    color: #7d8899;
+    color: #818C95;
     margin: 22px 0 8px;
 }
 .gezgin-ulkeler { display: flex; flex-direction: column; gap: 6px; }
@@ -1055,15 +1055,15 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #1a2330;
+    background: #0E141C;
     border-radius: 8px;
     padding: 10px 14px;
     cursor: pointer;
-    color: #eee;
+    color: #DEE7EB;
     font-size: 14px;
 }
-.gezgin-ulke:hover { background: #22303f; }
-.gezgin-ulke b { color: #48B7C7; }
+.gezgin-ulke:hover { background: #1A222B; }
+.gezgin-ulke b { color: #5FB6C4; }
 
 /* Misafir modunda "gittim" işareti tıklanamaz */
 .gittim-btn.misafir { cursor: default; pointer-events: none; }
@@ -1072,7 +1072,7 @@ body {
 .arama-baslik {
     font-size: 10px;
     letter-spacing: 1.2px;
-    color: #7d8899;
+    color: #818C95;
     padding: 10px 14px 4px;
 }
 .arama-sag { float: right; opacity: .6; font-size: 12px; }
@@ -1080,20 +1080,20 @@ body {
 /* Kullanıcı adı */
 .kullanici-adi {
     font-size: 18px;
-    color: #E67E22;
+    color: #E9A23B;
     font-weight: 600;
 }
 .kullanici-adi-not {
     font-size: 12px;
-    color: #7d8899;
+    color: #818C95;
     line-height: 1.5;
     margin-bottom: 8px;
 }
 .kullanici-adi-satir { display: flex; gap: 8px; }
 .kullanici-adi-satir input {
     flex: 1;
-    background: #0f1620;
-    border: 1px solid #2a3a4e;
+    background: #080D14;
+    border: 1px solid #222B35;
     border-radius: 8px;
     color: #fff;
     padding: 10px 12px;
@@ -1101,10 +1101,10 @@ body {
     font-size: 14px;
     outline: none;
 }
-.kullanici-adi-satir input:focus { border-color: #E67E22; }
+.kullanici-adi-satir input:focus { border-color: #E9A23B; }
 .kullanici-adi-satir button {
-    background: #E67E22;
-    color: #0f1620;
+    background: #E9A23B;
+    color: #080D14;
     border: none;
     border-radius: 8px;
     padding: 0 18px;
@@ -1115,7 +1115,7 @@ body {
 .kullanici-adi-uyari {
     margin-top: 6px;
     font-size: 12px;
-    color: #E67E22;
+    color: #E9A23B;
     min-height: 14px;
 }
 
@@ -1131,7 +1131,7 @@ body {
     margin-top: 12px;
 }
 .arkadas-etiket {
-    color: #48B7C7;
+    color: #5FB6C4;
     font-size: 13px;
     margin-right: auto;
 }
@@ -1143,35 +1143,35 @@ body {
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    background: #22303f;
-    color: #cfd8e3;
+    background: #1A222B;
+    color: #C6D2D8;
 }
-.arkadas-dugme.onay { background: #48B7C7; color: #06222a; }
+.arkadas-dugme.onay { background: #5FB6C4; color: #0A1A1F; }
 .arkadas-dugme:hover { filter: brightness(1.12); }
 .arkadas-dugme:disabled { opacity: .5; cursor: default; }
 .arkadas-uyari {
     flex-basis: 100%;
     font-size: 12px;
-    color: #E67E22;
+    color: #E9A23B;
 }
 
 .arkadas-satir {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #1a2330;
+    background: #0E141C;
     border-radius: 8px;
     padding: 10px 12px;
     margin-bottom: 6px;
     cursor: pointer;
     font-size: 14px;
-    color: #eee;
+    color: #DEE7EB;
 }
-.arkadas-satir:hover { background: #22303f; }
-.arkadas-satir.istek { cursor: default; border: 1px solid #48B7C7; }
-.arkadas-ad { flex: 1; color: #48B7C7; }
+.arkadas-satir:hover { background: #1A222B; }
+.arkadas-satir.istek { cursor: default; border: 1px solid #5FB6C4; }
+.arkadas-ad { flex: 1; color: #5FB6C4; }
 .arkadas-sag { opacity: .6; font-size: 12px; }
-.arkadas-bos { font-size: 12px; color: #7d8899; line-height: 1.5; }
+.arkadas-bos { font-size: 12px; color: #818C95; line-height: 1.5; }
 
 .arkadas-mini {
     border: none;
@@ -1181,10 +1181,10 @@ body {
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
-    background: #2a3a4e;
-    color: #cfd8e3;
+    background: #222B35;
+    color: #C6D2D8;
 }
-.arkadas-mini.onay { background: #48B7C7; color: #06222a; }
+.arkadas-mini.onay { background: #5FB6C4; color: #0A1A1F; }
 .arkadas-mini:hover { filter: brightness(1.12); }
 
 #profilBtn { position: fixed; }
@@ -1195,8 +1195,8 @@ body {
     min-width: 20px;
     height: 20px;
     border-radius: 10px;
-    background: #E67E22;
-    color: #0f1620;
+    background: #E9A23B;
+    color: #080D14;
     font-size: 12px;
     font-weight: 700;
     line-height: 20px;
@@ -1239,3 +1239,250 @@ body {
         rgba( 95, 182, 196, 0.20) 32%,
         rgba( 95, 182, 196, 0.00) 70%);
 }
+
+/* =====================================================================
+   YENİ TEMA — küreyle uyum
+   Küre koyu, sessiz ve soğuk tonlu; paneller de oraya uymalı. Buradaki
+   kurallar yukarıdaki eski kuralları eziyor. Üç şey yapıyor:
+     1. Paneller opak lacivert kutu değil, uzayın üstünde koyu cam
+     2. Kehribar rengi SADECE "senin" olan şeyde: gezilen şehir, değer
+     3. Köşeler daha az yuvarlak, çerçeveler kıl payı ince
+   ===================================================================== */
+:root {
+    --yuzey:      rgba(9, 13, 19, 0.86);
+    --yuzey-koyu: rgba(6, 9, 14, 0.92);
+    --kil:        rgba(190, 212, 218, 0.10);
+    --kil-guclu:  rgba(190, 212, 218, 0.20);
+    --yazi:       #DEE7EB;
+    --yazi-soluk: #808B94;
+    --kehribar:   #E9A23B;
+    --kehribar-a: #F3BE73;
+}
+
+/* --- panel yüzeyleri --------------------------------------------- */
+#panel, #sehirDetayPanel, #istatistikPanel {
+    background: var(--yuzey-koyu);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-left: 1px solid var(--kil);
+    box-shadow: none;
+}
+#gecmisPanel, #profilKart, #logo, #kitaChart, #istatistik, #sifirlaBtn, .arama-kutu {
+    background: var(--yuzey);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--kil);
+    border-radius: 6px;
+    box-shadow: none;
+}
+
+/* --- üst sayaç: ekranın en gürültülü şeyiydi ---------------------- */
+#istatistik {
+    color: var(--yazi);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    padding: 10px 22px;
+}
+
+/* --- logo --------------------------------------------------------- */
+#logo { color: var(--kehribar); font-size: 24px; letter-spacing: 3px; }
+
+/* --- gezilen şehir kartı: dolu turuncu blok değil ------------------ */
+.sehir-kart {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--kil);
+    border-radius: 5px;
+}
+.sehir-kart.secili {
+    background: rgba(233, 162, 59, 0.07);
+    border-color: rgba(233, 162, 59, 0.38);
+    box-shadow: inset 3px 0 0 var(--kehribar);
+}
+.sehir-kart.secili .sehir-ad { color: var(--kehribar); }
+.sehir-kart.secili .sehir-aciklama { color: #A9906A; }
+
+/* --- "gittim" işareti ---------------------------------------------- */
+.gittim-btn {
+    background: rgba(6,9,14,0.75);
+    border: 1px solid var(--kil-guclu);
+    color: var(--yazi-soluk);
+    box-shadow: none;
+}
+.gittim-btn.aktif {
+    background: rgba(233,162,59,0.16);
+    border-color: var(--kehribar);
+    color: var(--kehribar);
+}
+
+/* --- düğmeler: dolu yerine çerçeveli ------------------------------- */
+#sehirDetayKaydet, #profilKaydet, #dahaFazla {
+    background: rgba(233,162,59,0.08);
+    border: 1px solid rgba(233,162,59,0.45);
+    color: var(--kehribar);
+    border-radius: 5px;
+}
+#sehirDetayKaydet:hover, #profilKaydet:hover, #dahaFazla:hover {
+    background: rgba(233,162,59,0.20);
+    color: var(--kehribar-a);
+}
+
+/* --- bölüm başlıkları: turuncu değil, sessiz --------------------- */
+#gecmisBaslik, #istatistikBaslik, .detay-baslik, .panel-alt-baslik {
+    color: var(--yazi-soluk);
+    letter-spacing: 2px;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+#istatistikBaslik { font-size: 13px; }
+
+/* --- küre üstündeki ülke etiketi ---------------------------------- */
+.ulke-etiket {
+    background: rgba(6,9,14,0.88);
+    border: 1px solid var(--kil-guclu);
+    color: var(--yazi);
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+/* --- fotoğraf paylaşım rozeti ------------------------------------- */
+.foto-paylas.acik {
+    background: rgba(233,162,59,0.20);
+    color: var(--kehribar);
+    border: 1px solid rgba(233,162,59,0.45);
+}
+
+/* --- ince kenarlar ------------------------------------------------- */
+#panelArama, .kullanici-adi-satir input, #sehirNot {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--kil);
+    border-radius: 5px;
+    color: var(--yazi);
+}
+#panelArama:focus, #sehirNot:focus { border-color: var(--kil-guclu); outline: none; }
+
+/* --- kıta halkası -------------------------------------------------- */
+.halka-sayi {
+    fill: var(--yazi);
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-size: 34px;
+    font-weight: 500;
+}
+.halka-alt {
+    fill: var(--yazi-soluk);
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+/* --- profil düğmesi ------------------------------------------------ */
+#profilFoto {
+    background: rgba(233,162,59,0.12);
+    border: 1px solid rgba(233,162,59,0.40);
+    box-sizing: border-box;
+}
+#profilCizgi { background: var(--kil-guclu); opacity: 1; width: 1px; }
+#profilYazi { color: var(--yazi); font-weight: 500; font-size: 15px; letter-spacing: 2px; }
+
+/* --- profil kartındaki düğmeler ------------------------------------ */
+.kullanici-adi-satir button {
+    background: rgba(233,162,59,0.10);
+    border: 1px solid rgba(233,162,59,0.45);
+    color: var(--kehribar);
+    border-radius: 5px;
+}
+.kullanici-adi-satir button:hover { background: rgba(233,162,59,0.22); }
+
+#profilDegistir, .profil-ayar-btn {
+    background: rgba(255,255,255,0.035);
+    border: 1px solid var(--kil);
+    color: var(--yazi);
+    border-radius: 5px;
+}
+#profilDegistir:hover, .profil-ayar-btn:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: var(--kil-guclu);
+}
+.profil-ayar-btn.tehlike {
+    background: rgba(192,57,43,0.10);
+    border-color: rgba(192,57,43,0.45);
+    color: #D9776A;
+}
+.profil-ayar-btn.tehlike:hover {
+    background: rgba(192,57,43,0.22);
+    border-color: rgba(192,57,43,0.70);
+    color: #E9958A;
+}
+
+/* --- misafir modu ve arkadaşlık: dolu mavi yerine çerçeveli --------- */
+#misafirBar {
+    background: rgba(10,22,28,0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(95,182,196,0.35);
+    border-radius: 6px;
+    box-shadow: none;
+}
+#misafirBar button {
+    background: rgba(95,182,196,0.14);
+    border: 1px solid rgba(95,182,196,0.50);
+    color: #9FDDE7;
+    border-radius: 5px;
+}
+#misafirBar button:hover { background: rgba(95,182,196,0.26); filter: none; }
+
+.arkadas-dugme, .arkadas-mini {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--kil);
+    border-radius: 5px;
+}
+.arkadas-dugme.onay, .arkadas-mini.onay {
+    background: rgba(95,182,196,0.14);
+    border: 1px solid rgba(95,182,196,0.50);
+    color: #9FDDE7;
+}
+.arkadas-dugme:hover, .arkadas-mini:hover { filter: none; background: rgba(255,255,255,0.08); }
+.arkadas-dugme.onay:hover, .arkadas-mini.onay:hover { background: rgba(95,182,196,0.26); }
+.arkadas-satir.istek { border-color: rgba(95,182,196,0.40); }
+
+/* --- misafir sayı kutusu ------------------------------------------- */
+.gezgin-sayilar { border-radius: 5px; }
+
+/* --- giriş ekranı --------------------------------------------------
+   Uygulamanın ilk gördüğün ekranı burasıydı ve tek başına eski temada
+   kalmıştı: koyu bir uygulamanın önünde bembeyaz bir kart. Aynı koyu
+   cam diline geçirildi. */
+.giris-ekran {
+    background: radial-gradient(120% 90% at 50% 10%, #101826 0%, #080C13 55%, #04070C 100%);
+}
+.giris-kutu {
+    background: var(--yuzey);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--kil);
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    width: 320px;
+}
+.giris-logo { color: var(--kehribar); letter-spacing: 2px; }
+.giris-kutu input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--kil);
+    border-radius: 5px;
+    color: var(--yazi);
+}
+.giris-kutu input::placeholder { color: var(--yazi-soluk); }
+.giris-kutu input:focus { border-color: var(--kil-guclu); outline: none; }
+.giris-btn, .kayit-btn { border-radius: 5px; border: 1px solid var(--kil); }
+.giris-btn {
+    background: rgba(233,162,59,0.12);
+    border-color: rgba(233,162,59,0.50);
+    color: var(--kehribar);
+}
+.giris-btn:hover { background: rgba(233,162,59,0.24); }
+.kayit-btn { background: rgba(255,255,255,0.04); color: var(--yazi); }
+.kayit-btn:hover { background: rgba(255,255,255,0.08); }
+.giris-mesaj { color: var(--yazi-soluk); }
