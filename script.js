@@ -147,8 +147,16 @@ function kureKur() {
     // Saydam: arkasindaki yildiz tuvali gorunsun
     .backgroundColor("rgba(0,0,0,0)")
     .showAtmosphere(true)
-    .atmosphereColor("#7FA8D0")
-    .atmosphereAltitude(0.14)
+    /* Kurenin cevresindeki mavi hale. Onceki ton (#7FA8D0, 0.14) hem
+       soluk hem grimsiydi, uzaydan bakinca neredeyse fark edilmiyordu.
+       Canli sitede dort kademe denendi; bu ikisi en iyisi:
+         #5EA9E8 / 0.18  -> ince, kureye yapisik  (secilen)
+         #4A90D9 / 0.26  -> daha genis, daha yayvan
+       Kalinligi buyutmek haleyi genisletiyor, yaklasinca yikamiyor.
+       Daha genis bir hale istersen tek yapman gereken 0.18'i 0.22-0.26
+       arasina cekmek. */
+    .atmosphereColor("#5EA9E8")
+    .atmosphereAltitude(0.18)
     // Yukseklik SABIT. Fareyle uzerine gelince yukseltmek cazip ama
     // pahali: globe.gl yukseklik degisince 180 ulkenin geometrisini
     // bastan kuruyor ve bu her ulke gecisinde tekrarlaniyor. Vurgu icin
