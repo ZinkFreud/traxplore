@@ -1928,3 +1928,94 @@ body {
 .gezen-ad em { font-style: normal; color: var(--yazi-soluk); }
 .gezen-tarih { color: var(--kehribar); font-size: 12px; white-space: nowrap; }
 .gezen-bos { color: var(--yazi-soluk); font-size: 13px; padding: 6px 0; line-height: 1.5; }
+
+/* --- gezgin işlemleri (engelle / şikayet) -------------------------- */
+.gezgin-islem { display: flex; gap: 16px; margin: 4px 0 18px; }
+
+/* --- şikayet penceresi --------------------------------------------- */
+#sikayetKutu {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 4000;
+    background: rgba(3,5,9,0.72);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+#sikayetKutu.acik { display: flex; }
+.sikayet-ic {
+    width: 380px;
+    max-width: 100%;
+    background: var(--yuzey-koyu);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid var(--kil);
+    border-radius: 8px;
+    padding: 24px;
+    box-sizing: border-box;
+}
+.sikayet-ic h3 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--yazi);
+}
+.sikayet-not { margin: 0 0 14px; font-size: 13px; color: var(--yazi-soluk); }
+#sikayetSebepler { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+#sikayetSebepler button {
+    text-align: left;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--kil);
+    border-radius: 5px;
+    color: var(--yazi);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 12px;
+    cursor: pointer;
+}
+#sikayetSebepler button:hover { background: rgba(255,255,255,0.08); }
+#sikayetSebepler button.secili {
+    background: rgba(233,162,59,0.12);
+    border-color: rgba(233,162,59,0.45);
+    color: var(--kehribar);
+}
+#sikayetAciklama {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 70px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--kil);
+    border-radius: 5px;
+    color: var(--yazi);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px;
+    resize: vertical;
+}
+#sikayetDurum { font-size: 12px; color: var(--yazi-soluk); margin-top: 8px; min-height: 16px; }
+.sikayet-dugmeler { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 6px; }
+
+/* --- fotoğraf üzerindeki şikayet --- */
+.foto-sikayet {
+    position: absolute;
+    left: 6px; top: 6px;
+    background: rgba(6,9,14,0.75);
+    border: 1px solid var(--kil-guclu);
+    border-radius: 4px;
+    color: var(--yazi-soluk);
+    font-family: inherit;
+    font-size: 11px;
+    padding: 3px 7px;
+    cursor: pointer;
+    z-index: 4;
+}
+.foto-sikayet:hover { color: var(--yazi); }
+
+/* --- engellediklerin listesi --- */
+.engel-satir {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid var(--kil); font-size: 14px;
+}
+.engel-satir:last-child { border-bottom: none; }
+.engel-ad { flex: 1; color: var(--yazi); }

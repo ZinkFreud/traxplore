@@ -986,7 +986,10 @@ async function gezginPaneli() {
     misafir.sehirSayisi + "</b> şehir";
   liste.appendChild(sayilar);
 
-  if (!misafir.benim) liste.appendChild(arkadaslikDugmesi());
+  if (!misafir.benim) {
+    liste.appendChild(arkadaslikDugmesi());
+    liste.appendChild(gezginIslemleri());
+  }
 
   /* Kapali profil: kimlik ve sayilar duruyor, harita ve fotograflar yok.
      Sunucu zaten bos donuyor; burasi kullaniciya NEDEN bos oldugunu
@@ -1786,6 +1789,16 @@ function fotoKarti(f, adres, benimMi) {
     });
     kart.appendChild(dgm);
   } else {
+    const sik = document.createElement("button");
+    sik.className = "foto-sikayet";
+    sik.textContent = "şikayet";
+    sik.title = "Bu fotoğrafı şikayet et";
+    sik.addEventListener("click", function (e) {
+      e.stopPropagation();
+      sikayetAc("fotograf", f.id, f.kullanici_adi);
+    });
+    kart.appendChild(sik);
+
     const ad = document.createElement("span");
     ad.className = "foto-sahip";
     ad.appendChild(avatarYap(f.sahip_foto, "kucuk"));
@@ -2001,6 +2014,7 @@ function profilAc() {
   profilDuzenleme = false;
   profilDoldur();
   arkadasNabiz(true);            // istek gelmis olabilir, bakalim
+  engelListesiniYukle();
   profilKilitle(true);
   sadeceBuPanel("profilKart", true);
 }
@@ -2040,6 +2054,7 @@ function profilDoldur() {
     son.appendChild(sat);
   }
   hareketAnahtariniCiz();
+  engelListesiniCiz();
   profilButonFotoGuncelle();
 }
 
@@ -2108,6 +2123,114 @@ let arkadasListesi = [];
 let gelenIstekler  = [];
 
 /* Gezginin panelindeki dugme. Dort durum var, dordu de farkli davraniyor. */
+/* Engelle ve sikayet et. Mesajlasma olmayan bir uygulamada engellemenin
+   anlami: bu kisi profilime, harita ve fotograflarima erisemesin, ben de
+   onu aramada ve "burayi gezenler" listesinde gormeyeyim. Iki yonlu. */
+/* =====================================================================
+   SIKAYET
+   Iki hedef var: bir fotograf, ya da bir kullanici. Sebep sabit bir
+   listeden; aciklama istege bagli. Kayit sadece yoneticiye gorunuyor,
+   kimse baskasinin sikayetini goremiyor.
+   ===================================================================== */
+const SIKAYET_SEBEPLERI = [
+  ["uygunsuz", "Uygunsuz ya da rahatsız edici içerik"],
+  ["taciz",    "Taciz, hakaret ya da tehdit"],
+  ["spam",     "Spam ya da sahte hesap"],
+  ["telif",    "Bana ait bir içerik izinsiz kullanılmış"],
+  ["diger",    "Diğer"]
+];
+let sikayetHedef = null;
+
+function sikayetAc(tur, fotoId, kullaniciAdi) {
+  sikayetHedef = { tur: tur, foto: fotoId || null, ad: kullaniciAdi || null };
+  /* Basliga kullanici adini ek alarak koymuyoruz: Turkce'de ek sesli
+     harfe gore degisiyor (@mert'i ama @ayse'yi) ve kullanici adi ne
+     olacagi belli degil. Adi ayri satirda yaziyoruz. */
+  document.getElementById("sikayetBaslik").textContent =
+    tur === "fotograf" ? "Fotoğrafı şikayet et" : "Kullanıcıyı şikayet et";
+  document.querySelector("#sikayetKutu .sikayet-not").textContent =
+    (kullaniciAdi ? "@" + kullaniciAdi + " — " : "") + "ne oldu?";
+  const kutu = document.getElementById("sikayetSebepler");
+  kutu.innerHTML = "";
+  for (let i = 0; i < SIKAYET_SEBEPLERI.length; i++) {
+    (function (kod, yazi) {
+      const b = document.createElement("button");
+      b.textContent = yazi;
+      b.dataset.sebep = kod;
+      b.addEventListener("click", function () {
+        const hepsi = kutu.querySelectorAll("button");
+        for (let j = 0; j < hepsi.length; j++) hepsi[j].classList.toggle("secili", hepsi[j] === b);
+      });
+      kutu.appendChild(b);
+    })(SIKAYET_SEBEPLERI[i][0], SIKAYET_SEBEPLERI[i][1]);
+  }
+  document.getElementById("sikayetAciklama").value = "";
+  document.getElementById("sikayetDurum").textContent = "";
+  document.getElementById("sikayetKutu").classList.add("acik");
+}
+
+function sikayetKapat() {
+  document.getElementById("sikayetKutu").classList.remove("acik");
+  sikayetHedef = null;
+}
+
+document.getElementById("sikayetVazgec").addEventListener("click", sikayetKapat);
+document.getElementById("sikayetKutu").addEventListener("click", function (e) {
+  if (e.target === this) sikayetKapat();      // disina tiklayinca kapansin
+});
+
+document.getElementById("sikayetGonder").addEventListener("click", async function () {
+  if (!sikayetHedef) return;
+  const secili = document.querySelector("#sikayetSebepler button.secili");
+  const durum = document.getElementById("sikayetDurum");
+  if (!secili) { durum.textContent = "Bir sebep seç."; return; }
+  this.disabled = true;
+  durum.textContent = "Gönderiliyor…";
+  const { error } = await db.rpc("sikayet_et", {
+    p_tur: sikayetHedef.tur,
+    p_foto_id: sikayetHedef.foto,
+    p_kullanici_adi: sikayetHedef.ad,
+    p_sebep: secili.dataset.sebep,
+    p_aciklama: document.getElementById("sikayetAciklama").value
+  });
+  this.disabled = false;
+  if (error) { durum.textContent = hataYaz(error.message); return; }
+  durum.textContent = "Gönderildi. Teşekkürler, en kısa sürede bakılacak.";
+  setTimeout(sikayetKapat, 1400);
+});
+
+function gezginIslemleri() {
+  const kutu = document.createElement("div");
+  kutu.className = "gezgin-islem";
+
+  const eng = document.createElement("button");
+  eng.className = "metin-btn";
+  eng.textContent = "engelle";
+  eng.addEventListener("click", async function () {
+    const ad = misafir.kullanici_adi;
+    if (!confirm("@" + ad + " engellensin mi?\n\n" +
+                 "Haritanı ve fotoğraflarını göremez, sen de onu görmezsin. " +
+                 "Arkadaşsanız arkadaşlığınız kalkar.")) return;
+    eng.disabled = true;
+    const { error } = await db.rpc("engelle", { p_kullanici_adi: ad });
+    eng.disabled = false;
+    if (error) { alert(hataYaz(error.message)); return; }
+    misafirdenCik();
+    arkadasVeriTazele();
+  });
+
+  const sik = document.createElement("button");
+  sik.className = "metin-btn";
+  sik.textContent = "şikayet et";
+  sik.addEventListener("click", function () {
+    sikayetAc("kullanici", null, misafir.kullanici_adi);
+  });
+
+  kutu.appendChild(eng);
+  kutu.appendChild(sik);
+  return kutu;
+}
+
 function arkadaslikDugmesi() {
   const kutu = document.createElement("div");
   kutu.className = "arkadas-kutu";
@@ -2345,6 +2468,55 @@ function gizlilikAnahtariniCiz() {
 /* Gezi kaydinin AYRI anahtari. Kapaliysa arkadaslar bile goremez --
    profil anahtarindan bagimsiz, ust uste biniyorlar: kayit gorunmesi
    icin ikisinin de izin vermesi gerekiyor. */
+/* Engellediklerin. Bolum sadece liste bos degilse gorunuyor -- kimseyi
+   engellememis birine bos bir baslik gostermenin anlami yok. */
+let engelListesi = [];
+async function engelListesiniYukle() {
+  const { data } = await db.rpc("engellilerim");
+  engelListesi = data || [];
+  if (document.getElementById("profilKart").classList.contains("acik")) engelListesiniCiz();
+}
+
+function engelListesiniCiz() {
+  const kart = document.getElementById("profilKart");
+  let bolum = document.getElementById("engelBolum");
+  if (!engelListesi.length) { if (bolum) bolum.remove(); return; }
+  if (!bolum) {
+    bolum = document.createElement("div");
+    bolum.id = "engelBolum";
+    bolum.className = "profil-bolum";
+    const btnlar = document.getElementById("profilButonlar");
+    kart.insertBefore(bolum, btnlar);
+  }
+  bolum.innerHTML = "";
+  const et = document.createElement("label");
+  et.textContent = "ENGELLEDİKLERİN (" + engelListesi.length + ")";
+  bolum.appendChild(et);
+  for (let i = 0; i < engelListesi.length; i++) {
+    (function (g) {
+      const sat = document.createElement("div");
+      sat.className = "engel-satir";
+      sat.appendChild(avatarYap(g.foto, "kucuk"));
+      const ad = document.createElement("span");
+      ad.className = "engel-ad";
+      ad.textContent = "@" + g.kullanici_adi;
+      sat.appendChild(ad);
+      const kaldir = document.createElement("button");
+      kaldir.className = "arkadas-mini";
+      kaldir.textContent = "engeli kaldır";
+      kaldir.addEventListener("click", async function () {
+        kaldir.disabled = true;
+        const { error } = await db.rpc("engeli_kaldir", { p_kullanici_adi: g.kullanici_adi });
+        kaldir.disabled = false;
+        if (error) { alert(hataYaz(error.message)); return; }
+        engelListesiniYukle();
+      });
+      sat.appendChild(kaldir);
+      bolum.appendChild(sat);
+    })(engelListesi[i]);
+  }
+}
+
 function hareketAnahtariniCiz() {
   const kutu = document.getElementById("hareketAnahtar");
   if (!kutu) return;
@@ -3096,7 +3268,7 @@ async function veriYukle() {
   await ulkeleriYukle();
   await gezileriYukle();
   await Promise.all([koordinatlariYukle(), detaylariYukle(), profilYukle(),
-                     arkadasVeriTazele()]);
+                     arkadasVeriTazele(), engelListesiniYukle()]);
   istatistikGuncelle();
   gecmisGuncelle();
   kitaChartCiz();
