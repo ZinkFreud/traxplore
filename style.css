@@ -1712,3 +1712,72 @@ body {
 .giris-kutu.kurtarma #girisKullanici,
 .giris-kutu.kurtarma #modDegistir,
 .giris-kutu.kurtarma #adSecimAlani { display: none; }
+
+/* =====================================================================
+   AVATAR
+   Fotoğraf koymayanda silüet görünsün, boş daire kalmasın. Silüet ayrı
+   bir dosya değil, CSS'in içine gömülü küçük bir çizim — indirilecek
+   bir şey yok, temayla aynı renkte.
+
+   Avatar HER YERDE küçük. Büyütülemiyor, tıklanınca açılmıyor. Bu
+   bilinçli: yüzlere bakmak için gezilen bir yer olmasın diye.
+   ===================================================================== */
+.avatar {
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background-color: rgba(233, 162, 59, 0.10);
+    border: 1px solid rgba(233, 162, 59, 0.35);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    box-sizing: border-box;
+    overflow: hidden;
+    pointer-events: none;      /* tıklanamaz, büyütülemez */
+}
+/* Silüet: fotoğraf yokken. Fotoğraf gelince .dolu sınıfı bunu kapatıyor. */
+.avatar:not(.dolu) {
+    background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'>\
+<circle cx='20' cy='15' r='6.6' fill='%23E9A23B' fill-opacity='0.45'/>\
+<path d='M6.5 37c0-7.4 6-13.4 13.5-13.4S33.5 29.6 33.5 37z' fill='%23E9A23B' fill-opacity='0.45'/>\
+</svg>");
+    background-size: 100% 100%;
+}
+.avatar-kucuk  { width: 26px; height: 26px; }
+.avatar-orta   { width: 38px; height: 38px; }
+.avatar-buyuk  { width: 76px; height: 76px; }
+
+/* --- profil kartındaki fotoğraf bölümü --- */
+#profilFotolar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+#profilFotoIsler { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+#profilFotoEkle {
+    /* Eski kural 80x80 kesikli daireydi (fotograf ekleme yeri o zaman
+       galeriydi). Onun olculerini burada sifirliyoruz. */
+    width: auto; height: auto;
+    border-radius: 5px;
+    justify-content: flex-start;
+    display: inline-block;
+    padding: 8px 14px;
+    border-radius: 5px;
+    border: 1px solid var(--kil);
+    background: rgba(255,255,255,0.04);
+    color: var(--yazi);
+    font-size: 13px;
+    cursor: pointer;
+}
+#profilFotoEkle:hover { background: rgba(255,255,255,0.08); }
+#profilFotoDurum { font-size: 12px; color: var(--yazi-soluk); }
+
+/* --- misafir panelinin üst satırı: avatar + kullanıcı adı --------- */
+.gezgin-ust {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.gezgin-kim { font-size: 16px; font-weight: 600; color: var(--yazi); }

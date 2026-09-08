@@ -115,7 +115,7 @@ const kitaToplam = {};                     // kitada kac ulke var
 let gezilenler = [];                       // [{ulke, sehir}]
 let gezilenKoord = {};                     // "ulke|sehir" -> {lat,lng,nufus}
 let sehirDetaylari = {};                   // "ulke|sehir" -> {puan,foto,not}
-let profilVeri = { isim: "", konum: "", fotolar: [], kullanici_adi: "" };
+let profilVeri = { isim: "", konum: "", foto: "", kullanici_adi: "" };
 let profilDuzenleme = false;
 let aktifDetay = { ulke: "", sehir: "" };
 let aktifUlke  = "";
@@ -880,6 +880,7 @@ async function gezginiAc(kullaniciAdi) {
     kullanici_adi: p.kullanici_adi,
     isim: p.isim,
     konum: p.konum,
+    foto: p.foto || "",
     kita: p.kita_sayisi, ulke: p.ulke_sayisi, sehirSayisi: p.sehir_sayisi,
     benim: p.benim,
     arkadaslik: p.arkadaslik || "yok",
@@ -936,6 +937,15 @@ async function gezginPaneli() {
   const liste = document.getElementById("sehirListe");
   liste.innerHTML = "";
   liste.style.display = "block";
+
+  const ustSatir = document.createElement("div");
+  ustSatir.className = "gezgin-ust";
+  ustSatir.appendChild(avatarYap(misafir.foto, "orta"));
+  const kim = document.createElement("div");
+  kim.className = "gezgin-kim";
+  kim.textContent = "@" + misafir.kullanici_adi;
+  ustSatir.appendChild(kim);
+  liste.appendChild(ustSatir);
 
   const sayilar = document.createElement("div");
   sayilar.className = "gezgin-sayilar";
@@ -1464,6 +1474,68 @@ async function sehirDetayAc(ulke, sehir) {
    "gizli" gercekten gizli, adresi bilen bile goremiyor.
    ===================================================================== */
 const KOVA = "sehir-fotolari";
+
+/* Profil fotografi ayri bir kovada ve o kova ACIK. Sehir fotograflari
+   gizli olabildigi icin her gosterimde imzali adres uretiliyor; profil
+   fotografi ise zaten her yerde gorunsun diye var (aramada, arkadas
+   listesinde, fotografin altinda). Her avatar icin imza uretmek hem
+   yavas olurdu hem anlamsiz. */
+const PROFIL_KOVA = "profil-fotolari";
+
+function profilFotoAdresi(yol) {
+  if (!yol) return "";
+  try {
+    const { data } = db.storage.from(PROFIL_KOVA).getPublicUrl(yol);
+    return (data && data.publicUrl) || "";
+  } catch (e) { return ""; }
+}
+
+/* Tek yerden avatar kuruyoruz. Fotograf yoksa "dolu" sinifi konmuyor,
+   CSS silueti gosteriyor. */
+function avatarKur(el, yol) {
+  if (!el) return;
+  const adres = profilFotoAdresi(yol);
+  if (adres) {
+    el.style.backgroundImage = "url(" + adres + ")";
+    el.classList.add("dolu");
+  } else {
+    el.style.backgroundImage = "";
+    el.classList.remove("dolu");
+  }
+}
+
+function avatarYap(yol, boy) {
+  const d = document.createElement("div");
+  d.className = "avatar avatar-" + (boy || "kucuk");
+  avatarKur(d, yol);
+  return d;
+}
+
+/* Avatar icin kare kirpip 256 piksele indiriyoruz. Sehir fotografinin
+   kucultmesinden farkli: orada oran korunuyor, burada kare lazim. */
+function avatarKucult(dosya) {
+  return new Promise(function (coz, hata) {
+    const oku = new FileReader();
+    oku.onerror = function () { hata(new Error("Dosya okunamadi")); };
+    oku.onload = function (e) {
+      const im = new Image();
+      im.onerror = function () { hata(new Error("Gorsel acilamadi")); };
+      im.onload = function () {
+        const B = 256;
+        const kenar = Math.min(im.width, im.height);
+        const sx = (im.width - kenar) / 2, sy = (im.height - kenar) / 2;
+        const tuval = document.createElement("canvas");
+        tuval.width = B; tuval.height = B;
+        tuval.getContext("2d").drawImage(im, sx, sy, kenar, kenar, 0, 0, B, B);
+        tuval.toBlob(function (blob) {
+          if (blob) coz(blob); else hata(new Error("Donusturulemedi"));
+        }, "image/jpeg", 0.85);
+      };
+      im.src = e.target.result;
+    };
+    oku.readAsDataURL(dosya);
+  });
+}
 const FOTO_SINIR = 3;
 let fotoMesgul = false;
 
@@ -1728,26 +1800,9 @@ function profilDoldur() {
   arkadasBolumu();
   document.getElementById("profilIsim").value = profilVeri.isim || "";
   document.getElementById("profilKonum").value = profilVeri.konum || "";
-  const liste = document.getElementById("profilFotoListe");
-  liste.innerHTML = "";
-  const fotolar = profilVeri.fotolar || [];
-  for (let i = 0; i < fotolar.length; i++) {
-    (function (indeks) {
-      const kutu = document.createElement("div");
-      kutu.className = "profil-foto-kutu";
-      const im = document.createElement("img"); im.src = fotolar[indeks];
-      kutu.appendChild(im);
-      const sil = document.createElement("button");
-      sil.className = "profil-foto-sil"; sil.textContent = "×";
-      sil.addEventListener("click", function () {
-        if (!profilDuzenleme) return;
-        profilVeri.fotolar.splice(indeks, 1);
-        profilDoldur(); profilButonFotoGuncelle();
-      });
-      kutu.appendChild(sil);
-      liste.appendChild(kutu);
-    })(i);
-  }
+  avatarKur(document.getElementById("profilAvatar"), profilVeri.foto);
+  document.getElementById("profilFotoKaldir").style.display =
+    profilVeri.foto ? "inline-block" : "none";
   const son = document.getElementById("profilSonGezilen");
   son.innerHTML = "";
   const sonlar = gezilenler.slice(-6).reverse();
@@ -2028,20 +2083,10 @@ function profilKilitle(kilitli) {
   document.getElementById("profilKonum").disabled = kilitli;
   document.getElementById("profilKaydet").style.display = kilitli ? "none" : "block";
   document.getElementById("profilDegistir").style.display = kilitli ? "block" : "none";
-  document.getElementById("profilFotoEkle").style.display = kilitli ? "none" : "flex";
+  document.getElementById("profilFotoIsler").style.display = kilitli ? "none" : "flex";
 }
 function profilButonFotoGuncelle() {
-  const el = document.getElementById("profilFoto");
-  const f = (profilVeri.fotolar || [])[0];
-  if (f) {
-    el.style.backgroundImage = "url(" + f + ")";
-    el.style.backgroundSize = "cover";
-    el.style.backgroundPosition = "center";
-    el.textContent = "";
-  } else {
-    el.style.backgroundImage = "";
-    el.textContent = (profilVeri.isim || "?").charAt(0).toUpperCase();
-  }
+  avatarKur(document.getElementById("profilFoto"), profilVeri.foto);
 }
 
 /* =====================================================================
@@ -2297,15 +2342,15 @@ async function detaylariYukle() {
 async function profilYukle() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) { profilVeri = yerelOku("profilVeri", profilVeri); return; }
-  const yerel = yerelOku("profilVeri", { isim: "", konum: "", fotolar: [], kullanici_adi: "" });
+  const yerel = yerelOku("profilVeri", { isim: "", konum: "", foto: "", kullanici_adi: "" });
   const { data, error } = await db.from("profil")
-    .select("isim,konum,kullanici_adi").eq("user_id", oturum.session.user.id).maybeSingle();
+    .select("isim,konum,kullanici_adi,foto").eq("user_id", oturum.session.user.id).maybeSingle();
   if (error || !data) { profilVeri = yerel; return; }
-  // Profil fotograflari sunucuda degil, tarayicida duruyor; onlari
-  // yerelden koruyoruz. Kullanici adi ise sunucudan geliyor.
+  /* Eskiden profil fotograflari sadece tarayicida duruyordu; kimse
+     goremiyordu. Artik sunucuda, tek fotograf. */
   profilVeri = { isim: data.isim || "", konum: data.konum || "",
                  kullanici_adi: data.kullanici_adi || "",
-                 fotolar: yerel.fotolar || [] };
+                 foto: data.foto || "" };
   yerelYaz("profilVeri", profilVeri);
 }
 
@@ -2393,16 +2438,64 @@ document.getElementById("sehirDetayKaydet").addEventListener("click", async func
   sehirDetayKapat();
 });
 
-document.getElementById("profilFotoInput").addEventListener("change", function (e) {
+function profilFotoDurum(metin) {
+  const el = document.getElementById("profilFotoDurum");
+  if (el) el.textContent = metin || "";
+}
+
+/* Fotograf once kovaya yukleniyor, sonra yolu fonksiyona yazdiriliyor.
+   Sira onemli: once kayit yazip sonra yukleme yapsaydik ve yukleme
+   basarisiz olsaydi, profilde olmayan bir dosyaya isaret eden bir yol
+   kalirdi. */
+document.getElementById("profilFotoInput").addEventListener("change", async function (e) {
   const dosya = e.target.files[0];
+  this.value = "";                    // ayni dosya tekrar secilebilsin
   if (!dosya) return;
-  const oku = new FileReader();
-  oku.onload = function (ev) {
-    profilVeri.fotolar = profilVeri.fotolar || [];
-    profilVeri.fotolar.push(ev.target.result);
-    profilDoldur();
-  };
-  oku.readAsDataURL(dosya);
+  const { data: oturum } = await db.auth.getSession();
+  if (!oturum.session) { profilFotoDurum("Önce giriş yapmalısın."); return; }
+
+  profilFotoDurum("Yükleniyor…");
+  let blob;
+  try { blob = await avatarKucult(dosya); }
+  catch (h) { profilFotoDurum(h.message); return; }
+
+  const eskiYol = profilVeri.foto;
+  const yol = oturum.session.user.id + "/" +
+              (crypto.randomUUID ? crypto.randomUUID() : Date.now()) + ".jpg";
+
+  const { error: yuklemeHatasi } = await db.storage.from(PROFIL_KOVA)
+    .upload(yol, blob, { contentType: "image/jpeg" });
+  if (yuklemeHatasi) { profilFotoDurum("Yüklenemedi: " + yuklemeHatasi.message); return; }
+
+  const { data, error } = await db.rpc("profil_foto_yaz", { p_yol: yol });
+  if (error) {
+    await db.storage.from(PROFIL_KOVA).remove([yol]);   // yarim is birakma
+    profilFotoDurum(hataYaz(error.message));
+    return;
+  }
+
+  profilVeri.foto = data || yol;
+  yerelYaz("profilVeri", profilVeri);
+  if (eskiYol && eskiYol !== profilVeri.foto) {
+    await db.storage.from(PROFIL_KOVA).remove([eskiYol]);
+  }
+  profilFotoDurum("");
+  profilDoldur();
+  profilButonFotoGuncelle();
+});
+
+document.getElementById("profilFotoKaldir").addEventListener("click", async function () {
+  if (!profilVeri.foto) return;
+  const eskiYol = profilVeri.foto;
+  this.disabled = true;
+  const { error } = await db.rpc("profil_foto_yaz", { p_yol: null });
+  this.disabled = false;
+  if (error) { profilFotoDurum(hataYaz(error.message)); return; }
+  profilVeri.foto = "";
+  yerelYaz("profilVeri", profilVeri);
+  await db.storage.from(PROFIL_KOVA).remove([eskiYol]);
+  profilDoldur();
+  profilButonFotoGuncelle();
 });
 
 document.getElementById("profilKaydet").addEventListener("click", async function () {
