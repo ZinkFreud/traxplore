@@ -1781,3 +1781,14 @@ body {
     margin-bottom: 14px;
 }
 .gezgin-kim { font-size: 16px; font-weight: 600; color: var(--yazi); }
+
+/* --- listelerde avatar hizalaması --------------------------------- */
+.arama-satir.kisi {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.arama-metin { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arkadas-satir { display: flex; align-items: center; gap: 10px; }
+.foto-sahip { display: flex; align-items: center; gap: 6px; }
+.foto-sahip .avatar { width: 18px; height: 18px; }

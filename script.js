@@ -1712,7 +1712,8 @@ function fotoKarti(f, adres, benimMi) {
   } else {
     const ad = document.createElement("span");
     ad.className = "foto-sahip";
-    ad.textContent = f.sahip;
+    ad.appendChild(avatarYap(f.sahip_foto, "kucuk"));
+    ad.appendChild(document.createTextNode(f.sahip));
     // Kullanici adi olmayan biri profil sayfasina sahip degil; sadece
     // adi olanlar tiklanabilir olsun, yoksa tiklayip hicbir sey olmuyor.
     if (f.kullanici_adi) {
@@ -2025,6 +2026,7 @@ function arkadasBolumu() {
       (function (g) {
         const sat = document.createElement("div");
         sat.className = "arkadas-satir istek";
+        sat.appendChild(avatarYap(g.foto, "kucuk"));
         const ad = document.createElement("span");
         ad.className = "arkadas-ad";
         ad.textContent = "@" + g.kullanici_adi;
@@ -2066,8 +2068,15 @@ function arkadasBolumu() {
     (function (g) {
       const sat = document.createElement("div");
       sat.className = "arkadas-satir";
-      sat.innerHTML = "<span class='arkadas-ad'>@" + kacisla(g.kullanici_adi) + "</span>" +
-                      "<span class='arkadas-sag'>" + g.ulke_sayisi + " ülke</span>";
+      sat.appendChild(avatarYap(g.foto, "kucuk"));
+      const ad2 = document.createElement("span");
+      ad2.className = "arkadas-ad";
+      ad2.textContent = "@" + g.kullanici_adi;
+      sat.appendChild(ad2);
+      const sag2 = document.createElement("span");
+      sag2.className = "arkadas-sag";
+      sag2.textContent = g.ulke_sayisi + " ülke";
+      sat.appendChild(sag2);
       sat.title = g.isim || "";
       sat.addEventListener("click", function () {
         profilKapat();
@@ -2120,10 +2129,17 @@ aramaInput.addEventListener("input", function () {
       for (let i = 0; i < kisiler.length; i++) {
         (function (g) {
           const sat = document.createElement("div");
-          sat.className = "arama-satir";
-          sat.innerHTML = "<b>@" + kacisla(g.kullanici_adi) + "</b> " +
-            "<span style='opacity:.6'>" + kacisla(g.isim || "") + "</span>" +
-            "<span class='arama-sag'>" + g.ulke_sayisi + " ülke</span>";
+          sat.className = "arama-satir kisi";
+          sat.appendChild(avatarYap(g.foto, "kucuk"));
+          const metin = document.createElement("span");
+          metin.className = "arama-metin";
+          metin.innerHTML = "<b>@" + kacisla(g.kullanici_adi) + "</b> " +
+            "<span style='opacity:.6'>" + kacisla(g.isim || "") + "</span>";
+          sat.appendChild(metin);
+          const sag = document.createElement("span");
+          sag.className = "arama-sag";
+          sag.textContent = g.ulke_sayisi + " ülke";
+          sat.appendChild(sag);
           sat.addEventListener("click", function () {
             aramaKapat();
             gezginiAc(g.kullanici_adi);
