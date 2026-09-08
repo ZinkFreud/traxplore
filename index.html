@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260908j">
+    <link rel="stylesheet" href="style.css?v=20260908k">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -266,13 +266,22 @@
     </div>
     <button id="sifirlaBtn">HARİTAYI SIFIRLA</button>
 
+    <!-- Haritanin uzerinde, kose. Magazalar gizlilik metnine kolay
+         ulasilmasini istiyor; profil kartinin icinde durmasi teknik
+         olarak yeterli ama kimse orayi aramaz. -->
+    <div id="altBilgi">
+        <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik</a>
+        <span>·</span>
+        <a href="kosullar.html" target="_blank" rel="noopener">Koşullar</a>
+    </div>
+
     <!-- iPhone'da "ana ekrana ekle" adimini kimse kendiliginden bulmuyor -->
     <div id="ekleIpucu">
         <span>Uygulama gibi kullanmak için: paylaş <b>&#8593;</b> → <b>Ana Ekrana Ekle</b></span>
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260908j"></script>
+    <script src="script.js?v=20260908k"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */

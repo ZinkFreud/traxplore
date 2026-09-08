@@ -2071,3 +2071,31 @@ body {
 .yasal a { color: var(--yazi-soluk); text-decoration: none; border-bottom: 1px solid var(--kil-guclu); }
 .yasal a:hover { color: var(--yazi); }
 #profilKart .yasal { margin: 14px 0 4px; }
+
+/* --- harita üzerindeki küçük yasal bağlantı ------------------------- */
+/* Masaüstünde sağ altta; sıfırlama düğmesi orada gizli olduğu için yer
+   boş. Sağdan açılan panellerin altında kalıyor (z-index 900) -- panel
+   açıkken zaten haritaya bakmıyorsun. */
+#altBilgi {
+    position: fixed;
+    right: 20px; bottom: 16px;
+    z-index: 900;
+    display: flex; align-items: center; gap: 7px;
+    font-size: 11px;
+    color: rgba(190, 212, 218, 0.30);
+    letter-spacing: 0.02em;
+}
+#altBilgi a { color: inherit; text-decoration: none; }
+#altBilgi a:hover { color: var(--yazi-soluk); }
+
+@media (max-width: 720px), (max-height: 520px) {
+    /* Telefonda alt şerit var; bağlantıyı onun hemen üstüne, ortaya
+       alıyoruz. Şeridin yüksekliği ~44px, güvenli alan payıyla birlikte. */
+    #altBilgi {
+        right: 0; left: 0;
+        bottom: calc(52px + env(safe-area-inset-bottom));
+        justify-content: center;
+        font-size: 10.5px;
+        color: rgba(190, 212, 218, 0.26);
+    }
+}
