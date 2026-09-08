@@ -115,7 +115,7 @@ const kitaToplam = {};                     // kitada kac ulke var
 let gezilenler = [];                       // [{ulke, sehir}]
 let gezilenKoord = {};                     // "ulke|sehir" -> {lat,lng,nufus}
 let sehirDetaylari = {};                   // "ulke|sehir" -> {puan,foto,not}
-let profilVeri = { isim: "", konum: "", foto: "", kullanici_adi: "", profil_acik: true };
+let profilVeri = { isim: "", konum: "", foto: "", kullanici_adi: "", profil_acik: true, hareket_acik: false };
 let profilDuzenleme = false;
 let aktifDetay = { ulke: "", sehir: "" };
 let aktifUlke  = "";
@@ -829,6 +829,33 @@ function kureyeGit(lat, lng, yakin) {
 /* =====================================================================
    YARDIMCI
    ===================================================================== */
+const AYLAR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran",
+               "Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+
+/* Tarih ay hassasiyetinde: veritabaninda ayin ilk gunu duruyor, ekranda
+   sadece ay ve yil gosteriliyor. Gun hicbir yerde sorulmuyor. */
+function tarihYaz(gidilen) {
+  if (!gidilen) return "";
+  const p = String(gidilen).split("-");
+  const ay = parseInt(p[1], 10);
+  if (!p[0] || !ay) return "";
+  return AYLAR[ay - 1] + " " + p[0];
+}
+
+/* Siralama: tarihi olanlar once, en yenisi ustte. Tarihi olmayanlar
+   altta, eklenme sirasina gore (yeni eklenen ustte). Eklenme sirasi
+   kullaniciya gosterilmiyor, sadece siralamada kullaniliyor. */
+function gezileriSirala(liste) {
+  return liste.slice().sort(function (a, b) {
+    const at = a.gidilen || "", bt = b.gidilen || "";
+    if (at && bt) return at < bt ? 1 : (at > bt ? -1 : 0);
+    if (at) return -1;
+    if (bt) return 1;
+    const ae = a.eklendi || "", be = b.eklendi || "";
+    return ae < be ? 1 : (ae > be ? -1 : 0);
+  });
+}
+
 function kacisla(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
                   .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -866,10 +893,12 @@ async function ulkeleriYukle() {
 async function gezginiAc(kullaniciAdi) {
   const [{ data: profil, error: ph },
          { data: harita, error: hh },
-         { data: fotolar }] = await Promise.all([
+         { data: fotolar },
+         { data: kayit }] = await Promise.all([
     db.rpc("gezgin_profil",      { p_kullanici_adi: kullaniciAdi }),
     db.rpc("gezgin_haritasi",    { p_kullanici_adi: kullaniciAdi }),
-    db.rpc("gezgin_fotograflari",{ p_kullanici_adi: kullaniciAdi })
+    db.rpc("gezgin_fotograflari",{ p_kullanici_adi: kullaniciAdi }),
+    db.rpc("gezgin_gezi_kaydi",  { p_kullanici_adi: kullaniciAdi })
   ]);
   if (ph || hh || !profil || !profil.length) {
     console.log("Gezgin acilamadi", ph || hh);
@@ -885,6 +914,8 @@ async function gezginiAc(kullaniciAdi) {
     benim: p.benim,
     arkadaslik: p.arkadaslik || "yok",
     gorebilir: p.gorebilir !== false,
+    hareketAcik: p.hareket_acik === true,
+    kayit: kayit || [],
     sehirler: harita || [],
     ulkeler: new Set((harita || []).map(function (r) { return r.ulke; })),
     fotolar: fotolar || []
@@ -1001,6 +1032,27 @@ async function gezginPaneli() {
       });
       izgara.appendChild(kart);
     }
+  }
+
+  if (misafir.hareketAcik && misafir.kayit.length) {
+    const kb = document.createElement("div");
+    kb.className = "gezgin-baslik"; kb.textContent = "GEZİ KAYDI";
+    liste.appendChild(kb);
+    const kutu2 = document.createElement("div");
+    for (let i = 0; i < misafir.kayit.length && i < 20; i++) {
+      const g = misafir.kayit[i];
+      const sat = document.createElement("div");
+      sat.className = "kayit-satir";
+      const yer = document.createElement("span");
+      yer.className = "kayit-yer";
+      yer.innerHTML = kacisla(g.sehir) + " <em>— " + kacisla(g.ulke) + "</em>";
+      const tar = document.createElement("span");
+      tar.className = "kayit-tarih" + (g.gidilen ? "" : " yok");
+      tar.textContent = g.gidilen ? tarihYaz(g.gidilen) : "tarih yok";
+      sat.appendChild(yer); sat.appendChild(tar);
+      kutu2.appendChild(sat);
+    }
+    liste.appendChild(kutu2);
   }
 
   const bas2 = document.createElement("div");
@@ -1469,6 +1521,8 @@ async function sehirDetayAc(ulke, sehir) {
   const d = sehirDetaylari[anahtar(ulke, sehir)] || { puan: 0, not: "" };
   yildizGoster(d.puan || 0);
   document.getElementById("sehirNot").value = d.not || "";
+  tarihKutulariniDoldur();
+  tarihiGoster(ulke, sehir);
   fotoAlaniHazirla();
   document.getElementById("sehirFotoOnizle").innerHTML = "";
   const dk = document.getElementById("digerFotolar");
@@ -1747,6 +1801,75 @@ function fotoKarti(f, adres, benimMi) {
   return kart;
 }
 
+/* Ay ve yil kutulari. Bir kez dolduruluyor; yil listesi bu yildan
+   geriye 60 yil. Ileri tarih hic secilemiyor -- sunucu da reddediyor
+   ama kullaniciya yanlis secenegi hic gostermemek daha iyi. */
+let tarihKutulariHazir = false;
+function tarihKutulariniDoldur() {
+  if (tarihKutulariHazir) return;
+  const ay = document.getElementById("sehirAy");
+  const yil = document.getElementById("sehirYil");
+  if (!ay || !yil) return;
+  ay.innerHTML = "<option value=''>ay</option>";
+  for (let i = 0; i < 12; i++) {
+    const o = document.createElement("option");
+    o.value = String(i + 1); o.textContent = AYLAR[i];
+    ay.appendChild(o);
+  }
+  yil.innerHTML = "<option value=''>yıl</option>";
+  const buYil = new Date().getFullYear();
+  for (let y = buYil; y >= buYil - 60; y--) {
+    const o = document.createElement("option");
+    o.value = String(y); o.textContent = String(y);
+    yil.appendChild(o);
+  }
+  tarihKutulariHazir = true;
+}
+
+function gezisiBul(ulke, sehir) {
+  for (let i = 0; i < gezilenler.length; i++) {
+    if (gezilenler[i].ulke === ulke && gezilenler[i].sehir === sehir) return gezilenler[i];
+  }
+  return null;
+}
+
+function tarihiGoster(ulke, sehir) {
+  const g = gezisiBul(ulke, sehir);
+  const ay = document.getElementById("sehirAy");
+  const yil = document.getElementById("sehirYil");
+  const tmz = document.getElementById("sehirTarihTemizle");
+  if (!ay || !yil) return;
+  if (g && g.gidilen) {
+    const p = String(g.gidilen).split("-");
+    yil.value = p[0]; ay.value = String(parseInt(p[1], 10));
+  } else {
+    yil.value = ""; ay.value = "";
+  }
+  if (tmz) tmz.style.display = (g && g.gidilen) ? "inline-block" : "none";
+}
+
+/* Iki kutudan biri bosken yazmiyoruz -- yarim tarih diye bir sey yok. */
+async function tarihiKaydet() {
+  const ulke = aktifDetay.ulke, sehir = aktifDetay.sehir;
+  if (!ulke || !sehir) return;
+  const ay = document.getElementById("sehirAy").value;
+  const yil = document.getElementById("sehirYil").value;
+  if ((ay && !yil) || (!ay && yil)) { fotoDurum("Hem ay hem yıl seçmelisin."); return; }
+
+  const { data, error } = await db.rpc("sehir_tarihi_yaz", {
+    p_ulke: ulke, p_sehir: sehir,
+    p_yil: yil ? parseInt(yil, 10) : null,
+    p_ay:  ay  ? parseInt(ay, 10)  : null
+  });
+  if (error) { fotoDurum(hataYaz(error.message)); return; }
+  const g = gezisiBul(ulke, sehir);
+  if (g) g.gidilen = data || null;
+  yerelYaz("gezilenler", gezilenler);
+  fotoDurum("");
+  tarihiGoster(ulke, sehir);
+  if (document.getElementById("profilKart").classList.contains("acik")) profilDoldur();
+}
+
 function yildizGoster(puan) {
   seciliPuan = puan;
   const y = document.querySelectorAll("#yildizlar .yildiz");
@@ -1824,13 +1947,27 @@ function profilDoldur() {
     profilVeri.foto ? "inline-block" : "none";
   const son = document.getElementById("profilSonGezilen");
   son.innerHTML = "";
-  const sonlar = gezilenler.slice(-6).reverse();
-  for (let i = 0; i < sonlar.length; i++) {
-    const s = document.createElement("div");
-    s.className = "gecmis-sehir";
-    s.textContent = sonlar[i].sehir + " — " + sonlar[i].ulke;
-    son.appendChild(s);
+  const sirali = gezileriSirala(gezilenler).slice(0, 20);
+  if (!sirali.length) {
+    const bos = document.createElement("div");
+    bos.className = "arkadas-bos";
+    bos.textContent = "Henüz gezdiğin yer yok.";
+    son.appendChild(bos);
   }
+  for (let i = 0; i < sirali.length; i++) {
+    const g = sirali[i];
+    const sat = document.createElement("div");
+    sat.className = "kayit-satir";
+    const yer = document.createElement("span");
+    yer.className = "kayit-yer";
+    yer.innerHTML = kacisla(g.sehir) + " <em>— " + kacisla(g.ulke) + "</em>";
+    const tar = document.createElement("span");
+    tar.className = "kayit-tarih" + (g.gidilen ? "" : " yok");
+    tar.textContent = g.gidilen ? tarihYaz(g.gidilen) : "tarih yok";
+    sat.appendChild(yer); sat.appendChild(tar);
+    son.appendChild(sat);
+  }
+  hareketAnahtariniCiz();
   profilButonFotoGuncelle();
 }
 
@@ -2112,6 +2249,8 @@ function profilKilitle(kilitli) {
   document.getElementById("profilDegistir").style.display = kilitli ? "block" : "none";
   document.getElementById("profilFotoIsler").style.display = kilitli ? "none" : "flex";
   document.getElementById("profilAcikAnahtar").disabled = kilitli;
+  document.getElementById("hareketAnahtar").disabled = kilitli;
+  document.getElementById("hareketBolum").style.opacity = kilitli ? "0.55" : "1";
   document.getElementById("gizlilikBolum").style.opacity = kilitli ? "0.55" : "1";
 }
 /* Profil acik mi kapali mi. Kapali profil GIZLI degil: aramada cikiyor,
@@ -2129,6 +2268,22 @@ function gizlilikAnahtariniCiz() {
     ? "Haritanı ve fotoğraflarını herkes görebilir."
     : "Haritanı ve fotoğraflarını sadece arkadaşların görebilir. " +
       "Kullanıcı adın, fotoğrafın ve sayıların herkese görünmeye devam eder.";
+}
+
+/* Gezi kaydinin AYRI anahtari. Kapaliysa arkadaslar bile goremez --
+   profil anahtarindan bagimsiz, ust uste biniyorlar: kayit gorunmesi
+   icin ikisinin de izin vermesi gerekiyor. */
+function hareketAnahtariniCiz() {
+  const kutu = document.getElementById("hareketAnahtar");
+  if (!kutu) return;
+  const acik = profilVeri.hareket_acik === true;
+  kutu.checked = acik;
+  document.getElementById("hareketBaslik").textContent = acik ? "Açık" : "Kapalı";
+  document.getElementById("hareketNot").textContent = acik
+    ? (profilVeri.profil_acik === false
+        ? "Nereye ne zaman gittiğini sadece arkadaşların görebilir."
+        : "Nereye ne zaman gittiğini herkes görebilir.")
+    : "Gezi kaydını kimse göremez, arkadaşların bile.";
 }
 
 function profilButonFotoGuncelle() {
@@ -2342,9 +2497,12 @@ async function gezileriYukle() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) { gezilenler = yerelOku("gezilenler", []); return; }
   const { data, error } = await db.from("gezilenler")
-    .select("ulke,sehir").eq("user_id", oturum.session.user.id);
+    .select("ulke,sehir,gidilen,created_at").eq("user_id", oturum.session.user.id);
   if (error) { gezilenler = yerelOku("gezilenler", []); return; }
-  gezilenler = data.map(function (r) { return { ulke: r.ulke, sehir: r.sehir }; });
+  gezilenler = data.map(function (r) {
+    return { ulke: r.ulke, sehir: r.sehir,
+             gidilen: r.gidilen || null, eklendi: r.created_at || null };
+  });
   yerelYaz("gezilenler", gezilenler);
 }
 
@@ -2396,9 +2554,10 @@ async function profilYukle() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) { profilVeri = yerelOku("profilVeri", profilVeri); return; }
   const yerel = yerelOku("profilVeri",
-    { isim: "", konum: "", foto: "", kullanici_adi: "", profil_acik: true });
+    { isim: "", konum: "", foto: "", kullanici_adi: "",
+      profil_acik: true, hareket_acik: false });
   const { data, error } = await db.from("profil")
-    .select("isim,konum,kullanici_adi,foto,profil_acik")
+    .select("isim,konum,kullanici_adi,foto,profil_acik,hareket_acik")
     .eq("user_id", oturum.session.user.id).maybeSingle();
   if (error || !data) { profilVeri = yerel; return; }
   /* Eskiden profil fotograflari sadece tarayicida duruyordu; kimse
@@ -2406,7 +2565,8 @@ async function profilYukle() {
   profilVeri = { isim: data.isim || "", konum: data.konum || "",
                  kullanici_adi: data.kullanici_adi || "",
                  foto: data.foto || "",
-                 profil_acik: data.profil_acik !== false };
+                 profil_acik: data.profil_acik !== false,
+                 hareket_acik: data.hareket_acik === true };
   yerelYaz("profilVeri", profilVeri);
 }
 
@@ -2540,6 +2700,25 @@ document.getElementById("profilFotoInput").addEventListener("change", async func
   profilButonFotoGuncelle();
 });
 
+document.getElementById("hareketAnahtar").addEventListener("change", async function () {
+  const istenen = this.checked;
+  this.disabled = true;
+  const { data, error } = await db.rpc("hareket_gizlilik_yaz", { p_acik: istenen });
+  this.disabled = false;
+  if (error) { this.checked = !istenen; profilFotoDurum(hataYaz(error.message)); return; }
+  profilVeri.hareket_acik = data === true;
+  yerelYaz("profilVeri", profilVeri);
+  hareketAnahtariniCiz();
+});
+
+document.getElementById("sehirAy").addEventListener("change", tarihiKaydet);
+document.getElementById("sehirYil").addEventListener("change", tarihiKaydet);
+document.getElementById("sehirTarihTemizle").addEventListener("click", function () {
+  document.getElementById("sehirAy").value = "";
+  document.getElementById("sehirYil").value = "";
+  tarihiKaydet();
+});
+
 document.getElementById("profilAcikAnahtar").addEventListener("change", async function () {
   const istenen = this.checked;
   this.disabled = true;
@@ -2553,6 +2732,7 @@ document.getElementById("profilAcikAnahtar").addEventListener("change", async fu
   profilVeri.profil_acik = data !== false;
   yerelYaz("profilVeri", profilVeri);
   gizlilikAnahtariniCiz();
+  hareketAnahtariniCiz();
 });
 
 document.getElementById("profilFotoKaldir").addEventListener("click", async function () {
