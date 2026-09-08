@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traxplore — Gizlilik Politikası</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --zemin: #060a11; --yuzey: rgba(9,13,19,0.86);
+    --kil: rgba(190,212,218,0.10); --kil-guclu: rgba(190,212,218,0.20);
+    --yazi: #DEE7EB; --yazi-soluk: #808B94; --kehribar: #E9A23B;
+    color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0; background: var(--zemin); color: var(--yazi);
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px; line-height: 1.7;
+}
+.sayfa { max-width: 720px; margin: 0 auto; padding: 40px 22px 90px; }
+.ust { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+       border-bottom: 1px solid var(--kil); padding-bottom: 18px; margin-bottom: 26px; }
+.marka { font-size: 14px; letter-spacing: 0.2em; color: var(--kehribar);
+         font-weight: 600; text-decoration: none; }
+.diller { margin-left: auto; font-size: 13px; }
+a { color: var(--kehribar); }
+a:hover { color: #F3BE73; }
+h1 { font-size: 24px; font-weight: 600; margin: 0 0 6px; }
+.tarih { color: var(--yazi-soluk); font-size: 13px; margin: 0 0 32px; }
+h2 { font-size: 16px; font-weight: 600; margin: 34px 0 10px;
+     padding-top: 20px; border-top: 1px solid var(--kil); }
+h3 { font-size: 14px; font-weight: 600; margin: 22px 0 6px; color: var(--kehribar); }
+p, li { color: var(--yazi); }
+ul { padding-left: 20px; }
+li { margin: 6px 0; }
+.soluk { color: var(--yazi-soluk); }
+.kutu { border: 1px solid var(--kil-guclu); border-radius: 6px;
+        background: var(--yuzey); padding: 14px 18px; margin: 18px 0; }
+.kutu p:first-child { margin-top: 0; }
+.kutu p:last-child { margin-bottom: 0; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--kil);
+         vertical-align: top; }
+th { color: var(--yazi-soluk); font-weight: 600; font-size: 12px;
+     letter-spacing: 0.06em; text-transform: uppercase; }
+.alt { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--kil);
+       color: var(--yazi-soluk); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="sayfa">
+    <div class="ust">
+        <a class="marka" href="./">TRAXPLORE</a>
+        <span class="diller"><a href="privacy.html">English</a></span>
+    </div>
+    <h1>Gizlilik Politikası</h1>
+    <p class="tarih">Yürürlük tarihi: 8 Eylül 2026</p>
+
+    <p>Traxplore, gittiğin ülke ve şehirleri bir dünya haritası üzerinde
+    işaretlediğin bir uygulamadır. Bu metin, uygulamayı kullanırken hangi
+    bilgilerinin toplandığını, niçin toplandığını, nerede durduğunu ve
+    üzerinde hangi haklara sahip olduğunu anlatır.</p>
+
+    <div class="kutu">
+        <p><b>Veri sorumlusu:</b> Cihan Güzelsoy<br>
+        <b>İletişim:</b> <a href="mailto:cihanguzelsoy@gmail.com">cihanguzelsoy@gmail.com</a></p>
+        <p class="soluk">Bu metindeki her konuda, veri silme talepleri dahil,
+        bu adrese yazabilirsin.</p>
+    </div>
+
+    <h2>1. Toplanan bilgiler</h2>
+
+    <h3>Hesabını açmak için</h3>
+    <ul>
+        <li><b>E-posta adresi</b> — giriş yapman ve şifreni sıfırlayabilmen için.</li>
+        <li><b>Şifre</b> — şifrelenmiş (hash'lenmiş) olarak saklanır. Açık halini
+        biz de göremeyiz.</li>
+        <li><b>Kullanıcı adı</b> — zorunludur, bir kez seçilir ve sonradan
+        değiştirilemez. Uygulamada seni arayan herkese görünür.</li>
+    </ul>
+
+    <h3>Kendi girdiğin bilgiler (hepsi isteğe bağlı)</h3>
+    <ul>
+        <li><b>İsim</b> — profilinde görünen ad.</li>
+        <li><b>Konum yazısı</b> — "Ankara, Türkiye" gibi serbest bir metin.
+        Bu bir konum ölçümü değil, senin yazdığın bir cümledir.</li>
+        <li><b>Profil fotoğrafı</b> — koymazsan bir siluet görünür.</li>
+        <li><b>Gezdiğin ülke ve şehirler.</b></li>
+        <li><b>Gidilen ay ve yıl</b> — istersen. Gün ve saat sorulmaz ve
+        saklanmaz; bunu bilerek böyle yaptık, çünkü gün ve saat bir anı
+        değil bir konum kaydı olurdu.</li>
+        <li><b>Şehir notların ve puanların</b> — bunları senden başka kimse
+        göremez.</li>
+        <li><b>Şehir fotoğrafları</b> — yüklediğin fotoğraflar
+        <b>varsayılan olarak gizlidir</b>; tek tek "herkese açık"
+        yapmadıkça sadece sen görürsün.</li>
+    </ul>
+
+    <h3>Uygulamanın kendiliğinden tuttukları</h3>
+    <ul>
+        <li><b>Arkadaşlık ilişkileri</b> — kimin isteğini kabul ettiğin.</li>
+        <li><b>Engellediklerin.</b></li>
+        <li><b>Şikayet kayıtları</b> — birini ya da bir fotoğrafı şikayet
+        edersen: şikayeti kimin yaptığı, kim/ne hakkında olduğu, seçilen sebep
+        ve varsa yazdığın açıklama.</li>
+        <li><b>Kayıt ve güncelleme zamanları.</b></li>
+    </ul>
+
+    <h2>2. Toplamadıklarımız</h2>
+    <p>Bunları açıkça yazıyoruz, çünkü çoğu uygulama toplar:</p>
+    <ul>
+        <li><b>Cihazının konumu alınmaz.</b> Ne GPS, ne IP'den konum tahmini.
+        Haritadaki her şey senin elle işaretlediğin yerlerdir.</li>
+        <li><b>Reklam kimliği, izleyici (tracker) veya analitik yoktur.</b>
+        Google Analytics benzeri hiçbir araç kullanılmıyor.</li>
+        <li><b>Çerez kullanılmıyor.</b> Oturumun açık kalması için gereken
+        bilgi, tarayıcının kendi deposunda (localStorage) senin cihazında durur;
+        bize gönderilmez.</li>
+        <li><b>Rehberin, fotoğraf galerin veya diğer uygulamaların
+        okunmaz.</b> Sadece yüklemeyi kendin seçtiğin fotoğraf gönderilir.</li>
+        <li><b>Verilerin satılmaz</b>, reklam amacıyla kimseyle paylaşılmaz.</li>
+    </ul>
+
+    <h2>3. Bu bilgileri kim görebilir</h2>
+    <p>Traxplore'da <b>doğrudan mesajlaşma yoktur</b> ve eklenmesi
+    planlanmıyor. Görünürlük iki anahtarla senin kontrolündedir:</p>
+    <table>
+        <tr><th>Bilgi</th><th>Kim görebilir</th></tr>
+        <tr><td>Kullanıcı adın, profil fotoğrafın, ismin, konum yazın,
+                ülke/şehir sayıların</td>
+            <td>Uygulamaya giriş yapmış herkes</td></tr>
+        <tr><td>Haritan ve herkese açık yaptığın fotoğrafların</td>
+            <td>Profilin <b>açık</b>sa herkes, <b>kapalı</b>ysa sadece
+                arkadaşların</td></tr>
+        <tr><td>Gezi kaydın (hangi şehre hangi ay/yıl)</td>
+            <td>Sadece <b>gezi kaydı anahtarını</b> açtıysan ve profilinin
+                izin verdiği kişilere. Varsayılan <b>kapalı</b>dır;
+                kapalıyken arkadaşların bile göremez</td></tr>
+        <tr><td>Notların ve puanların</td>
+            <td>Sadece sen</td></tr>
+        <tr><td>Gizli fotoğrafların</td>
+            <td>Sadece sen. (Bir fotoğraf şikayet edilirse yönetici
+                inceleyebilir.)</td></tr>
+        <tr><td>E-posta adresin</td>
+            <td>Sadece sen ve yönetici. Başka hiçbir kullanıcıya gösterilmez</td></tr>
+    </table>
+    <p>Bu kurallar arayüzde gizlemekle değil, veritabanının kendi
+    kurallarıyla uygulanır. Yani birinin tarayıcı üzerinden dolanarak
+    görmemesi gereken bir şeyi görmesi mümkün değildir.</p>
+
+    <h2>4. Verilerin nerede duruyor</h2>
+    <p>Uygulamanın verisi <b>Supabase</b> altyapısında tutulur
+    (Supabase Inc., ABD merkezli bir şirkettir). Sunucular
+    <b>[SUNUCU BÖLGESİ]</b> bölgesindedir. Web sitesi
+    <b>GitHub Pages</b> üzerinde yayınlanır (GitHub, Inc. — Microsoft).</p>
+
+    <h3>Yurt dışına aktarım</h3>
+    <p>Sunucular Türkiye dışında olduğu için verilerin yurt dışına
+    aktarılmaktadır. Bu aktarım, uygulamanın çalışabilmesi için zorunludur:
+    hesabın, haritan ve fotoğrafların bu sunucularda durmasa uygulama
+    hiç çalışmaz. Hesap açarak bu aktarıma açık rıza vermiş olursun.
+    Rızanı geri çekmek istersen hesabını silmen yeterlidir; silme işlemi
+    uygulamanın içindedir ve verilerini bu sunuculardan kaldırır.</p>
+
+    <h2>5. Ne kadar süre saklanıyor</h2>
+    <ul>
+        <li><b>Hesabın açık olduğu sürece</b> yukarıdaki bilgiler saklanır.</li>
+        <li><b>Hesabını sildiğinde</b> profilin, ismin, konum yazın, profil
+        fotoğrafın, gezdiğin şehirler, notların, puanların, tarihlerin,
+        yüklediğin fotoğraflar (kaydıyla ve dosyasıyla), arkadaşlıkların,
+        engellediklerin ve giriş hesabın silinir.</li>
+        <li><b>Şikayet kayıtları 12 ay saklanır</b> ve bu süre sonunda
+        otomatik silinir. Aşağıda ayrıca açıklanıyor.</li>
+        <li><b>Silinen kullanıcı adı bir daha kimseye verilmez.</b>
+        Böylece eski bir kayıttaki "@ornek" ile yeni bir "@ornek"
+        karıştırılmaz.</li>
+    </ul>
+
+    <h3>Şikayet kayıtları neden hesap silinince de kalıyor</h3>
+    <p>Hesabını silmek, hakkında yapılmış şikayetlerin kaydını da silmenin
+    yolu olamaz; olsaydı, başkasını rahatsız eden biri "sil ve yeniden
+    kaydol" diyerek geçmişini her seferinde sıfırlardı. Bu yüzden şikayet
+    kaydı 12 ay tutulur. Tutulan şey asgaridir: <b>kullanıcı adı</b>,
+    şikayetin sebebi ve metni. Hesabın kimlik bağı koparılır;
+    e-postan, ismin, konumun, haritan, fotoğrafların — hiçbiri kalmaz.
+    Bu saklamanın hukuki dayanağı, kötüye kullanımın önlenmesindeki
+    meşru menfaattir (KVKK m.5/2-f, GDPR m.6/1-f).</p>
+
+    <h2>6. Hesabını silmek</h2>
+    <p>Hesabını uygulamanın içinden silebilirsin: <b>Profil > Hesabımı Sil</b>.
+    Bu işlem geri alınamaz ve onaylamak için kullanıcı adını yazman istenir.
+    Ne silindiği ve ne kaldığı, silme penceresinde de yazılıdır.</p>
+
+    <h2>7. Haklarınız</h2>
+    <p>KVKK 11. madde ve GDPR uyarınca şu haklara sahipsin:</p>
+    <ul>
+        <li>Verilerinin işlenip işlenmediğini öğrenme ve bilgi talep etme</li>
+        <li>Hangi amaçla işlendiğini öğrenme</li>
+        <li>Yurt içinde veya yurt dışında aktarıldığı tarafları bilme</li>
+        <li>Eksik veya yanlış işlenmişse düzeltilmesini isteme</li>
+        <li>Silinmesini veya yok edilmesini isteme</li>
+        <li>İşlemeye itiraz etme</li>
+        <li>Verilerinin bir kopyasını isteme (taşınabilirlik)</li>
+    </ul>
+    <p>Bu haklarını kullanmak için
+    <a href="mailto:cihanguzelsoy@gmail.com">cihanguzelsoy@gmail.com</a>
+    adresine yazman yeterli. Talebine en geç <b>30 gün</b> içinde
+    cevap verilir.</p>
+
+    <h2>8. Güvenlik</h2>
+    <p>Bağlantılar HTTPS ile şifrelenir. Şifreler hash'lenerek saklanır,
+    açık halleri hiçbir yerde tutulmaz. Kimin neyi görebileceği
+    veritabanı seviyesinde tanımlanmıştır. Yine de hiçbir sistemin
+    %100 güvenli olmadığını dürüstçe söylemek gerekir.</p>
+
+    <h2>9. Yaş sınırı</h2>
+    <p>Traxplore <b>16 yaşından küçükler için değildir.</b> 16 yaşından
+    küçük olduğunu öğrendiğimiz bir hesabı ve verilerini sileriz.
+    Çocuğunun hesap açtığını düşünen bir veli yukarıdaki adrese yazabilir.</p>
+
+    <h2>10. Bu metinde değişiklik</h2>
+    <p>Metin değişirse bu sayfa güncellenir ve en üstteki tarih yenilenir.
+    Önemli bir değişiklik olursa uygulama içinde de bildirilir.</p>
+
+    <div class="alt">
+        <p><a href="kosullar.html">Kullanım Koşulları</a> ·
+        <a href="./">Traxplore</a></p>
+        <p>Cihan Güzelsoy — cihanguzelsoy@gmail.com</p>
+    </div>
+</div>
+</body>
+</html>
