@@ -1894,3 +1894,37 @@ body {
 .kayit-yer em { font-style: normal; color: var(--yazi-soluk); }
 .kayit-tarih { color: var(--kehribar); font-size: 12px; white-space: nowrap; }
 .kayit-tarih.yok { color: #5B646C; }
+
+/* --- burayı gezenler ----------------------------------------------- */
+.suzgec { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.suzgec button {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--kil);
+    border-radius: 20px;
+    color: var(--yazi-soluk);
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 13px;
+    cursor: pointer;
+}
+.suzgec button:hover { background: rgba(255,255,255,0.08); }
+.suzgec button.secili {
+    background: rgba(233,162,59,0.12);
+    border-color: rgba(233,162,59,0.45);
+    color: var(--kehribar);
+}
+.gezen-satir {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--kil);
+    cursor: pointer;
+    font-size: 14px;
+}
+.gezen-satir:last-child { border-bottom: none; }
+.gezen-satir:hover .gezen-ad { color: var(--kehribar); }
+.gezen-ad { flex: 1; min-width: 0; color: var(--yazi); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gezen-ad em { font-style: normal; color: var(--yazi-soluk); }
+.gezen-tarih { color: var(--kehribar); font-size: 12px; white-space: nowrap; }
+.gezen-bos { color: var(--yazi-soluk); font-size: 13px; padding: 6px 0; line-height: 1.5; }

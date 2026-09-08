@@ -1523,6 +1523,11 @@ async function sehirDetayAc(ulke, sehir) {
   document.getElementById("sehirNot").value = d.not || "";
   tarihKutulariniDoldur();
   tarihiGoster(ulke, sehir);
+  /* Suzgec her sehirde bastan basliyor. Yapismis birakinca kullanici
+     yeni bir sehir aciyor, listeyi bos goruyor ve suzgecin acik
+     oldugunu fark etmiyor. */
+  gezenSuzgeciSifirla();
+  gezenleriYukle();
   fotoAlaniHazirla();
   document.getElementById("sehirFotoOnizle").innerHTML = "";
   const dk = document.getElementById("digerFotolar");
@@ -1867,7 +1872,74 @@ async function tarihiKaydet() {
   yerelYaz("gezilenler", gezilenler);
   fotoDurum("");
   tarihiGoster(ulke, sehir);
+  gezenleriYukle();
   if (document.getElementById("profilKart").classList.contains("acik")) profilDoldur();
+}
+
+/* Burayi gezenler. Sehir sayfasinin GOVDESININ DISINDA duruyor:
+   gitmedigin bir sehirde de gorunmesi gerekiyor -- asil ise yaradigi
+   yer orasi, "gidecegim, kimler gitmis" durumu. */
+let gezenSuzgecAy = "";
+function gezenSuzgeciSifirla() {
+  gezenSuzgecAy = "";
+  const dugmeler = document.querySelectorAll("#gezenSuzgec button");
+  for (let i = 0; i < dugmeler.length; i++) {
+    dugmeler[i].classList.toggle("secili", !dugmeler[i].dataset.ay);
+  }
+}
+async function gezenleriYukle() {
+  const kutu = document.getElementById("gezenListe");
+  if (!kutu) return;
+  const ulke = aktifDetay.ulke, sehir = aktifDetay.sehir;
+  kutu.innerHTML = "<div class='gezen-bos'>Yükleniyor…</div>";
+
+  const { data, error } = await db.rpc("sehir_gezenler", {
+    p_ulke: ulke, p_sehir: sehir,
+    p_ay: gezenSuzgecAy ? parseInt(gezenSuzgecAy, 10) : null,
+    p_limit: 20
+  });
+  // Panel bu arada baska bir sehre gectiyse eski cevabi yazma
+  if (aktifDetay.ulke !== ulke || aktifDetay.sehir !== sehir) return;
+  if (error) { kutu.innerHTML = "<div class='gezen-bos'>Liste alınamadı.</div>"; return; }
+
+  const liste = data || [];
+  kutu.innerHTML = "";
+  if (!liste.length) {
+    const bos = document.createElement("div");
+    bos.className = "gezen-bos";
+    bos.textContent = gezenSuzgecAy
+      ? "Bu aralıkta burayı gezen kimse görünmüyor."
+      : "Burayı gezen kimse görünmüyor.";
+    kutu.appendChild(bos);
+    return;
+  }
+  for (let i = 0; i < liste.length; i++) {
+    (function (g) {
+      const sat = document.createElement("div");
+      sat.className = "gezen-satir";
+      sat.appendChild(avatarYap(g.foto, "kucuk"));
+      const ad = document.createElement("span");
+      ad.className = "gezen-ad";
+      ad.innerHTML = "@" + kacisla(g.kullanici_adi) +
+        (g.benim ? " <em>(sen)</em>" : (g.isim ? " <em>" + kacisla(g.isim) + "</em>" : ""));
+      sat.appendChild(ad);
+      if (g.gidilen) {
+        const t = document.createElement("span");
+        t.className = "gezen-tarih";
+        t.textContent = tarihYaz(g.gidilen);
+        sat.appendChild(t);
+      }
+      if (!g.benim) {
+        sat.addEventListener("click", function () {
+          hepsiniKapat();
+          gezginiAc(g.kullanici_adi);
+        });
+      } else {
+        sat.style.cursor = "default";
+      }
+      kutu.appendChild(sat);
+    })(liste[i]);
+  }
 }
 
 function yildizGoster(puan) {
@@ -2699,6 +2771,19 @@ document.getElementById("profilFotoInput").addEventListener("change", async func
   profilDoldur();
   profilButonFotoGuncelle();
 });
+
+(function gezenSuzgeciBagla() {
+  const dugmeler = document.querySelectorAll("#gezenSuzgec button");
+  for (let i = 0; i < dugmeler.length; i++) {
+    dugmeler[i].addEventListener("click", function () {
+      gezenSuzgecAy = this.dataset.ay || "";
+      for (let j = 0; j < dugmeler.length; j++) {
+        dugmeler[j].classList.toggle("secili", dugmeler[j] === this);
+      }
+      gezenleriYukle();
+    });
+  }
+})();
 
 document.getElementById("hareketAnahtar").addEventListener("change", async function () {
   const istenen = this.checked;
