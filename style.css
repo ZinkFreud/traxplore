@@ -1933,7 +1933,7 @@ body {
 .gezgin-islem { display: flex; gap: 16px; margin: 4px 0 18px; }
 
 /* --- şikayet penceresi --------------------------------------------- */
-#sikayetKutu {
+#sikayetKutu, #silKutu {
     display: none;
     position: fixed;
     inset: 0;
@@ -1943,7 +1943,7 @@ body {
     justify-content: center;
     padding: 20px;
 }
-#sikayetKutu.acik { display: flex; }
+#sikayetKutu.acik, #silKutu.acik { display: flex; }
 .sikayet-ic {
     width: 380px;
     max-width: 100%;
@@ -2019,3 +2019,46 @@ body {
 }
 .engel-satir:last-child { border-bottom: none; }
 .engel-ad { flex: 1; color: var(--yazi); }
+
+/* --- hesap silme penceresi ----------------------------------------- */
+.sil-liste {
+    margin: 0 0 14px;
+    padding-left: 18px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--yazi-soluk);
+}
+.sil-uyari {
+    margin: 0 0 16px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: #e8b9b9;
+    background: rgba(140,40,40,0.16);
+    border: 1px solid rgba(180,70,70,0.32);
+    border-radius: 5px;
+    padding: 10px 12px;
+}
+.sil-uyari b { color: #ffd9d9; }
+.sil-etiket {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--yazi-soluk);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+#silOnay {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--kil);
+    border-radius: 5px;
+    color: var(--yazi);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px;
+}
+#silDurum { font-size: 12px; color: #e8b9b9; margin-top: 8px; min-height: 16px; }
+.sil-btn { background: #8e2a2a; color: #ffe4e4; border-color: rgba(200,90,90,0.5); }
+.sil-btn:hover:not(:disabled) { background: #a83333; }
+.sil-btn:disabled { opacity: 0.4; cursor: default; }

@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260908e">
+    <link rel="stylesheet" href="style.css?v=20260908f">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -166,6 +166,31 @@
         </div>
     </div>
 
+    <div id="silKutu">
+        <div class="sikayet-ic">
+            <h3>Hesabını sil</h3>
+            <p class="sikayet-not">Bu işlem geri alınamaz.</p>
+            <ul class="sil-liste">
+                <li>Profilin, ismin, konumun ve profil fotoğrafın silinir.</li>
+                <li>Gezdiğin şehirler, notların, puanların ve tarihlerin silinir.</li>
+                <li>Yüklediğin şehir fotoğrafları silinir.</li>
+                <li>Arkadaşlıkların ve engellediklerin silinir.</li>
+                <li>Giriş hesabın silinir.</li>
+            </ul>
+            <p class="sil-uyari">Hakkında şikayet varsa kaydı <b>12 ay</b> saklanır;
+                içinde sadece kullanıcı adın ve şikayetin metni kalır.
+                <b id="silAdNot">@kullanıcı</b> adı bir daha alınamaz.</p>
+            <label class="sil-etiket" for="silOnay">Onaylamak için kullanıcı adını yaz</label>
+            <input type="text" id="silOnay" autocomplete="off" spellcheck="false"
+                   autocapitalize="none" placeholder="kullanıcı adın">
+            <div id="silDurum"></div>
+            <div class="sikayet-dugmeler">
+                <button id="silVazgec" class="metin-btn">vazgeç</button>
+                <button id="silOnayla" class="giris-btn sil-btn" disabled>Hesabımı sil</button>
+            </div>
+        </div>
+    </div>
+
     <div id="profilKart">
         <button id="profilKapat">×</button>
 
@@ -225,6 +250,7 @@
         <div id="profilAyarlar">
             <button id="profilCikis" class="profil-ayar-btn">Çıkış Yap</button>
             <button id="profilSifirla" class="profil-ayar-btn tehlike">Haritayı Sıfırla</button>
+            <button id="hesapSil" class="profil-ayar-btn tehlike">Hesabımı Sil</button>
         </div>
     </div>
     <button id="sifirlaBtn">HARİTAYI SIFIRLA</button>
@@ -235,7 +261,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260908e"></script>
+    <script src="script.js?v=20260908f"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */

@@ -3262,6 +3262,99 @@ document.getElementById("sifirlaBtn").addEventListener("click", function () {
 });
 
 /* =====================================================================
+   HESAP SILME
+   Magazalar hesabin uygulama icinden silinebilmesini sart kosuyor.
+
+   Sira onemli: once kovadaki dosyalar, sonra veritabani ve giris
+   hesabi. Ters sirada olsaydi kayit silinir, dosya kovada sahipsiz
+   kalirdi -- silinmis birinin fotografi diskte durmaya devam ederdi.
+   hesabimi_sil() de kovada dosya kaldiysa isi reddediyor; yani bu
+   sira kural olarak da zorunlu, sadece niyet degil.
+
+   Onay icin kullanici adini yazdiriyoruz. "Emin misin?" penceresi
+   refleksle geciliyor; geri donusu olmayan bir iste bu yetmez.
+   ===================================================================== */
+function hesapSilAc() {
+  const ad = profilVeri.kullanici_adi || "";
+  document.getElementById("silAdNot").textContent = ad ? "@" + ad : "Kullanıcı";
+  const onay = document.getElementById("silOnay");
+  onay.value = "";
+  onay.placeholder = ad || "kullanıcı adın";
+  document.getElementById("silDurum").textContent = "";
+  document.getElementById("silOnayla").disabled = true;
+  document.getElementById("silKutu").classList.add("acik");
+  onay.focus();
+}
+
+function hesapSilKapat() {
+  document.getElementById("silKutu").classList.remove("acik");
+}
+
+document.getElementById("hesapSil").addEventListener("click", hesapSilAc);
+document.getElementById("silVazgec").addEventListener("click", hesapSilKapat);
+document.getElementById("silKutu").addEventListener("click", function (e) {
+  if (e.target === this) hesapSilKapat();
+});
+
+document.getElementById("silOnay").addEventListener("input", function () {
+  const ad = (profilVeri.kullanici_adi || "").toLowerCase();
+  const yazilan = this.value.trim().toLowerCase().replace(/^@/, "");
+  document.getElementById("silOnayla").disabled = !ad || yazilan !== ad;
+});
+
+/* Kovadaki kendi klasorunu bosalt. Yuz yuz listeleyip siliyoruz;
+   liste tek seferde her seyi vermiyor. */
+async function kovayiBosalt(kova, uid) {
+  for (let tur = 0; tur < 60; tur++) {
+    const { data, error } = await db.storage.from(kova).list(uid, { limit: 100 });
+    if (error) throw new Error(error.message);
+    if (!data || !data.length) return;
+    const yollar = [];
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].id) yollar.push(uid + "/" + data[i].name);   // klasor girisi degilse
+    }
+    if (!yollar.length) return;
+    const { error: silHatasi } = await db.storage.from(kova).remove(yollar);
+    if (silHatasi) throw new Error(silHatasi.message);
+  }
+  throw new Error("Fotoğraflar silinemedi.");
+}
+
+document.getElementById("silOnayla").addEventListener("click", async function () {
+  const btn = this;
+  const durum = document.getElementById("silDurum");
+  if (btn.disabled) return;
+  btn.disabled = true;
+  document.getElementById("silVazgec").disabled = true;
+  document.getElementById("silOnay").disabled = true;
+
+  try {
+    const { data: oturum } = await db.auth.getSession();
+    if (!oturum.session) throw new Error("Oturum kapanmış, tekrar giriş yap.");
+    const uid = oturum.session.user.id;
+
+    durum.textContent = "Fotoğraflar siliniyor…";
+    await kovayiBosalt(KOVA, uid);
+    await kovayiBosalt(PROFIL_KOVA, uid);
+
+    durum.textContent = "Hesap siliniyor…";
+    const { error } = await db.rpc("hesabimi_sil");
+    if (error) throw new Error(hataYaz(error.message));
+
+    // Telefonda duran kopyalar da gitsin, yoksa bir sonraki acilista
+    // silinmis hesabin haritasi gorunur.
+    await db.auth.signOut();
+    try { localStorage.clear(); } catch (e) {}
+    location.reload();
+  } catch (h) {
+    durum.textContent = h.message;
+    document.getElementById("silOnay").disabled = false;
+    document.getElementById("silVazgec").disabled = false;
+    btn.disabled = false;
+  }
+});
+
+/* =====================================================================
    BAŞLANGIÇ
    ===================================================================== */
 async function veriYukle() {
