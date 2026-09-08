@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traxplore — Yönetim</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --zemin:      #060a11;
+    --yuzey:      rgba(9, 13, 19, 0.86);
+    --kil:        rgba(190, 212, 218, 0.10);
+    --kil-guclu:  rgba(190, 212, 218, 0.20);
+    --yazi:       #DEE7EB;
+    --yazi-soluk: #808B94;
+    --kehribar:   #E9A23B;
+    color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0; padding: 0 0 60px;
+    background: var(--zemin); color: var(--yazi);
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-size: 14px; line-height: 1.5;
+}
+header {
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    padding: 16px 22px; border-bottom: 1px solid var(--kil);
+    background: var(--yuzey); position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(14px);
+}
+h1 { margin: 0; font-size: 15px; letter-spacing: 0.18em; font-weight: 600; color: var(--kehribar); }
+.ozet { display: flex; gap: 16px; font-size: 12px; color: var(--yazi-soluk); flex-wrap: wrap; }
+.ozet b { color: var(--yazi); font-weight: 600; }
+.sag { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+main { max-width: 900px; margin: 0 auto; padding: 22px; }
+
+button, select, input {
+    font-family: inherit; font-size: 13px; color: var(--yazi);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--kil-guclu); border-radius: 5px;
+    padding: 8px 12px; cursor: pointer;
+}
+button:hover:not(:disabled) { background: rgba(255,255,255,0.09); }
+button:disabled { opacity: 0.4; cursor: default; }
+button.tehlike { background: #6e2020; border-color: rgba(180,70,70,0.4); color: #ffd0d0; }
+button.tehlike:hover:not(:disabled) { background: #8e2a2a; }
+button.onay { border-color: rgba(233,162,59,0.45); color: var(--kehribar); }
+input[type=text] { cursor: text; }
+
+.kart {
+    border: 1px solid var(--kil); border-radius: 8px;
+    background: var(--yuzey); padding: 16px 18px; margin-bottom: 14px;
+}
+.kart.kapali { opacity: 0.55; }
+.ust { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.etiket {
+    font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    border: 1px solid var(--kil-guclu); border-radius: 3px; padding: 2px 7px;
+    color: var(--yazi-soluk);
+}
+.etiket.sebep { color: var(--kehribar); border-color: rgba(233,162,59,0.4); }
+.zaman { font-size: 12px; color: var(--yazi-soluk); margin-left: auto; }
+.satir { font-size: 13px; margin: 3px 0; }
+.satir span { color: var(--yazi-soluk); display: inline-block; min-width: 108px; }
+.aciklama {
+    margin: 10px 0; padding: 10px 12px; border-radius: 5px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--kil);
+    font-size: 13px; white-space: pre-wrap; word-break: break-word;
+}
+.gorsel { margin: 12px 0; }
+.gorsel img {
+    max-width: 320px; max-height: 320px; border-radius: 6px;
+    border: 1px solid var(--kil-guclu); display: block;
+}
+.isler { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.durum { font-size: 12px; color: var(--yazi-soluk); margin-top: 10px; min-height: 16px; }
+.durum.hata { color: #e8b9b9; }
+.bos { color: var(--yazi-soluk); padding: 30px 0; text-align: center; }
+h2 { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase;
+     color: var(--yazi-soluk); font-weight: 600; margin: 32px 0 12px; }
+.kisit { display: flex; align-items: center; gap: 12px; padding: 10px 0;
+         border-bottom: 1px solid var(--kil); font-size: 13px; flex-wrap: wrap; }
+.kisit:last-child { border-bottom: none; }
+.kisit .ad { flex: 1; min-width: 140px; }
+.giris { max-width: 340px; margin: 80px auto; }
+.giris input { width: 100%; margin-bottom: 10px; display: block; }
+.giris button { width: 100%; }
+.uyari { color: var(--yazi-soluk); font-size: 12.5px; line-height: 1.6;
+         border-left: 2px solid var(--kil-guclu); padding-left: 12px; margin: 18px 0; }
+</style>
+</head>
+<body>
+
+<div id="girisBolum" class="giris" style="display:none">
+    <h1 style="margin-bottom:18px">TRAXPLORE YÖNETİM</h1>
+    <input type="email" id="eposta" placeholder="e-posta" autocomplete="username">
+    <input type="password" id="sifre" placeholder="şifre" autocomplete="current-password">
+    <button id="girisBtn" class="onay">Giriş yap</button>
+    <div class="durum" id="girisDurum"></div>
+</div>
+
+<div id="panel" style="display:none">
+    <header>
+        <h1>TRAXPLORE YÖNETİM</h1>
+        <div class="ozet" id="ozet"></div>
+        <div class="sag">
+            <select id="filtre">
+                <option value="acik">Açık şikayetler</option>
+                <option value="kapali">Kapatılmışlar</option>
+                <option value="hepsi">Hepsi</option>
+            </select>
+            <button id="yenile">Yenile</button>
+            <button id="cikis">Çıkış</button>
+        </div>
+    </header>
+    <main>
+        <div class="uyari">
+            Apple, şikayetlere <b>24 saat</b> içinde bakılmasını şart koşuyor.
+            Kapattığın şikayet silinmiyor, kaydı 12 ay saklanıyor.
+            Yasaklama geri alınabilir; fotoğraf silmek geri alınamaz.
+        </div>
+        <div id="liste"></div>
+        <h2 id="kisitBaslik" style="display:none">Kısıtlı hesaplar</h2>
+        <div id="kisitlar"></div>
+    </main>
+</div>
+
+<div id="yetkisiz" style="display:none" class="giris">
+    <h1 style="margin-bottom:18px">TRAXPLORE YÖNETİM</h1>
+    <p class="satir">Bu hesabın yönetim yetkisi yok.</p>
+    <button id="cikis2">Çıkış yap</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* =====================================================================
+   TRAXPLORE — YÖNETİM PANELİ
+
+   Bu sayfa herkese açık bir adreste duruyor ve bu bilinçli. Sayfa boş
+   bir kabuk: bütün veri security definer fonksiyonlardan geliyor ve
+   hepsi ilk iş "yonetici_mi()" diye soruyor. Yönetici olmayan biri
+   sayfayı açarsa hiçbir şey göremez. Koruma burada değil, veritabanında.
+   ===================================================================== */
+
+const SUPABASE_URL = "https://nfmbutrdhdomgaltneuq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_VHpyi0vznoFhj2RaXewyig_Rk0v07tG";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const SEBEPLER = {
+  uygunsuz: "uygunsuz içerik", taciz: "taciz", spam: "spam",
+  telif: "telif hakkı", diger: "diğer"
+};
+
+function el(id) { return document.getElementById(id); }
+function goster(hangi) {
+  el("girisBolum").style.display = hangi === "giris"  ? "block" : "none";
+  el("panel").style.display      = hangi === "panel"  ? "block" : "none";
+  el("yetkisiz").style.display   = hangi === "yetkisiz" ? "block" : "none";
+}
+function tarih(s) {
+  if (!s) return "";
+  const d = new Date(s);
+  return d.toLocaleDateString("tr-TR", { day: "2-digit", month: "short", year: "numeric" }) +
+         " " + d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+}
+
+/* --- giriş ---------------------------------------------------------- */
+el("girisBtn").addEventListener("click", async function () {
+  const d = el("girisDurum");
+  d.className = "durum"; d.textContent = "Giriş yapılıyor…";
+  const { error } = await db.auth.signInWithPassword({
+    email: el("eposta").value.trim(), password: el("sifre").value
+  });
+  if (error) { d.className = "durum hata"; d.textContent = error.message; return; }
+  d.textContent = "";
+  baslat();
+});
+el("sifre").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") el("girisBtn").click();
+});
+async function cikisYap() { await db.auth.signOut(); location.reload(); }
+el("cikis").addEventListener("click", cikisYap);
+el("cikis2").addEventListener("click", cikisYap);
+el("yenile").addEventListener("click", function () { yukle(); });
+el("filtre").addEventListener("change", function () { yukle(); });
+
+/* --- veri ----------------------------------------------------------- */
+async function yukle() {
+  const liste = el("liste");
+  liste.innerHTML = "<div class='bos'>Yükleniyor…</div>";
+
+  const durum = el("filtre").value;
+  const [ozet, sikayetler, kisitlar] = await Promise.all([
+    db.rpc("yonetici_ozet"),
+    db.rpc("yonetici_sikayetler", { p_durum: durum, p_limit: 200 }),
+    db.rpc("yonetici_kisitlilar")
+  ]);
+
+  if (sikayetler.error) {
+    liste.innerHTML = "<div class='bos'>Okunamadı: " + sikayetler.error.message + "</div>";
+    return;
+  }
+
+  const o = (ozet.data && ozet.data[0]) || {};
+  el("ozet").innerHTML =
+    "açık <b>" + (o.acik || 0) + "</b>" +
+    " · kapalı <b>" + (o.kapali || 0) + "</b>" +
+    " · yasaklı <b>" + (o.yasakli || 0) + "</b>" +
+    " · susturulmuş <b>" + (o.susturulmus || 0) + "</b>";
+
+  liste.innerHTML = "";
+  const kayitlar = sikayetler.data || [];
+  if (!kayitlar.length) {
+    liste.innerHTML = "<div class='bos'>Bu filtrede şikayet yok.</div>";
+  } else {
+    for (let i = 0; i < kayitlar.length; i++) liste.appendChild(sikayetKarti(kayitlar[i]));
+  }
+
+  kisitlariCiz((kisitlar.data) || []);
+}
+
+/* Fotoğrafı görmeden karar veremezsin. Kova kapalı, o yüzden süreli
+   imzalı adres üretiyoruz; yöneticiye özel okuma izni SQL tarafında. */
+async function fotoAdresi(yol) {
+  if (!yol) return null;
+  const { data, error } = await db.storage.from("sehir-fotolari")
+    .createSignedUrl(yol, 600);
+  if (error || !data) return null;
+  return data.signedUrl;
+}
+
+function sikayetKarti(s) {
+  const kart = document.createElement("div");
+  kart.className = "kart" + (s.durum === "kapali" ? " kapali" : "");
+
+  const ust = document.createElement("div");
+  ust.className = "ust";
+  const t = document.createElement("span");
+  t.className = "etiket";
+  t.textContent = s.tur === "fotograf" ? "fotoğraf" : "kullanıcı";
+  const sb = document.createElement("span");
+  sb.className = "etiket sebep";
+  sb.textContent = SEBEPLER[s.sebep] || s.sebep;
+  ust.appendChild(t); ust.appendChild(sb);
+  if (s.durum === "kapali") {
+    const k = document.createElement("span");
+    k.className = "etiket";
+    k.textContent = "kapalı" + (s.sonuc ? " — " + s.sonuc : "");
+    ust.appendChild(k);
+  }
+  const z = document.createElement("span");
+  z.className = "zaman"; z.textContent = tarih(s.olusturuldu);
+  ust.appendChild(z);
+  kart.appendChild(ust);
+
+  function satir(baslik, deger) {
+    const d = document.createElement("div");
+    d.className = "satir";
+    const b = document.createElement("span"); b.textContent = baslik;
+    d.appendChild(b);
+    d.appendChild(document.createTextNode(deger));
+    kart.appendChild(d);
+  }
+  satir("Şikayet eden", s.eden_adi ? "@" + s.eden_adi : "(hesap silinmiş)");
+  satir("Şikayet edilen", s.hedef_adi ? "@" + s.hedef_adi : "(hesap silinmiş)");
+  if (s.foto_sehir) satir("Yer", s.foto_sehir + ", " + (s.foto_ulke || ""));
+  if (s.hedef_yasakli)     satir("Durum", "hesap yasaklı");
+  else if (s.hedef_susturulmus) satir("Durum", "hesap susturulmuş");
+
+  if (s.aciklama) {
+    const a = document.createElement("div");
+    a.className = "aciklama";
+    a.textContent = s.aciklama;
+    kart.appendChild(a);
+  }
+
+  if (s.tur === "fotograf" && s.foto_yol) {
+    const g = document.createElement("div");
+    g.className = "gorsel";
+    g.textContent = s.foto_id ? "Fotoğraf yükleniyor…" : "Fotoğraf silinmiş.";
+    kart.appendChild(g);
+    if (s.foto_id) {
+      fotoAdresi(s.foto_yol).then(function (adres) {
+        g.textContent = "";
+        if (!adres) { g.textContent = "Fotoğraf açılamadı."; return; }
+        const im = document.createElement("img");
+        im.src = adres; im.alt = "";
+        g.appendChild(im);
+      });
+    }
+  }
+
+  const durum = document.createElement("div");
+  durum.className = "durum";
+
+  const isler = document.createElement("div");
+  isler.className = "isler";
+
+  function calistir(btn, hepsi, isim, fn) {
+    btn.addEventListener("click", async function () {
+      for (let i = 0; i < hepsi.length; i++) hepsi[i].disabled = true;
+      durum.className = "durum"; durum.textContent = isim + "…";
+      try {
+        await fn();
+        await yukle();
+      } catch (h) {
+        durum.className = "durum hata";
+        durum.textContent = h.message;
+        for (let i = 0; i < hepsi.length; i++) hepsi[i].disabled = false;
+      }
+    });
+  }
+  function rpc(ad, p) {
+    return db.rpc(ad, p).then(function (c) {
+      if (c.error) throw new Error(c.error.message);
+      return c.data;
+    });
+  }
+
+  const dugmeler = [];
+
+  if (s.durum === "acik") {
+    const kapat = document.createElement("button");
+    kapat.className = "onay"; kapat.textContent = "Şikayeti kapat";
+    dugmeler.push(kapat); isler.appendChild(kapat);
+    calistir(kapat, dugmeler, "Kapatılıyor", function () {
+      return rpc("yonetici_sikayet_kapat", { p_id: s.id, p_sonuc: "sorun yok" });
+    });
+  }
+
+  if (s.tur === "fotograf" && s.foto_id) {
+    const sil = document.createElement("button");
+    sil.className = "tehlike"; sil.textContent = "Fotoğrafı sil";
+    dugmeler.push(sil); isler.appendChild(sil);
+    calistir(sil, dugmeler, "Siliniyor", async function () {
+      if (!confirm("Fotoğraf kalıcı olarak silinecek. Emin misin?"))
+        throw new Error("Vazgeçildi.");
+      /* Sıra önemli: önce dosya, sonra kayıt. Ters olsaydı kayıt gider,
+         dosya kovada sahipsiz kalırdı. SQL de bunu kural yapıyor. */
+      const { error } = await db.storage.from("sehir-fotolari").remove([s.foto_yol]);
+      if (error) throw new Error("Dosya silinemedi: " + error.message);
+      return rpc("yonetici_foto_sil", { p_id: s.foto_id });
+    });
+  }
+
+  if (s.hedef_adi && s.hedef_var) {
+    if (!s.hedef_susturulmus && !s.hedef_yasakli) {
+      const sus = document.createElement("button");
+      sus.textContent = "Sustur";
+      sus.title = "Girer, haritasını kullanır, yeni fotoğraf yükleyemez.";
+      dugmeler.push(sus); isler.appendChild(sus);
+      calistir(sus, dugmeler, "Susturuluyor", function () {
+        return rpc("yonetici_sustur", { p_kullanici_adi: s.hedef_adi, p_sustur: true });
+      });
+    }
+    if (!s.hedef_yasakli) {
+      const yas = document.createElement("button");
+      yas.className = "tehlike"; yas.textContent = "Yasakla";
+      yas.title = "Hesap kimseye görünmez, giriş kapatılmaya çalışılır.";
+      dugmeler.push(yas); isler.appendChild(yas);
+      calistir(yas, dugmeler, "Yasaklanıyor", async function () {
+        const sebep = prompt("Yasak sebebi (kayda geçiyor):", SEBEPLER[s.sebep] || "");
+        if (sebep === null) throw new Error("Vazgeçildi.");
+        const sonuc = await rpc("yonetici_yasakla",
+          { p_kullanici_adi: s.hedef_adi, p_sebep: sebep });
+        if (sonuc === "sadece_gorunurluk") {
+          alert("Hesap her yerden gizlendi ama GİRİŞİ kapatılamadı — " +
+                "veritabanı bu işleme izin vermiyor. İçerik üretemez, kimse " +
+                "göremez; yine de girişi Supabase panelinden elle kapatmak istersen " +
+                "Authentication > Users bölümünden yapabilirsin.");
+        }
+        return sonuc;
+      });
+    }
+  }
+
+  kart.appendChild(isler);
+  kart.appendChild(durum);
+  return kart;
+}
+
+function kisitlariCiz(liste) {
+  const kutu = el("kisitlar");
+  kutu.innerHTML = "";
+  el("kisitBaslik").style.display = liste.length ? "block" : "none";
+  for (let i = 0; i < liste.length; i++) {
+    (function (k) {
+      const s = document.createElement("div");
+      s.className = "kisit";
+      const ad = document.createElement("span");
+      ad.className = "ad";
+      ad.textContent = "@" + k.kullanici_adi + (k.isim ? " · " + k.isim : "");
+      s.appendChild(ad);
+
+      const e = document.createElement("span");
+      e.className = "etiket";
+      e.textContent = k.yasakli ? "yasaklı" : "susturulmuş";
+      s.appendChild(e);
+
+      if (k.yasak_sebep) {
+        const sb = document.createElement("span");
+        sb.style.color = "var(--yazi-soluk)";
+        sb.style.fontSize = "12px";
+        sb.textContent = k.yasak_sebep;
+        s.appendChild(sb);
+      }
+
+      const btn = document.createElement("button");
+      btn.textContent = k.yasakli ? "Yasağı kaldır" : "Susturmayı kaldır";
+      btn.addEventListener("click", async function () {
+        btn.disabled = true;
+        const c = k.yasakli
+          ? await db.rpc("yonetici_yasak_kaldir", { p_kullanici_adi: k.kullanici_adi })
+          : await db.rpc("yonetici_sustur", { p_kullanici_adi: k.kullanici_adi, p_sustur: false });
+        if (c.error) { alert(c.error.message); btn.disabled = false; return; }
+        yukle();
+      });
+      s.appendChild(btn);
+      kutu.appendChild(s);
+    })(liste[i]);
+  }
+}
+
+/* --- açılış --------------------------------------------------------- */
+async function baslat() {
+  const { data: oturum } = await db.auth.getSession();
+  if (!oturum.session) { goster("giris"); return; }
+  const { data, error } = await db.rpc("yonetici_mi");
+  if (error || data !== true) { goster("yetkisiz"); return; }
+  goster("panel");
+  yukle();
+}
+baslat();
+</script>
+</body>
+</html>
