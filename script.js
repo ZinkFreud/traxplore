@@ -194,6 +194,20 @@ function kureKur() {
     .pointLabel(function (d) { return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>"; })
     .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); });
 
+  /* Kapak ucgenlerinin kureyi kac derecede bir takip edecegi.
+     globe.gl'in varsayilani 5 ve Gronland'i yirtiyordu: earcut ulkeyi
+     ucgenlere bolerken kuzey ucundan guney ucuna uzanan bir ucgen
+     uretiyor, o ucgenin duz yuzeyi kurenin ICINE dusuyor ve kure
+     dolgunun icinden gecip uzun siyah dilimler aciyor. Noktali
+     haldeyken kapaklar saydam oldugu icin bu hic gorunmuyordu.
+     Canli sitede olculdu: 5'te yirtik, 2'de ve 1'de duzgun. Bedeli
+     kucuk -- ucgen sayisi 83 binden 111 bine cikiyor ama cizim
+     cagrisi sayisi ayni (328), yani ekran kartina yuku degismiyor.
+     Telefonda 2: geometriyi kuran CPU, cizen GPU degil. */
+  if (typeof kure.polygonCapCurvatureResolution === "function") {
+    kure.polygonCapCurvatureResolution(MOBIL ? 2 : 1);
+  }
+
   /* Sehir isiklari. Kure uzerine cizilen bir doku olsalardi cografi
      olarak sabit kalir, uzaklasinca gorunmez olurlardi. Bunun yerine
      kurenin uzerinde duran kucuk DOM parcalari: boyutlari ekranda
@@ -256,6 +270,19 @@ function kureKur() {
     }
     kure.lights(isiklar);
   } catch (e) { console.log("Isiklar ayarlanamadi:", e.message); }
+
+  /* Derinlik tamponu hassasiyeti. globe.gl kamerayi near=0.05,
+     far=125000 ile kuruyor; bu ikisinin orani 2.5 milyon ve derinlik
+     hassasiyetini yiyor. Kureye en fazla 106 birime yaklastigimiz icin
+     hicbir sey kameraya 4 birimden yakin olamiyor, dolayisiyla near'i
+     rahatca buyutebiliyoruz. Gorunur bir sorunu bunun yuzunden
+     olctugum yok -- ucgen yirtilmasinin sebebi bu degildi -- ama
+     yuzeye yapisik cizgilerin oldugu bir sahnede 100 kat daha iyi
+     derinlik ucuz bir sigorta. */
+  try {
+    const kam = kure.camera();
+    kam.near = 0.5; kam.far = 3000; kam.updateProjectionMatrix();
+  } catch (e) { console.log("Kamera derinligi ayarlanamadi:", e.message); }
 
   kure.pointOfView(acilisGorusu());
 
