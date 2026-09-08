@@ -115,7 +115,7 @@ const kitaToplam = {};                     // kitada kac ulke var
 let gezilenler = [];                       // [{ulke, sehir}]
 let gezilenKoord = {};                     // "ulke|sehir" -> {lat,lng,nufus}
 let sehirDetaylari = {};                   // "ulke|sehir" -> {puan,foto,not}
-let profilVeri = { isim: "", konum: "", foto: "", kullanici_adi: "" };
+let profilVeri = { isim: "", konum: "", foto: "", kullanici_adi: "", profil_acik: true };
 let profilDuzenleme = false;
 let aktifDetay = { ulke: "", sehir: "" };
 let aktifUlke  = "";
@@ -884,6 +884,7 @@ async function gezginiAc(kullaniciAdi) {
     kita: p.kita_sayisi, ulke: p.ulke_sayisi, sehirSayisi: p.sehir_sayisi,
     benim: p.benim,
     arkadaslik: p.arkadaslik || "yok",
+    gorebilir: p.gorebilir !== false,
     sehirler: harita || [],
     ulkeler: new Set((harita || []).map(function (r) { return r.ulke; })),
     fotolar: fotolar || []
@@ -955,6 +956,22 @@ async function gezginPaneli() {
   liste.appendChild(sayilar);
 
   if (!misafir.benim) liste.appendChild(arkadaslikDugmesi());
+
+  /* Kapali profil: kimlik ve sayilar duruyor, harita ve fotograflar yok.
+     Sunucu zaten bos donuyor; burasi kullaniciya NEDEN bos oldugunu
+     soyluyor, yoksa "veri gelmedi" sanir. */
+  if (!misafir.gorebilir) {
+    const kilit = document.createElement("div");
+    kilit.className = "gezgin-kilit";
+    kilit.textContent = "@" + misafir.kullanici_adi +
+      " haritasını sadece arkadaşlarına gösteriyor. " +
+      "Arkadaş olduğunuzda gezdiği yerleri ve fotoğraflarını görebilirsin.";
+    liste.appendChild(kilit);
+    /* Panelin acilmasi fonksiyonun SONUNDA; buradan erken donunce
+       icerik doluyor ama panel kapali kaliyordu. Bir kez yasandi. */
+    sadeceBuPanel("panel", true);
+    return;
+  }
 
   if (misafir.fotolar.length) {
     const bas = document.createElement("div");
@@ -1802,6 +1819,7 @@ function profilDoldur() {
   document.getElementById("profilIsim").value = profilVeri.isim || "";
   document.getElementById("profilKonum").value = profilVeri.konum || "";
   avatarKur(document.getElementById("profilAvatar"), profilVeri.foto);
+  gizlilikAnahtariniCiz();
   document.getElementById("profilFotoKaldir").style.display =
     profilVeri.foto ? "inline-block" : "none";
   const son = document.getElementById("profilSonGezilen");
@@ -2093,7 +2111,26 @@ function profilKilitle(kilitli) {
   document.getElementById("profilKaydet").style.display = kilitli ? "none" : "block";
   document.getElementById("profilDegistir").style.display = kilitli ? "block" : "none";
   document.getElementById("profilFotoIsler").style.display = kilitli ? "none" : "flex";
+  document.getElementById("profilAcikAnahtar").disabled = kilitli;
+  document.getElementById("gizlilikBolum").style.opacity = kilitli ? "0.55" : "1";
 }
+/* Profil acik mi kapali mi. Kapali profil GIZLI degil: aramada cikiyor,
+   kullanici adi, avatar ve sayilar gorunuyor. Sadece harita ve
+   fotograflar arkadaslara ozel oluyor. Yoksa kimse ona istek
+   gonderemezdi. */
+function gizlilikAnahtariniCiz() {
+  const kutu = document.getElementById("profilAcikAnahtar");
+  if (!kutu) return;
+  const acik = profilVeri.profil_acik !== false;
+  kutu.checked = acik;
+  document.getElementById("profilAcikBaslik").textContent =
+    acik ? "Herkese açık" : "Sadece arkadaşlarım";
+  document.getElementById("profilAcikNot").textContent = acik
+    ? "Haritanı ve fotoğraflarını herkes görebilir."
+    : "Haritanı ve fotoğraflarını sadece arkadaşların görebilir. " +
+      "Kullanıcı adın, fotoğrafın ve sayıların herkese görünmeye devam eder.";
+}
+
 function profilButonFotoGuncelle() {
   avatarKur(document.getElementById("profilFoto"), profilVeri.foto);
 }
@@ -2358,15 +2395,18 @@ async function detaylariYukle() {
 async function profilYukle() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) { profilVeri = yerelOku("profilVeri", profilVeri); return; }
-  const yerel = yerelOku("profilVeri", { isim: "", konum: "", foto: "", kullanici_adi: "" });
+  const yerel = yerelOku("profilVeri",
+    { isim: "", konum: "", foto: "", kullanici_adi: "", profil_acik: true });
   const { data, error } = await db.from("profil")
-    .select("isim,konum,kullanici_adi,foto").eq("user_id", oturum.session.user.id).maybeSingle();
+    .select("isim,konum,kullanici_adi,foto,profil_acik")
+    .eq("user_id", oturum.session.user.id).maybeSingle();
   if (error || !data) { profilVeri = yerel; return; }
   /* Eskiden profil fotograflari sadece tarayicida duruyordu; kimse
      goremiyordu. Artik sunucuda, tek fotograf. */
   profilVeri = { isim: data.isim || "", konum: data.konum || "",
                  kullanici_adi: data.kullanici_adi || "",
-                 foto: data.foto || "" };
+                 foto: data.foto || "",
+                 profil_acik: data.profil_acik !== false };
   yerelYaz("profilVeri", profilVeri);
 }
 
@@ -2498,6 +2538,21 @@ document.getElementById("profilFotoInput").addEventListener("change", async func
   profilFotoDurum("");
   profilDoldur();
   profilButonFotoGuncelle();
+});
+
+document.getElementById("profilAcikAnahtar").addEventListener("change", async function () {
+  const istenen = this.checked;
+  this.disabled = true;
+  const { data, error } = await db.rpc("profil_gizlilik_yaz", { p_acik: istenen });
+  this.disabled = false;
+  if (error) {
+    this.checked = !istenen;                 // sunucu kabul etmediyse geri al
+    profilFotoDurum(hataYaz(error.message));
+    return;
+  }
+  profilVeri.profil_acik = data !== false;
+  yerelYaz("profilVeri", profilVeri);
+  gizlilikAnahtariniCiz();
 });
 
 document.getElementById("profilFotoKaldir").addEventListener("click", async function () {

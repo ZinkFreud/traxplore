@@ -1792,3 +1792,64 @@ body {
 .arkadas-satir { display: flex; align-items: center; gap: 10px; }
 .foto-sahip { display: flex; align-items: center; gap: 6px; }
 .foto-sahip .avatar { width: 18px; height: 18px; }
+
+/* --- açık/kapalı anahtarı ------------------------------------------ */
+.anahtar-satir {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+    margin: 0 !important;
+    color: var(--yazi) !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    font-size: 14px !important;
+}
+.anahtar-satir input { position: absolute; opacity: 0; pointer-events: none; }
+.anahtar-gorsel {
+    flex: 0 0 auto;
+    width: 38px; height: 22px;
+    border-radius: 11px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--kil);
+    position: relative;
+    transition: background 0.2s, border-color 0.2s;
+    margin-top: 1px;
+}
+.anahtar-gorsel::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--yazi-soluk);
+    transition: transform 0.2s, background 0.2s;
+}
+.anahtar-satir input:checked + .anahtar-gorsel {
+    background: rgba(233,162,59,0.18);
+    border-color: rgba(233,162,59,0.55);
+}
+.anahtar-satir input:checked + .anahtar-gorsel::after {
+    transform: translateX(16px);
+    background: var(--kehribar);
+}
+.anahtar-yazi { display: flex; flex-direction: column; gap: 3px; }
+.anahtar-yazi b { font-weight: 600; }
+.anahtar-yazi em {
+    font-style: normal;
+    font-size: 12px;
+    color: var(--yazi-soluk);
+    line-height: 1.45;
+}
+
+/* --- kilitli profil uyarısı --------------------------------------- */
+.gezgin-kilit {
+    margin: 18px 0;
+    padding: 16px;
+    border: 1px solid var(--kil);
+    border-radius: 6px;
+    background: rgba(255,255,255,0.03);
+    color: var(--yazi-soluk);
+    font-size: 13px;
+    line-height: 1.55;
+}

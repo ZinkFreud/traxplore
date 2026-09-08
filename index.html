@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260907h">
+    <link rel="stylesheet" href="style.css?v=20260908a">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -149,6 +149,18 @@
             <input type="text" id="profilIsim" placeholder="Adın" disabled>
         </div>
 
+        <div class="profil-bolum" id="gizlilikBolum">
+            <label>PROFİL GÖRÜNÜRLÜĞÜ</label>
+            <label class="anahtar-satir">
+                <input type="checkbox" id="profilAcikAnahtar">
+                <span class="anahtar-gorsel"></span>
+                <span class="anahtar-yazi">
+                    <b id="profilAcikBaslik">Herkese açık</b>
+                    <em id="profilAcikNot">Haritanı ve fotoğraflarını herkes görebilir.</em>
+                </span>
+            </label>
+        </div>
+
         <div class="profil-bolum">
             <label>KONUM</label>
             <input type="text" id="profilKonum" placeholder="Şehir, Ülke" disabled>
@@ -176,7 +188,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260907h"></script>
+    <script src="script.js?v=20260908a"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
