@@ -2429,6 +2429,11 @@ function mobilSeritTazele() {
 }
 
 function sadeceBuPanel(id, itsin) {
+  /* Arama kutusu SAG_PANELLER'de degil -- ayri bir katman. O yuzden bir
+     panel acilirken kendiliginden kapanmiyordu: telefonda "Ara"ya basip
+     hicbir sey yazmadan "Istatistikler"e gecince arama serit uzerinde
+     acik kaliyordu. Panel acmak, aramayi bitirmek demektir. */
+  aramaKapat();
   for (let i = 0; i < SAG_PANELLER.length; i++) {
     const el = document.getElementById(SAG_PANELLER[i]);
     if (!el) continue;
