@@ -46,6 +46,8 @@ th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--kil
          vertical-align: top; }
 th { color: var(--yazi-soluk); font-weight: 600; font-size: 12px;
      letter-spacing: 0.06em; text-transform: uppercase; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+       font-size: 0.92em; color: var(--kehribar); }
 .alt { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--kil);
        color: var(--yazi-soluk); font-size: 13px; }
 </style>
@@ -152,18 +154,23 @@ th { color: var(--yazi-soluk); font-weight: 600; font-size: 12px;
     görmemesi gereken bir şeyi görmesi mümkün değildir.</p>
 
     <h2>4. Verilerin nerede duruyor</h2>
-    <p>Uygulamanın verisi <b>Supabase</b> altyapısında tutulur
-    (Supabase Inc., ABD merkezli bir şirkettir). Sunucular
-    <b>[SUNUCU BÖLGESİ]</b> bölgesindedir. Web sitesi
+    <p>Uygulamanın verisi <b>Supabase</b> altyapısında tutulur. Sunucular
+    <b>Almanya'nın Frankfurt şehrindedir</b> (AWS <code>eu-central-1</code>
+    bölgesi). Hizmeti sağlayan Supabase Inc. ABD merkezli bir şirkettir,
+    ama verinin fiziksel olarak durduğu yer Frankfurt'tur. Web sitesi
     <b>GitHub Pages</b> üzerinde yayınlanır (GitHub, Inc. — Microsoft).</p>
 
     <h3>Yurt dışına aktarım</h3>
     <p>Sunucular Türkiye dışında olduğu için verilerin yurt dışına
     aktarılmaktadır. Bu aktarım, uygulamanın çalışabilmesi için zorunludur:
     hesabın, haritan ve fotoğrafların bu sunucularda durmasa uygulama
-    hiç çalışmaz. Hesap açarak bu aktarıma açık rıza vermiş olursun.
-    Rızanı geri çekmek istersen hesabını silmen yeterlidir; silme işlemi
-    uygulamanın içindedir ve verilerini bu sunuculardan kaldırır.</p>
+    hiç çalışmaz. Hesap açarak bu aktarıma açık rıza vermiş olursun
+    (KVKK m.9). Rızanı geri çekmek istersen hesabını silmen yeterlidir;
+    silme işlemi uygulamanın içindedir ve verilerini bu sunuculardan
+    kaldırır.</p>
+    <p>Verilerin <b>Avrupa Birliği sınırları içinde</b> kalıyor. Yani
+    Avrupa'nın veri koruma rejimi (GDPR) kapsamı dışına çıkmıyor;
+    ABD'ye veya başka bir ülkeye taşınmıyor.</p>
 
     <h2>5. Ne kadar süre saklanıyor</h2>
     <ul>
