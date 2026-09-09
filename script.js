@@ -53,13 +53,20 @@ function acilisGorusu() {
    arasinda hicbir fark yoktu, sadece sehir isiklari vardi. Dolgu cok
    sonuk: kitalari bogmadan "buraya gittim" demeye yetiyor. */
 const OKYANUS       = "#060a11";                 // deniz ve bosluk
-const RENK_GEZILDI  = "rgba(190,212,218,0.20)";  // gezilen ulke dolgusu
-const RENK_BOS      = "rgba(0,0,0,0)";           // gezilmeyen: dolgu yok
+/* Uc ton: okyanus en koyu, gezmedigin kara ortada, gezdigin en acik.
+   Onceki halde gezmedigin ulkelerin dolgusu HIC yoktu, sadece cizgisi
+   vardi. Masaustunde okunuyordu ama telefonda kara ile deniz ayni
+   karanliga dusuyor, harita bombos gorunuyordu. Sicak/soguk ayrim da
+   denendi (gezdigin yerler kehribara calan bir ton) -- kitalar kahve
+   rengi bir lekeye donuyor, begenilmedi. Ayrimi renkle degil
+   PARLAKLIKLA yapiyoruz, tema tek renk ailesinde kaliyor. */
+const RENK_GEZILDI  = "rgba(190,212,218,0.38)";  // gezilen ulke dolgusu
+const RENK_BOS      = "rgba(190,212,218,0.14)";  // gezilmeyen kara
 /* Hover vurgusu kara renginin acik tonu. Once kehribardi ama kehribar
    bu haritada "senin gittigin sehir" demek; fareyi gezdirirken ayni
    rengin cikmasi yaniltiyordu. */
-const RENK_HOVER    = "rgba(214,233,240,0.34)";
-const RENK_MIS_ULKE = "rgba(150,214,236,0.20)";  // baskasinin haritasi
+const RENK_HOVER    = "rgba(224,240,247,0.52)";
+const RENK_MIS_ULKE = "rgba(150,214,236,0.38)";  // baskasinin haritasi
 /* Ulke cizgileri. Eskiden uzaktayken tamamen kapaliydilar cunku nokta
    dokusu karayi zaten gosteriyordu. Artik kara BU cizgilerden ibaret,
    o yuzden hic kapanmiyorlar; sadece yaklasinca netlesiyorlar. */
@@ -222,7 +229,12 @@ function kureKur() {
     .onPolygonClick(function (d) { panelAc(d.properties.name); })
     .pointsData([])
     .pointLat("lat").pointLng("lng")
-    .pointColor(function () { return misafir ? RENK_MISAFIR : PIN_RENK; })
+    /* Nokta katmani artik GORUNMUYOR ama duruyor. Sebebi: sehir adini
+       gosteren ve tiklamayi yakalayan katman bu. Gorunen sey altindaki
+       html isigi; ondan cikan kucuk cubuk hos degildi, kaldirildi.
+       Saydam bir cismin fare isinini yakalamaya devam ettigi canli
+       sitede olculdu -- saydamken de sehir adi cikiyor. */
+    .pointColor(function () { return "rgba(0,0,0,0)"; })
     // Yaricap pinBoyutu() tarafindan yakinliga gore ayarlaniyor.
     .pointAltitude(0.0141)
     .pointResolution(MOBIL ? 8 : 14)
@@ -251,7 +263,7 @@ function kureKur() {
      pointer-events almiyor. */
   kure.htmlElementsData([])
       .htmlLat("lat").htmlLng("lng")
-      .htmlAltitude(0.02)
+      .htmlAltitude(0.001)          // yuzeye yapisik; 0.02'de havada duruyordu
       .htmlTransitionDuration(0)
       .htmlElement(function (d) {
         const dis = document.createElement("div");
