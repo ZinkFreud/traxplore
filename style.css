@@ -2117,3 +2117,25 @@ body {
         color: rgba(190, 212, 218, 0.26);
     }
 }
+
+/* --- iOS'un kendiliğinden yakınlaştırması ---------------------------
+   Safari, yazı boyutu 16 pikselden KÜÇÜK bir yazı alanına dokunulunca
+   sayfayı yakınlaştırıyor. Apple bunu bilerek yapıyor: küçük yazıyı
+   okutmaya zorlamamak için. Ama klavye kapanınca zoom geri çıkmıyor --
+   sayfa yakınlaşmış kalıyor, sağ tarafı ekran dışına taşıyor ve
+   kullanıcı elle geri açana kadar bütün paneller kesik görünüyor.
+
+   Tek çözümü alanları 16 piksele çıkarmak. Görünüm meta etiketine
+   "user-scalable=no" yazmak İŞE YARAMAZ; Safari iOS 10'dan beri onu
+   kasten yok sayıyor (görme zorluğu olan kullanıcıyı korumak için).
+
+   !important gerekiyor çünkü alanların çoğu kimliğiyle (#girisEmail
+   gibi) boyutlandırılmış; kimlik seçicisi bu kuraldan güçlü.
+   Masaüstünü etkilemiyor, sadece dokunmatik ekranlarda. */
+@media (max-width: 720px), (max-height: 520px), (pointer: coarse) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
+}
