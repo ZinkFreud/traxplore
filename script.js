@@ -41,6 +41,23 @@ function acilisGorusu() {
   return { lat: ILK_GORUS.lat, lng: ILK_GORUS.lng,
            altitude: sigacakYukseklik(ILK_GORUS.altitude) };
 }
+/* Meridyenler kutuplarda birbirine girmesin diye 88 derecede kesiliyor;
+   zaten oradan otesi ekranda birkac piksel. */
+function izgaraYollari() {
+  const yollar = [];
+  for (let lo = -180; lo < 180; lo += IZGARA_ARALIK) {
+    const p = [];
+    for (let la = -88; la <= 88; la += 2) p.push([la, lo]);
+    yollar.push({ nokta: p, ana: false });
+  }
+  for (let la = -90 + IZGARA_ARALIK; la < 90; la += IZGARA_ARALIK) {
+    const p = [];
+    for (let lo = -180; lo <= 180; lo += 3) p.push([la, lo]);
+    yollar.push({ nokta: p, ana: (la === 0) });     // ana = ekvator
+  }
+  return yollar;
+}
+
 /* --- Kure temasi ------------------------------------------------------- */
 /* Kure artik DOKU degil GEOMETRI. Noktali dunya bir resimdi: 4096x2048
    bir tuvali kureye sariyorduk, yaklasinca o resmin pikselleri buyuyup
@@ -52,6 +69,13 @@ function acilisGorusu() {
    isaretleme" diye karar vermistik; o zaman gezdigin yer ile gezmedigin
    arasinda hicbir fark yoktu, sadece sehir isiklari vardi. Dolgu cok
    sonuk: kitalari bogmadan "buraya gittim" demeye yetiyor. */
+/* Kara dolgulari OPAK ve bunun bir isi var.
+   Renkler yari saydam hallerinin koyu okyanus uzerindeki tam
+   karsiligi: rgba(190,212,218,0.14) + #060a11 = #20262d. Ekranda
+   birebir ayni gorunuyor. Ama opak olduklari icin ALTLARINDAKINI
+   ORTUYORLAR -- ekvator ve izgara cizgilerini kurenin yuzeyine,
+   dolgunun altina ciziyoruz; cizgiler boylece sadece denizde kaliyor.
+   Karada gizlemek icin ayri bir kara maskesi cikarmaya gerek yok. */
 const OKYANUS       = "#060a11";                 // deniz ve bosluk
 /* Uc ton: okyanus en koyu, gezmedigin kara ortada, gezdigin en acik.
    Onceki halde gezmedigin ulkelerin dolgusu HIC yoktu, sadece cizgisi
@@ -60,13 +84,13 @@ const OKYANUS       = "#060a11";                 // deniz ve bosluk
    denendi (gezdigin yerler kehribara calan bir ton) -- kitalar kahve
    rengi bir lekeye donuyor, begenilmedi. Ayrimi renkle degil
    PARLAKLIKLA yapiyoruz, tema tek renk ailesinde kaliyor. */
-const RENK_GEZILDI  = "rgba(190,212,218,0.38)";  // gezilen ulke dolgusu
-const RENK_BOS      = "rgba(190,212,218,0.14)";  // gezilmeyen kara
+const RENK_GEZILDI  = "#4c575d";   // gezilen ulke  (= 190,212,218 %38)
+const RENK_BOS      = "#20262d";   // gezilmeyen kara (= %14)
 /* Hover vurgusu kara renginin acik tonu. Once kehribardi ama kehribar
    bu haritada "senin gittigin sehir" demek; fareyi gezdirirken ayni
    rengin cikmasi yaniltiyordu. */
-const RENK_HOVER    = "rgba(224,240,247,0.52)";
-const RENK_MIS_ULKE = "rgba(150,214,236,0.38)";  // baskasinin haritasi
+const RENK_HOVER    = "#788289";   // uzerine gelinen ulke (= %52)
+const RENK_MIS_ULKE = "#3d5864";   // baskasinin haritasi (= %38 mavi)
 /* Ulke cizgileri. Eskiden uzaktayken tamamen kapaliydilar cunku nokta
    dokusu karayi zaten gosteriyordu. Artik kara BU cizgilerden ibaret,
    o yuzden hic kapanmiyorlar; sadece yaklasinca netlesiyorlar. */
@@ -75,6 +99,13 @@ const SINIR_UZAK    = 0.26;   // acilis gorunumunde
 const SINIR_YAKIN   = 0.55;   // yaklasinca
 const SINIR_BASLA   = 2.2;    // bu yukseklikten yukarida SINIR_UZAK
 const SINIR_TAM     = 0.5;    // bu yukseklikte SINIR_YAKIN
+/* Ekvator, meridyenler (boylam) ve paraleller (enlem).
+   Sadece denizde gorunuyorlar; karayi yukaridaki opak dolgu ortuyor.
+   15 derecede bir, cok silik -- amac bilgi vermek degil, bos denize
+   bir olcek duygusu katmak. Ekvator digerlerinden biraz belirgin. */
+const IZGARA_ARALIK = 15;
+const IZGARA_ALFA   = 0.09;
+
 const PIN_RENK      = "#FFF1D6";                 // isigin parlak cekirdegi
 const RENK_MISAFIR  = "#DFF7FF";                 // baska bir gezginin haritasi
 
@@ -227,6 +258,19 @@ function kureKur() {
       kure.polygonCapColor(kure.polygonCapColor());
     })
     .onPolygonClick(function (d) { panelAc(d.properties.name); })
+    /* Izgara kurenin yuzeyinde (0.0006), ulke dolgulari 0.003'te.
+       Yani cizgiler dolgunun altinda kaliyor ve karada gorunmuyor. */
+    .pathsData(izgaraYollari())
+    .pathPoints(function (d) { return d.nokta; })
+    .pathPointLat(function (p) { return p[0]; })
+    .pathPointLng(function (p) { return p[1]; })
+    .pathPointAlt(0.0006)
+    .pathColor(function (d) {
+      return "rgba(190,212,218," +
+             (d.ana ? IZGARA_ALFA * 1.7 : IZGARA_ALFA) + ")";
+    })
+    .pathStroke(null)
+    .pathTransitionDuration(0)
     .pointsData([])
     .pointLat("lat").pointLng("lng")
     /* Nokta katmani artik GORUNMUYOR ama duruyor. Sebebi: sehir adini
