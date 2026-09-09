@@ -120,6 +120,33 @@ const kitaRenk = {
 
 function yerelYaz(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
 function yerelOku(k, v) { try { return JSON.parse(localStorage.getItem(k)) || v; } catch (e) { return v; } }
+
+/* Yerel kopya KIME ait?
+   Bu olmadan su oluyordu: bir kullanici cikis yapiyor, ayni tarayicidan
+   baskasi giriyor, ve yeni kullanici oncekinin haritasini, ismini,
+   kullanici adini goruyordu. Yeni bir hesapta sunucuda profil satiri
+   olmadigi icin kod yerel kopyaya dusuyor, o kopya da bir oncekinin.
+   Sonucu iki tarafli kotu: internet kafede ayni makineyi kullanan iki
+   kisi birbirinin verisini goruyor; ve yeni hesap "kullanici adin var"
+   sanildigi icin ad secme ekranini hic gormuyor, adsiz kaliyor.
+   Cozum: yerel kopyayi kullanici kimligiyle muhurluyoruz. Kimlik
+   degistiyse kopya bize ait degildir, siliyoruz. */
+const YEREL_ANAHTARLAR = ["gezilenler", "sehirDetaylari", "profilVeri",
+                          "bekleyenKullaniciAdi"];
+
+function yerelTemizle() {
+  for (let i = 0; i < YEREL_ANAHTARLAR.length; i++) {
+    try { localStorage.removeItem(YEREL_ANAHTARLAR[i]); } catch (e) {}
+  }
+}
+
+function yerelSahibiniAyarla(uid) {
+  const sahip = yerelOku("oturumSahibi", "");
+  if (sahip === uid) return false;
+  yerelTemizle();
+  yerelYaz("oturumSahibi", uid || "");
+  return true;                       // temizlik yapildi
+}
 function anahtar(ulke, sehir) { return ulke + "|" + sehir; }
 function gezildiMi(ulke, sehir) {
   return gezilenler.some(function (g) { return g.ulke === ulke && g.sehir === sehir; });
@@ -2570,7 +2597,17 @@ async function profilYukle() {
   const { data, error } = await db.from("profil")
     .select("isim,konum,kullanici_adi,foto,profil_acik,hareket_acik")
     .eq("user_id", oturum.session.user.id).maybeSingle();
-  if (error || !data) { profilVeri = yerel; return; }
+  /* HATA ile "satir yok" ayni sey degil. Hata varsa sunucuya
+     ulasamadik demektir, yerel kopya ise yarar. Ama satir yoksa hesap
+     gercekten bos: yerel kopyaya dusersek bir onceki kullanicinin
+     profilini bu hesaba giydirmis oluruz. Bir kez oldu. */
+  if (error) { profilVeri = yerel; return; }
+  if (!data) {
+    profilVeri = { isim: "", konum: "", kullanici_adi: "",
+                   foto: "", profil_acik: true, hareket_acik: false };
+    yerelYaz("profilVeri", profilVeri);
+    return;
+  }
   /* Eskiden profil fotograflari sadece tarayicida duruyordu; kimse
      goremiyordu. Artik sunucuda, tek fotograf. */
   profilVeri = { isim: data.isim || "", konum: data.konum || "",
@@ -3003,6 +3040,10 @@ document.getElementById("girisBtn").addEventListener("click", async function () 
 
 async function cikisYap() {
   await db.auth.signOut();
+  /* Cikinca yerel kopya kalmasin. Ortak kullanilan bir bilgisayarda
+     sonraki kisi oncekinin haritasini gormemeli. */
+  yerelTemizle();
+  yerelYaz("oturumSahibi", "");
   location.reload();
 }
 (function mobilSeridiBagla() {
@@ -3132,6 +3173,11 @@ document.getElementById("silOnayla").addEventListener("click", async function ()
    BAŞLANGIÇ
    ===================================================================== */
 async function veriYukle() {
+  // Once kim oldugumuza bakalim; baskasinin kopyasiyla ise baslamayalim
+  try {
+    const { data: o } = await db.auth.getSession();
+    yerelSahibiniAyarla(o.session ? o.session.user.id : "");
+  } catch (e) { /* oturum okunamadiysa asagisi zaten yerel kopyasiz calisir */ }
   await ulkeleriYukle();
   await gezileriYukle();
   await Promise.all([koordinatlariYukle(), detaylariYukle(), profilYukle(),
