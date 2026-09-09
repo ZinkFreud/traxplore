@@ -2968,8 +2968,15 @@ document.getElementById("kayitBtn").addEventListener("click", async function () 
     girisMesaj.textContent = "Bu kullanıcı adı alınmış, başka bir tane dene."; return;
   }
 
+  /* emailRedirectTo SART. Yazmazsak Supabase dogrulama baglantisini kendi
+     "Site URL" ayarina yolluyor; o ayar bir kez yanlis girilmisse kullanici
+     onay linkine tiklayip bambaska bir sayfada buluyor kendini. Yasandi:
+     bir kayit, GitHub kok sayfasina dustu. Burada acikca yaziyoruz ki
+     ayardan bagimsiz olarak Traxplore'a donsun. */
   const { error } = await db.auth.signUp({
-    email: e, password: s, options: { data: { kullanici_adi: k } }
+    email: e, password: s,
+    options: { data: { kullanici_adi: k },
+               emailRedirectTo: location.origin + location.pathname }
   });
   this.disabled = false;
   if (error) { girisMesaj.textContent = hataYaz(error.message); return; }
