@@ -1435,7 +1435,7 @@ function listeSonrasiTazele() {
     profilEkraniCiz();
 }
 
-document.getElementById("istekBtn").addEventListener("click", async function () {
+bagla("istekBtn", "click", async function () {
   const u = aktifDetay.ulke, s = aktifDetay.sehir, k = aktifDetay.kayit;
   this.disabled = true; listeDurumu("");
   const { data, error } = await db.rpc("gitmek_istiyorum", { p_ulke: u, p_sehir: s });
@@ -1447,7 +1447,7 @@ document.getElementById("istekBtn").addEventListener("click", async function () 
   listeSonrasiTazele();
 });
 
-document.getElementById("favoriBtn").addEventListener("click", async function () {
+bagla("favoriBtn", "click", async function () {
   const u = aktifDetay.ulke, s = aktifDetay.sehir, k = aktifDetay.kayit;
   this.disabled = true; listeDurumu("");
   const { data, error } = await db.rpc("favori_degistir", { p_ulke: u, p_sehir: s });
@@ -2920,9 +2920,9 @@ function sifreDurumu(metin, hata) {
   d.textContent = metin || "";
 }
 
-document.getElementById("ayarlarAc").addEventListener("click", ayarlariAc);
-document.getElementById("ayarlarKapat").addEventListener("click", hepsiniKapat);
-document.getElementById("ayarlarGeri").addEventListener("click", function () { profilAc(); });
+bagla("ayarlarAc", "click", ayarlariAc);
+bagla("ayarlarKapat", "click", hepsiniKapat);
+bagla("ayarlarGeri", "click", function () { profilAc(); });
 
 /* Sifre degistirme. Supabase'de "guvenli sifre degisikligi" ayari aciksa
    yakin zamanda giris yapmis olmak gerekiyor; o durumda anlasilir bir
@@ -3372,12 +3372,26 @@ async function profilYukle() {
 
 /* =====================================================================
    OLAYLAR
-   ===================================================================== */
+
+   bagla(): olmayan bir ogeye baglanmaya calisirsak uygulama olmesin.
+   Neden onemli: index.html ile script.js AYRI dosyalar ve tarayici
+   (ya da servis iscisi, ya da GitHub Pages) birini yenileyip otekini
+   eski birakabiliyor. Eski index.html + yeni script.js oldugunda
+   "document.getElementById(yeni_oge).addEventListener" satiri hata
+   firlatiyor, betik ORADA duruyor ve uygulama giris ekraninda kalip
+   hicbir seye cevap vermiyor. Boyle bir sey bir kez yasandi; artik
+   eksik oge sadece konsola yaziliyor, gerisi calismaya devam ediyor. */
+function bagla(id, olay, islev) {
+  const el = document.getElementById(id);
+  if (!el) { console.log("Oge bulunamadi, atlandi:", id); return null; }
+  el.addEventListener(olay, islev);
+  return el;
+}
 document.getElementById("kapat").addEventListener("click", paneliKapat);
 document.getElementById("ortu").addEventListener("click", hepsiniKapat);
 document.getElementById("sehirDetayKapat").addEventListener("click", sehirDetayKapat);
 document.getElementById("kitaChart").addEventListener("click", istatistikPaneliAc);
-document.getElementById("kureSayac").addEventListener("click", istatistikPaneliAc);
+bagla("kureSayac", "click", istatistikPaneliAc);
 document.getElementById("istatistikKapat").addEventListener("click", istatistikPaneliKapat);
 document.getElementById("profilBtn").addEventListener("click", kendiProfilim);
 document.getElementById("profilKapat").addEventListener("click", profilKapat);
@@ -3435,8 +3449,8 @@ function fotoAlaniHazirla() {
   bolum.parentElement.insertBefore(diger, bolum.nextSibling);
 }
 
-document.getElementById("notAcikAnahtar").addEventListener("change", notAnahtariniCiz);
-document.getElementById("sehirNot").addEventListener("input", notAnahtariniCiz);
+bagla("notAcikAnahtar", "change", notAnahtariniCiz);
+bagla("sehirNot", "input", notAnahtariniCiz);
 
 document.getElementById("sehirDetayKaydet").addEventListener("click", async function () {
   const btn = this;

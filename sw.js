@@ -12,12 +12,12 @@
    yayinda degistirmek gerekiyor, yoksa telefon eski dosyalari tutar.
    ===================================================================== */
 
-const SURUM  = "traxplore-20260910h";
+const SURUM  = "traxplore-20260910i";
 const KABUK  = [
   "./",
   "./index.html",
-  "./style.css?v=20260910h",
-  "./script.js?v=20260910h",
+  "./style.css?v=20260910i",
+  "./script.js?v=20260910i",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
@@ -31,13 +31,16 @@ const DISARIDAN = [
 ];
 
 self.addEventListener("install", function (olay) {
+  /* addAll ATOMIK: listedeki tek bir dosya inmezse (404, kesinti, yeni
+     surum daha yayilmamis) kurulum tamamen basarisiz oluyor, yeni
+     servis iscisi hic devreye girmiyor ve telefon eski dosyalarla
+     kaliyor. Tek tek ekleyip hatayi yutuyoruz: eksik kalan dosya
+     internetten gelir, kurulum yine de tamamlanir. */
   olay.waitUntil(
     caches.open(SURUM).then(function (kap) {
-      return kap.addAll(KABUK).then(function () {
-        return Promise.all(DISARIDAN.map(function (a) {
-          return kap.add(a).catch(function () {});
-        }));
-      });
+      return Promise.all(KABUK.concat(DISARIDAN).map(function (a) {
+        return kap.add(a).catch(function () {});
+      }));
     }).then(function () { return self.skipWaiting(); })
   );
 });
