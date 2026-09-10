@@ -12,35 +12,13 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Traxplore">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Traxplore — gezdiğin dünyayı işaretle</title>
-
-    <!-- BAGLANTI ONIZLEMESI
-         Bunlar yokken WhatsApp/Telegram gibi uygulamalar sayfadaki ilk
-         uzun metni cekiyordu: "hesabimi sil" penceresinin icindeki
-         "sikayet kaydi 12 ay saklanir..." yazisi onizlemede cikiyordu.
-         Basligi ve aciklamayi artik biz soyluyoruz. -->
-    <meta name="description" content="Gittiğin şehirleri dünya küresinde işaretle. Fotoğraflarını ekle, notunu yaz, arkadaşlarının haritasını gör.">
-    <link rel="canonical" href="https://zinkfreud.github.io/traxplore/">
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Traxplore">
-    <meta property="og:locale" content="tr_TR">
-    <meta property="og:url" content="https://zinkfreud.github.io/traxplore/">
-    <meta property="og:title" content="Traxplore — gezdiğin dünyayı işaretle">
-    <meta property="og:description" content="Gittiğin şehirleri dünya küresinde işaretle. Fotoğraflarını ekle, notunu yaz, arkadaşlarının haritasını gör.">
-    <meta property="og:image" content="https://zinkfreud.github.io/traxplore/onizleme.png?v=1">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Traxplore — gezilen şehirlerin işaretli olduğu dünya küresi">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Traxplore — gezdiğin dünyayı işaretle">
-    <meta name="twitter:description" content="Gittiğin şehirleri dünya küresinde işaretle. Fotoğraflarını ekle, notunu yaz, arkadaşlarının haritasını gör.">
-    <meta name="twitter:image" content="https://zinkfreud.github.io/traxplore/onizleme.png?v=1">
+    <title>Traxplore</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260910l">
+    <link rel="stylesheet" href="style.css?v=20260909g">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -117,25 +95,9 @@
     <div id="sehirDetayPanel">
         <button id="sehirDetayKapat">×</button>
         <h2 id="sehirDetayBaslik"></h2>
+        <img id="sehirKapak" src="" alt="">
 
-        <!-- "Gittim" dugmesi burada, cunku isaretlemek icin ulke paneline
-             geri donmek gerekiyordu. Kapak fotografi varsa onun sag ust
-             kosesinde duruyor, yoksa baslik altinda tam genislikte. -->
-        <div id="sehirKapakSar" class="kapaksiz">
-            <img id="sehirKapak" src="" alt="">
-            <button id="gittimBtn" type="button">Buraya gittim</button>
-        </div>
-
-        <!-- Listeler kapagin hemen altinda. Ulke listesindeki sehir
-             satirlarina konmadi: orasi zaten dar, uc dugme sigmaz. -->
-        <div id="listeDugmeler">
-            <button id="istekBtn" type="button">Gitmek istiyorum</button>
-            <button id="favoriBtn" type="button">☆ Favori</button>
-        </div>
-        <div id="listeDurum"></div>
-
-        <div id="kilitUyari">Buraya gittiğini işaretleyince puan verebilir,
-            not tutabilir, tarih girebilir ve fotoğraf ekleyebilirsin.</div>
+        <div id="kilitUyari">Bu şehri değerlendirmek için önce <b>gittim</b> olarak işaretle.</div>
 
         <div class="detay-bolum" id="gezenlerBolum">
             <label>BURAYI GEZENLER</label>
@@ -145,13 +107,6 @@
                 <button data-ay="12">Son 1 yıl</button>
             </div>
             <div id="gezenListe"></div>
-        </div>
-
-        <!-- Govdenin DISINDA: gitmedigin bir sehirde de baskalarinin
-             yorumlarini okuyabilmelisin, asil ise yaradigi yer orasi. -->
-        <div class="detay-bolum" id="yorumBolum">
-            <label>YORUMLAR <span id="yorumSayac"></span></label>
-            <div id="yorumListe"></div>
         </div>
 
         <div id="detayGovde">
@@ -183,20 +138,9 @@
             <div id="sehirFotoOnizle"></div>
         </div>
 
-        <!-- Tek kutu: ayni metin ya sadece sana gorunuyor ya da sehir
-             sayfasinda herkese. Fotograflardaki anahtarin aynisi. -->
-        <div class="detay-bolum" id="notBolum">
-            <label>NOTUN <span id="notSayac"></span></label>
-            <textarea id="sehirNot" maxlength="600"
-                      placeholder="Bu şehirle ilgili notların..."></textarea>
-            <label class="anahtar-satir" id="notAnahtarSatir">
-                <input type="checkbox" id="notAcikAnahtar">
-                <span class="anahtar-gorsel"></span>
-                <span class="anahtar-yazi">
-                    <b id="notAcikBaslik">Sadece sen görüyorsun</b>
-                    <em id="notAcikNot">Açarsan bu şehrin sayfasında yorum olarak görünür.</em>
-                </span>
-            </label>
+        <div class="detay-bolum">
+            <label>NOTUN</label>
+            <textarea id="sehirNot" placeholder="Bu şehirle ilgili notların..."></textarea>
         </div>
 
         <button id="sehirDetayKaydet">KAYDET</button>
@@ -253,99 +197,22 @@
         </div>
     </div>
 
-    <!-- PROFIL EKRANI
-         Ust kisim sabit: fotograf, kullanici adi, isim, konum, sayilar.
-         Altinda sekmeler; sadece sekme govdesi kayiyor.
-         AYNI iskelet baskasinin profili icin de kullaniliyor -- iki ayri
-         cizim kodu tutmak, birinde duzeltilen seyin otekinde durmasi
-         demekti. Fark sadece hangi verinin ciziligi ve gizlilik suzgeci. -->
     <div id="profilKart">
         <button id="profilKapat">×</button>
-        <button id="ayarlarAc" type="button" title="Ayarlar" aria-label="Ayarlar">
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none"
-                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-                <circle cx="12" cy="12" r="3.2"></circle>
-                <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"></path>
-            </svg>
-        </button>
 
-        <div id="profilUst">
+        <div id="profilFotolar">
+            <input type="file" id="profilFotoInput" accept="image/*" hidden>
             <div id="profilAvatar" class="avatar avatar-buyuk"></div>
-            <div id="profilKimlik">
-                <div id="profilAd">—</div>
-                <div id="profilAltSatir"></div>
-                <!-- Sayilar kutu degil duz yazi: kendi profilinde ayni
-                     sayilar zaten haritanin tepesinde de yaziyor, iki
-                     yerde birden kutu icinde bagirmasi fazlaydi. -->
-                <div id="profilSayiYazi"></div>
+            <div id="profilFotoIsler">
+                <label for="profilFotoInput" id="profilFotoEkle">Fotoğraf Seç</label>
+                <button id="profilFotoKaldir" class="metin-btn">Kaldır</button>
             </div>
+            <div id="profilFotoDurum"></div>
         </div>
-
-        <!-- Favoriler (en fazla 6 sehir). Bos oldugunda gizli. -->
-        <div id="profilFavoriler" hidden></div>
-
-        <!-- Kullanici adi alma kutusu (adi yoksa) ya da misafir profilinde
-             arkadaslik / engelle-sikayet dugmeleri buraya giriyor. -->
-        <div id="profilUstEk"></div>
-
-        <div id="profilSekmeler">
-            <button type="button" class="sekme-btn secili" data-sekme="gezdim">Gezdiklerim</button>
-            <button type="button" class="sekme-btn" data-sekme="istek">Gitmek İstediklerim</button>
-            <button type="button" class="sekme-btn" data-sekme="foto">Fotoğraflar</button>
-            <button type="button" class="sekme-btn" data-sekme="yorum">Yorumlar</button>
-        </div>
-
-        <div id="profilIcerik">
-            <div class="sekme-govde" id="sekmeGezdim"></div>
-            <div class="sekme-govde" id="sekmeIstek" hidden></div>
-            <div class="sekme-govde" id="sekmeFoto" hidden></div>
-            <div class="sekme-govde" id="sekmeYorum" hidden></div>
-            <div class="sekme-govde" id="sekmeArkadas" hidden></div>
-        </div>
-    </div>
-    <!-- Ayarlar profilden AYRI bir ekran. Sebebi sadece yer darligi degil:
-         "Haritayi Sifirla" ve "Hesabimi Sil" gibi geri donusu olmayan
-         seyler her acilista goz onunde durmamali. -->
-    <div id="ayarlarPanel">
-        <button id="ayarlarKapat">×</button>
-        <button id="ayarlarGeri" class="metin-btn" type="button">‹ Profil</button>
-        <h2 class="ayar-baslik">Ayarlar</h2>
 
         <div class="profil-bolum">
-            <label>HESAP</label>
-            <div class="ayar-satir"><span>E-posta</span><b id="ayarEposta">—</b></div>
-        </div>
-
-        <!-- Isim, konum ve fotograf duzenleme profilden buraya tasindi:
-             profilin ust kismi "sabit" olacaksa icinde acilip kapanan
-             bir duzenleme formu olamaz. -->
-        <div class="profil-bolum" id="profilDuzenle">
-            <label>PROFİL</label>
-            <div id="profilFotolar">
-                <input type="file" id="profilFotoInput" accept="image/*" hidden>
-                <div id="ayarAvatar" class="avatar avatar-buyuk"></div>
-                <div id="profilFotoIsler">
-                    <label for="profilFotoInput" id="profilFotoEkle">Fotoğraf Seç</label>
-                    <button id="profilFotoKaldir" class="metin-btn">Kaldır</button>
-                </div>
-                <div id="profilFotoDurum"></div>
-            </div>
+            <label>İSİM</label>
             <input type="text" id="profilIsim" placeholder="Adın" disabled>
-            <input type="text" id="profilKonum" placeholder="Şehir, Ülke" disabled>
-            <div id="profilButonlar">
-                <button id="profilKaydet">KAYDET</button>
-                <button id="profilDegistir">DEĞİŞTİR</button>
-            </div>
-        </div>
-
-        <div class="profil-bolum">
-            <label>ŞİFRE DEĞİŞTİR</label>
-            <input type="password" id="yeniSifre1" autocomplete="new-password"
-                   placeholder="Yeni şifre (en az 6 karakter)">
-            <input type="password" id="yeniSifre2" autocomplete="new-password"
-                   placeholder="Yeni şifre (tekrar)">
-            <button id="sifreDegistir" class="profil-ayar-btn">Şifreyi Değiştir</button>
-            <div id="sifreDurum" class="ayar-durum"></div>
         </div>
 
         <div class="profil-bolum" id="gizlilikBolum">
@@ -360,6 +227,11 @@
             </label>
         </div>
 
+        <div class="profil-bolum">
+            <label>KONUM</label>
+            <input type="text" id="profilKonum" placeholder="Şehir, Ülke" disabled>
+        </div>
+
         <div class="profil-bolum" id="hareketBolum">
             <label>GEZİ KAYDI</label>
             <label class="anahtar-satir">
@@ -372,41 +244,31 @@
             </label>
         </div>
 
-        <div class="profil-bolum" id="engelBolum">
-            <label id="engelBaslik">ENGELLEDİKLERİN</label>
-            <div id="engelListe"></div>
+        <div class="profil-bolum">
+            <label>GEZİ KAYDIN</label>
+            <div id="profilSonGezilen"></div>
         </div>
 
-        <div class="profil-bolum">
-            <label>YASAL</label>
-            <div class="yasal">
-                <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a>
-                <span>·</span>
-                <a href="kosullar.html" target="_blank" rel="noopener">Kullanım Koşulları</a>
-            </div>
+        <div id="profilButonlar">
+            <button id="profilKaydet">KAYDET</button>
+            <button id="profilDegistir">DEĞİŞTİR</button>
         </div>
-
-        <div class="profil-bolum">
-            <label>HESAP İŞLEMLERİ</label>
-            <div id="profilAyarlar">
-                <button id="profilCikis" class="profil-ayar-btn">Çıkış Yap</button>
-                <button id="profilSifirla" class="profil-ayar-btn tehlike">Haritayı Sıfırla</button>
-                <button id="hesapSil" class="profil-ayar-btn tehlike">Hesabımı Sil</button>
-            </div>
+        <div id="profilAyarlar">
+            <button id="profilCikis" class="profil-ayar-btn">Çıkış Yap</button>
+            <button id="profilSifirla" class="profil-ayar-btn tehlike">Haritayı Sıfırla</button>
+            <button id="hesapSil" class="profil-ayar-btn tehlike">Hesabımı Sil</button>
+        </div>
+        <div class="yasal">
+            <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a>
+            <span>·</span>
+            <a href="kosullar.html" target="_blank" rel="noopener">Kullanım Koşulları</a>
         </div>
     </div>
-
     <button id="sifirlaBtn">HARİTAYI SIFIRLA</button>
 
     <!-- Haritanin uzerinde, kose. Magazalar gizlilik metnine kolay
          ulasilmasini istiyor; profil kartinin icinde durmasi teknik
          olarak yeterli ama kimse orayi aramaz. -->
-    <!-- Telefonda kurenin altindaki sayac. Uygulamanin verdigi tek
-         "puan" bu; sag ust kosede 12 punto gri durmasi az geliyordu.
-         Kisa ekranlarda (yan cevrilince) kurenin altinda yer kalmadigi
-         icin gizleniyor, sayilar ust seride buyuk olarak cikiyor. -->
-    <button id="kureSayac" type="button" aria-label="İstatistikler"></button>
-
     <div id="altBilgi">
         <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik</a>
         <span>·</span>
@@ -419,7 +281,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260910l"></script>
+    <script src="script.js?v=20260909g"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
