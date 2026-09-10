@@ -810,6 +810,7 @@ async function gezginiAc(kullaniciAdi) {
 function misafirdenCik() {
   if (!misafir) return;
   misafir = null;
+  document.body.classList.remove("misafirde");
   const bar = document.getElementById("misafirBar");
   if (bar) bar.remove();
   hepsiniKapat();
@@ -818,7 +819,13 @@ function misafirdenCik() {
   kureyiSifirla();
 }
 
+/* Bar ustte duruyor ve telefonda #mobilUst seridiyle ayni yere
+   dusuyordu: logo ve sayac barin altinda kaliyordu. Ustelik o sayac
+   SENIN sayilarini gosteriyor -- baskasinin haritasina bakarken
+   yaniltici. Misafir kipinde ustteki serit tamamen barin yerini
+   aliyor; masaustunde de ayni sebeple istatistik seridi gizleniyor. */
 function misafirBariGoster() {
+  document.body.classList.add("misafirde");
   let bar = document.getElementById("misafirBar");
   if (!bar) {
     bar = document.createElement("div");
@@ -827,6 +834,7 @@ function misafirBariGoster() {
   }
   bar.innerHTML = "";
   const yazi = document.createElement("span");
+  yazi.className = "misafir-yazi";
   yazi.textContent = "@" + misafir.kullanici_adi + " haritasına bakıyorsun";
   const cik = document.createElement("button");
   cik.textContent = "kendi haritama dön";

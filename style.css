@@ -2456,3 +2456,25 @@ button.sayi-baglanti.bekleyen::after {
 #notSayac, #yorumSayac { font-size: 10.5px; opacity: 0.65; margin-left: 5px; letter-spacing: 0; }
 #notDurum { font-size: 11.5px; color: #e8b9b9; margin-top: 8px; line-height: 1.4; }
 #notDurum:empty { margin-top: 0; }
+
+/* --- misafir kipi: üstteki şerit çakışıyordu ------------------------
+   #misafirBar ile #mobilUst ikisi de z-index 1100 ve ikisi de üstte;
+   bar logonun ve sayacın üstüne biniyordu. Ayrıca o sayaç SENİN
+   sayılarını gösteriyor — başkasının haritasına bakarken yanıltıcı.
+   Misafirdeyken ikisini de gizleyip yerini bara bırakıyoruz. */
+body.misafirde #istatistik { display: none; }
+.misafir-yazi { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 720px), (max-height: 520px) {
+    body.misafirde #mobilUst { display: none !important; }
+    body.misafirde #misafirBar {
+        top: 0; left: 0; right: 0;
+        transform: none;
+        justify-content: space-between;
+        border-radius: 0 0 12px 12px;
+        border-top: none;
+        padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+        font-size: 13px;
+    }
+    body.misafirde #misafirBar button { flex: 0 0 auto; }
+}
