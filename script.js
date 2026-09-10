@@ -225,6 +225,12 @@ function gezildiMi(ulke, sehir) {
 let kure = null;
 let ulkeOzellikleri = [];        // GeoJSON feature listesi
 let hoverUlke = null;
+let hoverSehir = null;          // dokunma anında parmağın altındaki pin
+let sonAcilanUlke = "";         // aynı ülkeyi iki kez açmayalım
+let sonAcilanAn   = 0;
+let kureDurdu     = false;      // çizim duraklatıldı mı
+let kureUykuda    = false;      // 30 sn dokunulmadı
+let kameraBitis   = 0;          // kamera animasyonu bitiş anı
 let pinListesi = [];             // kurede gorunen pinler
 let sonYukseklik = 2.5;
 let sonEsik = -1;                // en son uygulanan nufus esigi
@@ -312,6 +318,7 @@ function kureKur() {
     .pointAltitude(0.0141)
     .pointResolution(MOBIL ? 8 : 14)
     .pointLabel(function (d) { return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>"; })
+    .onPointHover(function (d) { hoverSehir = d || null; })
     .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); });
 
   /* Kapak ucgenlerinin kureyi kac derecede bir takip edecegi.
@@ -695,6 +702,11 @@ function pinBoyutu() {
 function pinleriTazele() { yogunlukGuncelle(true); }
 
 function kureyeGit(lat, lng, yakin) {
+  /* Kamera hareket ederken cizimi duraklatmayalim, yoksa animasyon
+     gorunmuyor. Bittikten sonra karar yeniden veriliyor. */
+  kameraBitis = Date.now() + 1800;
+  kureyiUyandir();
+  setTimeout(kureAnimasyonTazele, 1850);
   if (!kure) return;
   kure.controls().autoRotate = false;
   kure.pointOfView({ lat: lat, lng: lng, altitude: yakin ? 0.28 : 1.7 }, 900);
@@ -843,6 +855,7 @@ function misafirBariGoster() {
 }
 
 function panelAc(ulkeAdi) {
+  sonAcilanUlke = ulkeAdi; sonAcilanAn = Date.now();
   const arama = document.getElementById("panelArama");
   if (arama) arama.style.display = "";
   document.getElementById("sehirListe").style.display = "";
@@ -3179,6 +3192,114 @@ function mobilSeritTazele() {
 const ORTU_IZLENEN = ["panel", "sehirDetayPanel", "profilKart", "ayarlarPanel",
                       "istatistikPanel", "gecmisPanel", "aramaKutu"];
 
+/* =====================================================================
+   KURENIN CIZIMINI DURDURMA
+   Kure durmadan ciziliyor: kimse dokunmasa da saniyede 60 kare. Telefon
+   isiniyor, isininca islemciyi kendisi yavaslatiyor, yavaslayinca da
+   dokunuslar kaciyor. Iki yerde duruyoruz:
+
+     1. Telefonda bir panel acikken. Panel ekranin %82'sini kapliyor,
+        arkasindaki kureyi cizmenin kimseye faydasi yok.
+     2. 30 saniye hic dokunulmayinca. Telefon masada acik dururken bile
+        kure donuyordu.
+
+   Ikisi de sadece TELEFONDA. Masaustunde kure ekranin yarisinda duruyor
+   ve donmesi uygulamanin ilk izlenimi; orada durdurmuyoruz.
+   ===================================================================== */
+const UYKU_SURESI = 30000;
+let uykuSayaci = null;
+
+function kureAnimasyonTazele() {
+  if (!kure || typeof kure.pauseAnimation !== "function") return;
+  const panelAcik = MOBIL && ORTU_IZLENEN.some(function (id) {
+    const el = document.getElementById(id);
+    return el && el.classList.contains("acik");
+  });
+  const kameraOynuyor = Date.now() < kameraBitis;
+  const dursun = !kameraOynuyor && (kureUykuda || panelAcik);
+  if (dursun === kureDurdu) return;
+  kureDurdu = dursun;
+  try {
+    if (dursun) kure.pauseAnimation();
+    else        kure.resumeAnimation();
+  } catch (e) { kureDurdu = false; }
+}
+
+/* Uyku SADECE cizimi durduruyor, autoRotate'e dokunmuyor. Sebebi:
+   cizim dururken kontroller de guncellenmiyor, yani kure oldugu yerde
+   kaliyor ve uyaninca kaldigi yerden devam ediyor -- sicrama olmuyor.
+   autoRotate'i kapatip acsaydik, kullanicinin bir sehre yaklasip
+   birakmis oldugu duruma dokunmus olurduk: ekrana her dokunusunda kure
+   yeniden donmeye baslardi. */
+function kureyiUyandir() {
+  if (!MOBIL) return;
+  kureUykuda = false;
+  clearTimeout(uykuSayaci);
+  uykuSayaci = setTimeout(function () {
+    kureUykuda = true;
+    kureAnimasyonTazele();
+  }, UYKU_SURESI);
+  kureAnimasyonTazele();
+}
+
+if (MOBIL) {
+  ["touchstart", "pointerdown", "wheel", "keydown"].forEach(function (o) {
+    document.addEventListener(o, kureyiUyandir, { passive: true });
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) kureyiUyandir();
+  });
+  kureyiUyandir();               // sayaci baslat
+}
+
+/* =====================================================================
+   DOKUNMAYLA ULKE / SEHIR ACMA
+   Kure kutuphanesi dokunmada tiklamayi guvenilir uretmiyor: parmak
+   basinca ulke rengi degisiyor (yani kutuphane parmagin altindakini
+   BILIYOR) ama tiklama gelmiyor. Telefonda "bazi ulkeler aciliyor,
+   bazilari acmiyor" bundan.
+
+   Cozum: parmak kalkarken kaydirma degil de dokunussa (12 pikselden az
+   hareket, yarim saniyeden kisa), parmagin altindaki neyse onu biz
+   aciyoruz. Kutuphanenin tiklamasi da gelirse ayni sey iki kez
+   acilmasin diye kisa bir koruma var.
+   ===================================================================== */
+(function dokunmayiBagla() {
+  const harita = document.getElementById("harita");
+  if (!harita) return;
+  let bas = null;
+
+  harita.addEventListener("touchstart", function (e) {
+    if (e.touches.length !== 1) { bas = null; return; }
+    const t = e.touches[0];
+    bas = { x: t.clientX, y: t.clientY, an: Date.now() };
+  }, { passive: true });
+
+  harita.addEventListener("touchend", function (e) {
+    const b = bas; bas = null;
+    if (!b) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!t) return;
+    const dx = t.clientX - b.x, dy = t.clientY - b.y;
+    if (Math.sqrt(dx * dx + dy * dy) > 12) return;      // kureyi cevirmis
+    if (Date.now() - b.an > 500) return;                // basili tutmus
+
+    /* Pin, ulkenin ustunde duruyor: parmak pinin uzerindeyse sehri ac. */
+    if (hoverSehir) {
+      const s = hoverSehir;
+      if (aktifDetay.ulke === s.ulke && aktifDetay.sehir === s.sehir &&
+          document.getElementById("sehirDetayPanel").classList.contains("acik")) return;
+      sehirDetayAc(s.ulke, s.sehir);
+      return;
+    }
+    if (!hoverUlke || !hoverUlke.properties) return;
+    const ad = hoverUlke.properties.name;
+    if (!ad) return;
+    if (ad === sonAcilanUlke && Date.now() - sonAcilanAn < 700) return;  // zaten acildi
+    panelAc(ad);
+  }, { passive: true });
+})();
+
 function ortuTazele() {
   const ortu = document.getElementById("ortu");
   if (!ortu) return;
@@ -3187,6 +3308,7 @@ function ortuTazele() {
     return el && el.classList.contains("acik");
   });
   ortu.classList.toggle("acik", acik);
+  kureAnimasyonTazele();
 }
 
 (function ortuyuIzle() {
