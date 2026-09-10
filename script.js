@@ -3308,6 +3308,11 @@ function ortuTazele() {
     return el && el.classList.contains("acik");
   });
   ortu.classList.toggle("acik", acik);
+  /* Harita ustundeki mobilya (buyuk sayac, yasal baglanti) panel
+     acikken gorunmesin. Ikisi de z-index 900'de; "Son Gezdiklerin"
+     paneli de 900'deydi ve esitlikte HTML sirasi kazandigi icin sayac
+     panelin ONUNDE cikip yaziya karisiyordu. */
+  document.body.classList.toggle("panelde", acik);
   kureAnimasyonTazele();
 }
 

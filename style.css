@@ -2533,6 +2533,14 @@ body.misafirde #istatistik { display: none; }
     /* Başkasının haritasındayken kendi sayın ortada durmasın. */
     body.misafirde #kureSayac { display: none; }
 
+    /* Panel açıkken haritanın üstündeki mobilya görünmesin. "Son
+       Gezdiklerin" paneli de z-index 900'deydi; eşitlikte HTML sırası
+       kazandığı için sayaç panelin ÖNÜNDE çıkıp yazıya karışıyordu.
+       Panelin katını yükseltiyoruz, ayrıca ikisini de gizliyoruz. */
+    #gecmisPanel { z-index: 1001; }
+    body.panelde #kureSayac,
+    body.panelde #altBilgi { display: none !important; }
+
     /* Alt bilgi bağlantısı sayacın altında kalsın */
     #altBilgi { bottom: calc(52px + env(safe-area-inset-bottom)); }
 }
