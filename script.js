@@ -1924,7 +1924,6 @@ function profilDoldur() {
   document.getElementById("profilIsim").value = profilVeri.isim || "";
   document.getElementById("profilKonum").value = profilVeri.konum || "";
   avatarKur(document.getElementById("profilAvatar"), profilVeri.foto);
-  gizlilikAnahtariniCiz();
   document.getElementById("profilFotoKaldir").style.display =
     profilVeri.foto ? "inline-block" : "none";
   const son = document.getElementById("profilSonGezilen");
@@ -1949,8 +1948,6 @@ function profilDoldur() {
     sat.appendChild(yer); sat.appendChild(tar);
     son.appendChild(sat);
   }
-  hareketAnahtariniCiz();
-  engelListesiniCiz();
   profilButonFotoGuncelle();
 }
 
@@ -2113,6 +2110,10 @@ function gezginIslemleri() {
     if (error) { alert(hataYaz(error.message)); return; }
     misafirdenCik();
     arkadasVeriTazele();
+    /* Engel listesi kendiliginden tazelenmiyordu: birini engelledikten
+       sonra Ayarlar'a girince liste bos gorunuyor, ancak sayfa
+       yenilenince beliriyordu. */
+    engelListesiniYukle();
   });
 
   const sik = document.createElement("button");
@@ -2333,16 +2334,64 @@ function arkadasBolumu() {
   }
 }
 
+/* =====================================================================
+   AYARLAR
+   Profilden ayri bir ekran. "Haritayi Sifirla" ve "Hesabimi Sil" her
+   acilista goz onunde durmasin diye; ayrica profil kartini kisaltiyor.
+   ===================================================================== */
+async function ayarlariAc() {
+  sadeceBuPanel("ayarlarPanel", true);
+  gizlilikAnahtariniCiz();
+  hareketAnahtariniCiz();
+  engelListesiniCiz();
+  sifreDurumu("");
+  const { data: oturum } = await db.auth.getSession();
+  document.getElementById("ayarEposta").textContent =
+    (oturum.session && oturum.session.user && oturum.session.user.email) || "—";
+}
+
+function sifreDurumu(metin, hata) {
+  const d = document.getElementById("sifreDurum");
+  if (!d) return;
+  d.className = "ayar-durum" + (hata ? " hata" : "");
+  d.textContent = metin || "";
+}
+
+document.getElementById("ayarlarAc").addEventListener("click", ayarlariAc);
+document.getElementById("ayarlarKapat").addEventListener("click", hepsiniKapat);
+document.getElementById("ayarlarGeri").addEventListener("click", function () { profilAc(); });
+
+/* Sifre degistirme. Supabase'de "guvenli sifre degisikligi" ayari aciksa
+   yakin zamanda giris yapmis olmak gerekiyor; o durumda anlasilir bir
+   mesaj veriyoruz, ham hatayi degil. */
+document.getElementById("sifreDegistir").addEventListener("click", async function () {
+  const a = document.getElementById("yeniSifre1").value;
+  const b = document.getElementById("yeniSifre2").value;
+  if (a.length < 6) { sifreDurumu("Şifre en az 6 karakter olmalı.", true); return; }
+  if (a !== b)      { sifreDurumu("İki şifre aynı değil.", true); return; }
+  this.disabled = true;
+  sifreDurumu("Değiştiriliyor…");
+  const { error } = await db.auth.updateUser({ password: a });
+  this.disabled = false;
+  if (error) {
+    sifreDurumu(/reauth|recent|session|login/i.test(error.message)
+      ? "Güvenlik için yeniden giriş yapman gerekiyor. Çıkış yapıp tekrar gir, sonra dene."
+      : hataYaz(error.message), true);
+    return;
+  }
+  document.getElementById("yeniSifre1").value = "";
+  document.getElementById("yeniSifre2").value = "";
+  sifreDurumu("Şifren değişti.");
+});
+
 function profilKilitle(kilitli) {
   document.getElementById("profilIsim").disabled = kilitli;
   document.getElementById("profilKonum").disabled = kilitli;
   document.getElementById("profilKaydet").style.display = kilitli ? "none" : "block";
   document.getElementById("profilDegistir").style.display = kilitli ? "block" : "none";
   document.getElementById("profilFotoIsler").style.display = kilitli ? "none" : "flex";
-  document.getElementById("profilAcikAnahtar").disabled = kilitli;
-  document.getElementById("hareketAnahtar").disabled = kilitli;
-  document.getElementById("hareketBolum").style.opacity = kilitli ? "0.55" : "1";
-  document.getElementById("gizlilikBolum").style.opacity = kilitli ? "0.55" : "1";
+  /* Gorunurluk anahtarlari artik Ayarlar ekraninda; profil duzenleme
+     kilidiyle iliskileri kalmadi. */
 }
 /* Profil acik mi kapali mi. Kapali profil GIZLI degil: aramada cikiyor,
    kullanici adi, avatar ve sayilar gorunuyor. Sadece harita ve
@@ -2370,24 +2419,18 @@ let engelListesi = [];
 async function engelListesiniYukle() {
   const { data } = await db.rpc("engellilerim");
   engelListesi = data || [];
-  if (document.getElementById("profilKart").classList.contains("acik")) engelListesiniCiz();
+  engelListesiniCiz();
 }
 
 function engelListesiniCiz() {
-  const kart = document.getElementById("profilKart");
-  let bolum = document.getElementById("engelBolum");
-  if (!engelListesi.length) { if (bolum) bolum.remove(); return; }
-  if (!bolum) {
-    bolum = document.createElement("div");
-    bolum.id = "engelBolum";
-    bolum.className = "profil-bolum";
-    const btnlar = document.getElementById("profilButonlar");
-    kart.insertBefore(bolum, btnlar);
-  }
-  bolum.innerHTML = "";
-  const et = document.createElement("label");
-  et.textContent = "ENGELLEDİKLERİN (" + engelListesi.length + ")";
-  bolum.appendChild(et);
+  const bolum = document.getElementById("engelBolum");
+  const kutu  = document.getElementById("engelListe");
+  if (!bolum || !kutu) return;
+  /* Kimseyi engellememis birine bos bir baslik gostermenin anlami yok */
+  bolum.style.display = engelListesi.length ? "block" : "none";
+  document.getElementById("engelBaslik").textContent =
+    "ENGELLEDİKLERİN (" + engelListesi.length + ")";
+  kutu.innerHTML = "";
   for (let i = 0; i < engelListesi.length; i++) {
     (function (g) {
       const sat = document.createElement("div");
@@ -2408,7 +2451,7 @@ function engelListesiniCiz() {
         engelListesiniYukle();
       });
       sat.appendChild(kaldir);
-      bolum.appendChild(sat);
+      kutu.appendChild(sat);
     })(engelListesi[i]);
   }
 }
@@ -2537,7 +2580,7 @@ function acikPanelVarMi() {
 /* gecmisPanel masaustunde sag ustte hep duran bir pencere; "acik"
    sinifinin orada bir karsiligi yok. Mobilde ise alttan acilan bir
    sayfaya donusuyor, o yuzden listeye onu da katiyoruz. */
-const SAG_PANELLER = ["panel", "sehirDetayPanel", "profilKart",
+const SAG_PANELLER = ["panel", "sehirDetayPanel", "profilKart", "ayarlarPanel",
                       "istatistikPanel", "gecmisPanel"];
 /* Alt seritteki uc dugme. Acik olana tekrar basinca kapaniyor --
    gecmis panelinin kapatma dugmesi yok, kapanmanin baska yolu olmali. */
@@ -2568,7 +2611,7 @@ function mobilSeritTazele() {
    sinif degisikliklerini izliyoruz -- ileride yeni bir panel eklenirse
    kendiliginden calisir. Masaustunde kapali: orada paneller yanda
    duruyor ve kure kullanilabilir kalmali. */
-const ORTU_IZLENEN = ["panel", "sehirDetayPanel", "profilKart",
+const ORTU_IZLENEN = ["panel", "sehirDetayPanel", "profilKart", "ayarlarPanel",
                       "istatistikPanel", "gecmisPanel", "aramaKutu"];
 
 function ortuTazele() {
@@ -2611,6 +2654,7 @@ function hepsiniKapat() {
   document.getElementById("panel").classList.remove("acik");
   document.getElementById("sehirDetayPanel").classList.remove("acik");
   document.getElementById("profilKart").classList.remove("acik");
+  document.getElementById("ayarlarPanel").classList.remove("acik");
   document.getElementById("istatistikPanel").classList.remove("acik");
   document.getElementById("harita").classList.remove("itili");
   document.getElementById("gecmisPanel").classList.remove("acik");

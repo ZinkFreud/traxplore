@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260910a">
+    <link rel="stylesheet" href="style.css?v=20260910b">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -207,6 +207,13 @@
 
     <div id="profilKart">
         <button id="profilKapat">×</button>
+        <button id="ayarlarAc" type="button" title="Ayarlar" aria-label="Ayarlar">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none"
+                 stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                <circle cx="12" cy="12" r="3.2"></circle>
+                <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1z"></path>
+            </svg>
+        </button>
 
         <div id="profilFotolar">
             <input type="file" id="profilFotoInput" accept="image/*" hidden>
@@ -223,6 +230,44 @@
             <input type="text" id="profilIsim" placeholder="Adın" disabled>
         </div>
 
+        <div class="profil-bolum">
+            <label>KONUM</label>
+            <input type="text" id="profilKonum" placeholder="Şehir, Ülke" disabled>
+        </div>
+
+        <div class="profil-bolum">
+            <label>GEZİ KAYDIN</label>
+            <div id="profilSonGezilen"></div>
+        </div>
+
+        <div id="profilButonlar">
+            <button id="profilKaydet">KAYDET</button>
+            <button id="profilDegistir">DEĞİŞTİR</button>
+        </div>
+    </div>
+    <!-- Ayarlar profilden AYRI bir ekran. Sebebi sadece yer darligi degil:
+         "Haritayi Sifirla" ve "Hesabimi Sil" gibi geri donusu olmayan
+         seyler her acilista goz onunde durmamali. -->
+    <div id="ayarlarPanel">
+        <button id="ayarlarKapat">×</button>
+        <button id="ayarlarGeri" class="metin-btn" type="button">‹ Profil</button>
+        <h2 class="ayar-baslik">Ayarlar</h2>
+
+        <div class="profil-bolum">
+            <label>HESAP</label>
+            <div class="ayar-satir"><span>E-posta</span><b id="ayarEposta">—</b></div>
+        </div>
+
+        <div class="profil-bolum">
+            <label>ŞİFRE DEĞİŞTİR</label>
+            <input type="password" id="yeniSifre1" autocomplete="new-password"
+                   placeholder="Yeni şifre (en az 6 karakter)">
+            <input type="password" id="yeniSifre2" autocomplete="new-password"
+                   placeholder="Yeni şifre (tekrar)">
+            <button id="sifreDegistir" class="profil-ayar-btn">Şifreyi Değiştir</button>
+            <div id="sifreDurum" class="ayar-durum"></div>
+        </div>
+
         <div class="profil-bolum" id="gizlilikBolum">
             <label>PROFİL GÖRÜNÜRLÜĞÜ</label>
             <label class="anahtar-satir">
@@ -233,11 +278,6 @@
                     <em id="profilAcikNot">Haritanı ve fotoğraflarını herkes görebilir.</em>
                 </span>
             </label>
-        </div>
-
-        <div class="profil-bolum">
-            <label>KONUM</label>
-            <input type="text" id="profilKonum" placeholder="Şehir, Ülke" disabled>
         </div>
 
         <div class="profil-bolum" id="hareketBolum">
@@ -252,26 +292,30 @@
             </label>
         </div>
 
-        <div class="profil-bolum">
-            <label>GEZİ KAYDIN</label>
-            <div id="profilSonGezilen"></div>
+        <div class="profil-bolum" id="engelBolum">
+            <label id="engelBaslik">ENGELLEDİKLERİN</label>
+            <div id="engelListe"></div>
         </div>
 
-        <div id="profilButonlar">
-            <button id="profilKaydet">KAYDET</button>
-            <button id="profilDegistir">DEĞİŞTİR</button>
+        <div class="profil-bolum">
+            <label>YASAL</label>
+            <div class="yasal">
+                <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a>
+                <span>·</span>
+                <a href="kosullar.html" target="_blank" rel="noopener">Kullanım Koşulları</a>
+            </div>
         </div>
-        <div id="profilAyarlar">
-            <button id="profilCikis" class="profil-ayar-btn">Çıkış Yap</button>
-            <button id="profilSifirla" class="profil-ayar-btn tehlike">Haritayı Sıfırla</button>
-            <button id="hesapSil" class="profil-ayar-btn tehlike">Hesabımı Sil</button>
-        </div>
-        <div class="yasal">
-            <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a>
-            <span>·</span>
-            <a href="kosullar.html" target="_blank" rel="noopener">Kullanım Koşulları</a>
+
+        <div class="profil-bolum">
+            <label>HESAP İŞLEMLERİ</label>
+            <div id="profilAyarlar">
+                <button id="profilCikis" class="profil-ayar-btn">Çıkış Yap</button>
+                <button id="profilSifirla" class="profil-ayar-btn tehlike">Haritayı Sıfırla</button>
+                <button id="hesapSil" class="profil-ayar-btn tehlike">Hesabımı Sil</button>
+            </div>
         </div>
     </div>
+
     <button id="sifirlaBtn">HARİTAYI SIFIRLA</button>
 
     <!-- Haritanin uzerinde, kose. Magazalar gizlilik metnine kolay
@@ -289,7 +333,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260910a"></script>
+    <script src="script.js?v=20260910b"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */

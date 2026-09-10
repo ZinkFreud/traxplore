@@ -564,8 +564,8 @@ body {
     text-align: center;
 }
 
-/* Profil kartı - sağdan kayan */
-#profilKart {
+/* Profil kartı ve ayarlar — sağdan kayan, aynı yüzey */
+#profilKart, #ayarlarPanel {
     position: fixed;
     top: 0;
     right: 0;
@@ -584,11 +584,11 @@ body {
     box-sizing: border-box;
     pointer-events: none;
 }
-#profilKart.acik {
+#profilKart.acik, #ayarlarPanel.acik {
     transform: translateX(0);
     pointer-events: auto;
 }
-#profilKapat {
+#profilKapat, #ayarlarKapat {
     position: absolute; top: 20px; right: 20px;
     background: none; border: none; color: #888;
     font-size: 24px; cursor: pointer;
@@ -1311,7 +1311,7 @@ body {
     border-left: 1px solid var(--kil);
     box-shadow: none;
 }
-#gecmisPanel, #profilKart, #logo, #kitaChart, #istatistik, #sifirlaBtn, .arama-kutu {
+#gecmisPanel, #profilKart, #ayarlarPanel, #logo, #kitaChart, #istatistik, #sifirlaBtn, .arama-kutu {
     background: var(--yuzey);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
@@ -1646,7 +1646,7 @@ body {
     }
 
     /* --- bütün paneller: alttan açılan tam sayfa --- */
-    #panel, #sehirDetayPanel, #istatistikPanel, #profilKart, #gecmisPanel {
+    #panel, #sehirDetayPanel, #istatistikPanel, #profilKart, #ayarlarPanel, #gecmisPanel {
         position: fixed;
         left: 0; right: 0; bottom: 0;
         top: auto;
@@ -1665,7 +1665,7 @@ body {
         box-sizing: border-box;
     }
     #panel.acik, #sehirDetayPanel.acik, #istatistikPanel.acik,
-    #profilKart.acik, #gecmisPanel.acik {
+    #profilKart.acik, #ayarlarPanel.acik, #gecmisPanel.acik {
         transform: translateY(0);
         pointer-events: auto;
     }
@@ -2179,3 +2179,33 @@ body {
 @media (max-width: 720px), (max-height: 520px) {
     #ortu { background: rgba(4,7,12,0.45); }
 }
+
+/* --- ayarlar ekranı ------------------------------------------------- */
+#ayarlarAc {
+    position: absolute; top: 19px; right: 54px;
+    background: none; border: none; color: var(--yazi-soluk);
+    cursor: pointer; padding: 2px; line-height: 0;
+}
+#ayarlarAc:hover { color: var(--kehribar); }
+#ayarlarGeri {
+    display: inline-block; margin-bottom: 4px; padding: 0;
+    font-size: 13px;
+}
+h2.ayar-baslik {
+    margin: 0 0 22px; font-size: 22px; font-weight: 600; color: var(--yazi);
+}
+.ayar-satir {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 12px; font-size: 14px; color: var(--yazi-soluk);
+    padding: 10px 12px; border-radius: 8px; background: #080D14;
+}
+.ayar-satir b {
+    color: var(--yazi); font-weight: 500; word-break: break-all; text-align: right;
+}
+.ayar-durum { font-size: 12.5px; color: var(--yazi-soluk); min-height: 16px; margin-top: 8px; }
+.ayar-durum.hata { color: #e8b9b9; }
+#yeniSifre1 { margin-bottom: 8px; }
+#yeniSifre2 { margin-bottom: 10px; }
+#sifreDegistir { width: 100%; }
+#ayarlarPanel .yasal { justify-content: flex-start; margin-top: 0; }
+#engelListe:empty { display: none; }
