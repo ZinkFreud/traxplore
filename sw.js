@@ -12,16 +12,17 @@
    yayinda degistirmek gerekiyor, yoksa telefon eski dosyalari tutar.
    ===================================================================== */
 
-const SURUM  = "traxplore-20260910i";
+const SURUM  = "traxplore-20260910j";
 const KABUK  = [
   "./",
   "./index.html",
-  "./style.css?v=20260910i",
-  "./script.js?v=20260910i",
+  "./style.css?v=20260910j",
+  "./script.js?v=20260910j",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./apple-touch-icon.png"
+  "./apple-touch-icon.png",
+  "./onizleme.png?v=1"
 ];
 /* Bunlar baska sunucudan geliyor; biri inmezse kurulum bozulmasin diye
    tek tek ve hatayi yutarak ekliyoruz. */
