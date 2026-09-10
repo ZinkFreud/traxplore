@@ -186,6 +186,35 @@ function yerelSahibiniAyarla(uid) {
   return true;                       // temizlik yapildi
 }
 function anahtar(ulke, sehir) { return ulke + "|" + sehir; }
+
+/* =====================================================================
+   LISTELER — gitmek istediklerim ve favorilerim
+   Ikisi de acilista bir kez cekiliyor; sehir kartinda ve profilde
+   buradan okunuyor. Kurallar (6 sinir, "once gitmis olmalisin",
+   isaretleyince istek listesinden dusme) SUNUCUDA; burasi sadece
+   ekrani ona uyduruyor.
+   ===================================================================== */
+let istekListesi  = [];
+let favoriListesi = [];
+
+function listedeMi(liste, ulke, sehir) {
+  for (let i = 0; i < liste.length; i++)
+    if (liste[i].ulke === ulke && liste[i].sehir === sehir) return true;
+  return false;
+}
+function listedenCikar(liste, ulke, sehir) {
+  return liste.filter(function (x) {
+    return !(x.ulke === ulke && x.sehir === sehir); });
+}
+
+async function listeleriYukle() {
+  const { data: oturum } = await db.auth.getSession();
+  if (!oturum.session) { istekListesi = []; favoriListesi = []; return; }
+  const { data, error } = await db.rpc("listelerim");
+  if (error) { console.log("listeler alinamadi:", error.message); return; }
+  istekListesi  = (data || []).filter(function (r) { return r.tur === "istek"; });
+  favoriListesi = (data || []).filter(function (r) { return r.tur === "favori"; });
+}
 function gezildiMi(ulke, sehir) {
   return gezilenler.some(function (g) { return g.ulke === ulke && g.sehir === sehir; });
 }
@@ -739,11 +768,13 @@ async function gezginiAc(kullaniciAdi) {
   const [{ data: profil, error: ph },
          { data: harita, error: hh },
          { data: fotolar },
-         { data: kayit }] = await Promise.all([
+         { data: kayit },
+         { data: listeler }] = await Promise.all([
     db.rpc("gezgin_profil",      { p_kullanici_adi: kullaniciAdi }),
     db.rpc("gezgin_haritasi",    { p_kullanici_adi: kullaniciAdi }),
     db.rpc("gezgin_fotograflari",{ p_kullanici_adi: kullaniciAdi }),
-    db.rpc("gezgin_gezi_kaydi",  { p_kullanici_adi: kullaniciAdi })
+    db.rpc("gezgin_gezi_kaydi",  { p_kullanici_adi: kullaniciAdi }),
+    db.rpc("gezgin_listeleri",   { p_kullanici_adi: kullaniciAdi })
   ]);
   if (ph || hh || !profil || !profil.length) {
     console.log("Gezgin acilamadi", ph || hh);
@@ -763,7 +794,9 @@ async function gezginiAc(kullaniciAdi) {
     kayit: kayit || [],
     sehirler: harita || [],
     ulkeler: new Set((harita || []).map(function (r) { return r.ulke; })),
-    fotolar: fotolar || []
+    fotolar: fotolar || [],
+    istekler:  (listeler || []).filter(function (r) { return r.tur === "istek"; }),
+    favoriler: (listeler || []).filter(function (r) { return r.tur === "favori"; })
   };
   misafirBariGoster();
   kureRenkTazele();
@@ -1007,12 +1040,20 @@ async function sehirSec(btn, ulke, s) {
       if (error) console.log("silme hatası:", error.message);
     }
   }
+  /* Sunucuda tetikleyici var: isaretleyince istek listesinden, isareti
+     kaldirinca favorilerden dusuyor. Ayni seyi burada da yapiyoruz ki
+     ekran sayfa yenilenmeden dogru gorunsun. */
+  if (!varMi) istekListesi  = listedenCikar(istekListesi,  ulke, s.ad);
+  else        favoriListesi = listedenCikar(favoriListesi, ulke, s.ad);
+
   yerelYaz("gezilenler", gezilenler);
   istatistikGuncelle();
   gecmisGuncelle();
   kitaChartCiz();
   kureRenkTazele();
   pinleriTazele();
+  if (document.getElementById("profilKart").classList.contains("acik") && !misafir)
+    profilEkraniCiz();
 }
 
 /* =====================================================================
@@ -1263,6 +1304,7 @@ async function sehirDetayAc(ulke, sehir) {
   fotoDurum("");
   fotolariGoster();
 
+  listeDurumu("");
   detayKilidiTazele();
   sadeceBuPanel("sehirDetayPanel", true);
 }
@@ -1275,6 +1317,7 @@ function detayKilidiTazele() {
   const btn = document.getElementById("gittimBtn");
   btn.textContent = gitti ? "✓ Gittim" : "Buraya gittim";
   btn.classList.toggle("gidildi", gitti);
+  listeDugmeleriniTazele();
 }
 
 function gittimDugmesi(acik) {
@@ -1306,6 +1349,69 @@ document.getElementById("gittimBtn").addEventListener("click", async function ()
   detayKilidiTazele();
   ulkeKartiTazele(aktifDetay.ulke, k.ad);
   if (gezildiMi(aktifDetay.ulke, aktifDetay.sehir)) { tarihiGoster(aktifDetay.ulke, aktifDetay.sehir); }
+});
+
+/* --- Gitmek istiyorum / Favori --------------------------------------
+   Iki dugme de "vardiysa cikar, yoksa ekle". Favori gitmedigin sehirde
+   kapali: gitmedigin bir yeri favorileyebilseydin o zaten "gitmek
+   istediklerim" olurdu. Ayni kural sunucuda da var, buradaki sadece
+   kullaniciya sebebini soyluyor. */
+function listeDurumu(metin) {
+  const el = document.getElementById("listeDurum");
+  if (el) el.textContent = metin || "";
+}
+
+function listeDugmeleriniTazele() {
+  const ist = document.getElementById("istekBtn");
+  const fav = document.getElementById("favoriBtn");
+  if (!ist || !fav) return;
+  const u = aktifDetay.ulke, s = aktifDetay.sehir;
+  const gitti   = gezildiMi(u, s);
+  const istekte = listedeMi(istekListesi, u, s);
+  const favoride= listedeMi(favoriListesi, u, s);
+
+  /* Gittigin yer artik "gitmek istedigim" degil; dugme de kalmasin. */
+  ist.hidden = gitti;
+  ist.textContent = istekte ? "✓ Gitmek istiyorum" : "Gitmek istiyorum";
+  ist.classList.toggle("aktif", istekte);
+
+  fav.disabled = !gitti;
+  fav.textContent = favoride ? "★ Favorin" : "☆ Favori";
+  fav.classList.toggle("aktif", favoride);
+  fav.title = !gitti
+    ? "Favorilere eklemek için önce buraya gittiğini işaretle"
+    : (favoride ? "Favorilerinden çıkar"
+                : "Favorilerine ekle (en fazla " + FAVORI_SINIR + ")");
+}
+
+function listeSonrasiTazele() {
+  listeDugmeleriniTazele();
+  if (document.getElementById("profilKart").classList.contains("acik") && !misafir)
+    profilEkraniCiz();
+}
+
+document.getElementById("istekBtn").addEventListener("click", async function () {
+  const u = aktifDetay.ulke, s = aktifDetay.sehir, k = aktifDetay.kayit;
+  this.disabled = true; listeDurumu("");
+  const { data, error } = await db.rpc("gitmek_istiyorum", { p_ulke: u, p_sehir: s });
+  this.disabled = false;
+  if (error) { listeDurumu(hataYaz(error.message)); return; }
+  if (data) istekListesi = istekListesi.concat([{ ulke:u, sehir:s,
+              enlem: k ? k.enlem : null, boylam: k ? k.boylam : null }]);
+  else      istekListesi = listedenCikar(istekListesi, u, s);
+  listeSonrasiTazele();
+});
+
+document.getElementById("favoriBtn").addEventListener("click", async function () {
+  const u = aktifDetay.ulke, s = aktifDetay.sehir, k = aktifDetay.kayit;
+  this.disabled = true; listeDurumu("");
+  const { data, error } = await db.rpc("favori_degistir", { p_ulke: u, p_sehir: s });
+  this.disabled = false;
+  if (error) { listeDurumu(hataYaz(error.message)); listeDugmeleriniTazele(); return; }
+  if (data) favoriListesi = favoriListesi.concat([{ ulke:u, sehir:s,
+              enlem: k ? k.enlem : null, boylam: k ? k.boylam : null }]);
+  else      favoriListesi = listedenCikar(favoriListesi, u, s);
+  listeSonrasiTazele();
 });
 
 
@@ -1801,6 +1907,7 @@ function profilKaynagi() {
       kayitAcik: misafir.hareketAcik === true,
       sehirler:  misafir.sehirler || [],
       kayit:     misafir.kayit || [],
+      istekler:  misafir.istekler  || [],
       favoriler: misafir.favoriler || []
     };
   }
@@ -1825,8 +1932,7 @@ function profilKaynagi() {
     gorebilir: true, kayitAcik: true,
     sehirler: sehirler,
     kayit: gezileriSirala(gezilenler),
-    /* Favoriler henuz sunucuda yok; adim 4'te dolacak. Cizim kodu
-       simdiden duruyor ki yeri ve yuksekligi olculebilsin. */
+    istekler:  istekListesi,
     favoriler: favoriListesi
   };
 }
@@ -1922,7 +2028,6 @@ function sayilariYaz(k) {
 /* Favoriler: en fazla 6 sehir, profilin ust kisminda. Kapali profilde
    gosterilmiyor -- nereleri sevdigin de nereye gittigin bilgisi. */
 const FAVORI_SINIR = 6;
-let favoriListesi = [];
 
 function favorileriCiz(k) {
   const kutu = document.getElementById("profilFavoriler");
@@ -1942,9 +2047,7 @@ function favorileriCiz(k) {
       e.textContent = f.sehir;
       e.title = f.sehir + " — " + f.ulke;
       e.addEventListener("click", function () {
-        const s = k.sehirler.find(function (x) {
-          return x.ulke === f.ulke && x.sehir === f.sehir; });
-        if (s && s.enlem != null) kureyeGit(s.enlem, s.boylam, true);
+        if (f.enlem != null) kureyeGit(f.enlem, f.boylam, true);
         if (k.benim) sehirDetayAc(f.ulke, f.sehir);
       });
       kutu.appendChild(e);
@@ -1989,10 +2092,7 @@ function sekmeSec(ad) {
   if (ad === "gezdim")       sekmeGezdimCiz(k);
   else if (ad === "foto")    sekmeFotoCiz(k);
   else if (ad === "arkadas") arkadasBolumu();
-  else if (ad === "istek")
-    yerTutucu("sekmeIstek", k,
-      "Gitmek istediğin yerler yakında burada olacak.",
-      "Gitmek istediği yerler yakında burada olacak.");
+  else if (ad === "istek")   sekmeIstekCiz(k);
   else if (ad === "yorum")
     yerTutucu("sekmeYorum", k,
       "Yazdığın yorumlar yakında burada toplanacak. Asıl yerleri şehir sayfaları olacak.",
@@ -2088,6 +2188,40 @@ function sekmeGezdimCiz(k) {
     kutu.appendChild(sekmeBasligi("GEZİ KAYDI"));
     kutu.appendChild(bosYazi("Nereye ne zaman gittiğini paylaşmıyor."));
   }
+}
+
+/* --- GITMEK ISTEDIKLERIM ------------------------------------------
+   Kurede gosterilmiyor: gezdiklerinle ayni kurede iki farkli anlam
+   tasiyan isaret olurdu, karisirdi. Liste olarak duruyor. */
+function sekmeIstekCiz(k) {
+  const kutu = document.getElementById("sekmeIstek");
+  kutu.innerHTML = "";
+  if (!k.gorebilir) { kutu.appendChild(kilitYazisi(k)); return; }
+  const liste = k.istekler || [];
+  if (!liste.length) {
+    kutu.appendChild(bosYazi(k.benim
+      ? "Henüz bir yer eklemedin. Bir şehrin sayfasını açıp \u201cGitmek istiyorum\u201d de."
+      : "Gitmek istediği bir yer görünmüyor."));
+    return;
+  }
+  kutu.appendChild(sekmeBasligi("GİTMEK İSTEDİKLERİ" + (k.benim ? "M" : "") +
+                                " (" + liste.length + ")"));
+  const kutu2 = document.createElement("div");
+  kutu2.className = "gezgin-ulkeler";
+  for (let i = 0; i < liste.length; i++) {
+    (function (r) {
+      const sat = document.createElement("div");
+      sat.className = "gezgin-ulke";
+      sat.innerHTML = "<span>" + kacisla(r.sehir) +
+                      " <em>— " + kacisla(r.ulke) + "</em></span>";
+      sat.addEventListener("click", function () {
+        if (r.enlem != null) kureyeGit(r.enlem, r.boylam, true);
+        if (k.benim) sehirDetayAc(r.ulke, r.sehir);
+      });
+      kutu2.appendChild(sat);
+    })(liste[i]);
+  }
+  kutu.appendChild(kutu2);
 }
 
 /* --- FOTOGRAFLAR --------------------------------------------------- */
@@ -3584,7 +3718,7 @@ async function veriYukle() {
   await ulkeleriYukle();
   await gezileriYukle();
   await Promise.all([koordinatlariYukle(), detaylariYukle(), profilYukle(),
-                     arkadasVeriTazele(), engelListesiniYukle()]);
+                     arkadasVeriTazele(), engelListesiniYukle(), listeleriYukle()]);
   istatistikGuncelle();
   gecmisGuncelle();
   kitaChartCiz();

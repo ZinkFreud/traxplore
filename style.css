@@ -2382,3 +2382,35 @@ button.sayi-baglanti.bekleyen::after {
     #profilSayiYazi { font-size: 12.5px; }
     .favori-etiket { max-width: 44%; }
 }
+
+/* --- şehir kartındaki liste düğmeleri ------------------------------
+   "Gitmek istiyorum" gittiğin şehirde hiç görünmüyor; favori ise
+   gitmediğin şehirde kapalı duruyor (sebebi üstüne gelince yazıyor).
+   Aynı kurallar sunucuda da var. */
+#listeDugmeler {
+    display: flex; gap: 8px;
+    margin: 12px 0 0;
+}
+#listeDugmeler button {
+    flex: 1 1 0;
+    background: none;
+    border: 1px solid var(--kil);
+    border-radius: 6px;
+    color: var(--yazi-soluk);
+    font-family: inherit; font-size: 12.5px;
+    padding: 9px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+#listeDugmeler button:hover:not(:disabled) { border-color: var(--kil-guclu); color: var(--yazi); }
+#listeDugmeler button.aktif {
+    border-color: var(--kehribar);
+    color: var(--kehribar);
+}
+#listeDugmeler button:disabled { opacity: 0.38; cursor: default; }
+#listeDurum { font-size: 11.5px; color: #e8b9b9; margin-top: 7px; min-height: 15px; line-height: 1.4; }
+#listeDurum:empty { min-height: 0; margin-top: 0; }
+/* Düğmelerle altındaki uyarı kutusu birbirine yapışmasın */
+#listeDugmeler + #listeDurum + #kilitUyari,
+#listeDugmeler + #listeDurum + #kilitUyari + .detay-bolum { margin-top: 14px; }
