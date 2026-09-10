@@ -1070,6 +1070,21 @@ async function sehirSec(btn, ulke, s) {
 /* =====================================================================
    İSTATİSTİK
    ===================================================================== */
+/* Telefondaki buyuk sayac: kurenin altinda, ortada. Sag ust kosedeki
+   kucuk yazi uygulamanin verdigi tek "puani" gomuyordu. Sayi ARTINCA
+   bir an parliyor -- odul o sayi, arttigini gormek gerekiyor. */
+let sonSehirSayisi = null;
+
+function sayacParcasi(sayi, ad) {
+  const s = document.createElement("span");
+  s.className = "kure-sayac-parca";
+  const b = document.createElement("b");
+  b.textContent = sayi;
+  s.appendChild(b);
+  s.appendChild(document.createTextNode(" " + ad));
+  return s;
+}
+
 function istatistikGuncelle() {
   const ulkeler = [], kitalar = [];
   for (let i = 0; i < gezilenler.length; i++) {
@@ -1081,6 +1096,22 @@ function istatistikGuncelle() {
     kitalar.length + " Kıta — " + ulkeler.length + " Ülke — " + gezilenler.length + " Şehir gezdin";
   const kisa = document.getElementById("mobilSayac");
   if (kisa) kisa.textContent = ulkeler.length + " ülke · " + gezilenler.length + " şehir";
+
+  const buyuk = document.getElementById("kureSayac");
+  if (buyuk) {
+    buyuk.innerHTML = "";
+    buyuk.appendChild(sayacParcasi(kitalar.length, "kıta"));
+    buyuk.appendChild(sayacParcasi(ulkeler.length, "ülke"));
+    buyuk.appendChild(sayacParcasi(gezilenler.length, "şehir"));
+    /* Ilk yukleme parlamasin; sadece SONRADAN artinca. */
+    if (sonSehirSayisi !== null && gezilenler.length > sonSehirSayisi) {
+      buyuk.classList.remove("parla");
+      void buyuk.offsetWidth;               // animasyonu bastan baslat
+      buyuk.classList.add("parla");
+      setTimeout(function () { buyuk.classList.remove("parla"); }, 900);
+    }
+    sonSehirSayisi = gezilenler.length;
+  }
 }
 
 /* =====================================================================
@@ -3346,6 +3377,7 @@ document.getElementById("kapat").addEventListener("click", paneliKapat);
 document.getElementById("ortu").addEventListener("click", hepsiniKapat);
 document.getElementById("sehirDetayKapat").addEventListener("click", sehirDetayKapat);
 document.getElementById("kitaChart").addEventListener("click", istatistikPaneliAc);
+document.getElementById("kureSayac").addEventListener("click", istatistikPaneliAc);
 document.getElementById("istatistikKapat").addEventListener("click", istatistikPaneliKapat);
 document.getElementById("profilBtn").addEventListener("click", kendiProfilim);
 document.getElementById("profilKapat").addEventListener("click", profilKapat);

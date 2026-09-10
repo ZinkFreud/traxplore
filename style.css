@@ -2478,3 +2478,76 @@ body.misafirde #istatistik { display: none; }
     }
     body.misafirde #misafirBar button { flex: 0 0 auto; }
 }
+
+/* =====================================================================
+   KÜRE ALTI SAYAÇ (sadece telefon)
+   Uygulamanın verdiği tek "puan" bu. Sağ üst köşede 12 punto gri
+   duruyordu; küreyle alt şerit arasındaki boş alana, ortaya alındı.
+   Kehribar kullanılmıyor — küreyle yarışmasın, iri olması yetiyor.
+   ===================================================================== */
+#kureSayac { display: none; }
+
+@media (max-width: 720px), (max-height: 520px) {
+    #kureSayac {
+        display: flex;
+        position: fixed;
+        left: 0; right: 0;
+        bottom: calc(74px + env(safe-area-inset-bottom));
+        z-index: 900;
+        justify-content: center;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 2px 18px;
+        background: none;
+        border: none;
+        padding: 6px 16px;
+        font-family: inherit;
+        font-size: 12px;
+        color: var(--yazi-soluk);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .kure-sayac-parca { white-space: nowrap; }
+    /* Ayırıcı nokta yok: yıldızlı gökyüzünün önünde toz gibi duruyordu,
+       üstelik iri rakamla küçük yazının arasında hizası tutmuyordu.
+       Boşluk zaten ayırıyor. */
+    .kure-sayac-parca b {
+        font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+        font-size: 23px; font-weight: 600;
+        color: var(--yazi);
+        margin-right: 2px;
+        transition: color 0.25s ease;
+    }
+    /* Yeni şehir işaretlenince sayı bir an parlasın. Ödül o sayı. */
+    #kureSayac.parla b { animation: sayacParla 0.9s ease; }
+    @keyframes sayacParla {
+        0%   { color: var(--yazi); }
+        25%  { color: var(--kehribar); text-shadow: 0 0 14px rgba(233,162,59,0.55); }
+        100% { color: var(--yazi); text-shadow: none; }
+    }
+
+    /* Aynı sayıyı iki yerde bağırmayalım: büyük sayaç varken üstteki
+       küçük yazı gidiyor, logo kalıyor. */
+    #mobilSayac { display: none; }
+
+    /* Başkasının haritasındayken kendi sayın ortada durmasın. */
+    body.misafirde #kureSayac { display: none; }
+
+    /* Alt bilgi bağlantısı sayacın altında kalsın */
+    #altBilgi { bottom: calc(52px + env(safe-area-inset-bottom)); }
+}
+
+/* Kısa ekran (telefon yan çevrilince): kürenin altında yer kalmıyor.
+   Sayaç üst şeride çıkıyor, logonun yerini alıyor. */
+@media (max-height: 520px) {
+    #kureSayac { display: none !important; }
+    #mobilLogo  { display: none; }
+    #mobilSayac {
+        display: block;
+        font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+        font-size: 17px;
+        color: var(--yazi);
+        letter-spacing: 0.2px;
+    }
+    #mobilUst { justify-content: flex-start; }
+}

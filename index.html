@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260910g">
+    <link rel="stylesheet" href="style.css?v=20260910h">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -379,6 +379,12 @@
     <!-- Haritanin uzerinde, kose. Magazalar gizlilik metnine kolay
          ulasilmasini istiyor; profil kartinin icinde durmasi teknik
          olarak yeterli ama kimse orayi aramaz. -->
+    <!-- Telefonda kurenin altindaki sayac. Uygulamanin verdigi tek
+         "puan" bu; sag ust kosede 12 punto gri durmasi az geliyordu.
+         Kisa ekranlarda (yan cevrilince) kurenin altinda yer kalmadigi
+         icin gizleniyor, sayilar ust seride buyuk olarak cikiyor. -->
+    <button id="kureSayac" type="button" aria-label="İstatistikler"></button>
+
     <div id="altBilgi">
         <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik</a>
         <span>·</span>
@@ -391,7 +397,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260910g"></script>
+    <script src="script.js?v=20260910h"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
