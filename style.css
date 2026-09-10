@@ -2209,3 +2209,143 @@ h2.ayar-baslik {
 #sifreDegistir { width: 100%; }
 #ayarlarPanel .yasal { justify-content: flex-start; margin-top: 0; }
 #engelListe:empty { display: none; }
+
+/* =====================================================================
+   PROFİL EKRANI — sabit üst + kayan sekme gövdesi
+   Üstteki kimlik ve sayılar kaymıyor; kayan tek yer #profilIcerik.
+   Aynı iskelet başkasının profili için de kullanılıyor.
+   ===================================================================== */
+#profilKart {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;                 /* kayan tek yer #profilIcerik */
+    padding: 26px 0 0;
+}
+#profilUst, #profilSayilar, #profilUstEk, #profilSekmeler {
+    flex: 0 0 auto;
+    padding-left: 26px;
+    padding-right: 26px;
+}
+#profilIcerik {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 26px 26px;
+}
+
+/* Kapat ve çark düğmeleri üstte mutlak duruyor; kimlik yazısı
+   altlarına girmesin diye sağdan yer bırakıyoruz. */
+#profilUst { display: flex; align-items: center; gap: 14px; padding-right: 92px; }
+#profilKimlik { min-width: 0; }
+#profilAd {
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-size: 19px; font-weight: 600; letter-spacing: 0.3px;
+    color: var(--yazi);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#profilIsimYazi  { font-size: 13px;   color: var(--yazi-soluk); margin-top: 3px;
+                   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#profilKonumYazi { font-size: 12px;   color: var(--yazi-soluk); opacity: 0.72; margin-top: 2px;
+                   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* --- sayılar --- */
+#profilSayilar { display: flex; gap: 7px; margin-top: 18px; }
+.sayi-kutu {
+    flex: 1 1 0; min-width: 0;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 9px 3px;
+    background: rgba(190, 212, 218, 0.035);
+    border: 1px solid var(--kil);
+    border-radius: 6px;
+    color: var(--yazi-soluk);
+    font-family: inherit;
+}
+.sayi-kutu b { font-size: 17px; font-weight: 600; color: var(--yazi); line-height: 1.1; }
+.sayi-kutu span { font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; }
+button.sayi-kutu { cursor: pointer; position: relative; }
+button.sayi-kutu:hover { border-color: var(--kil-guclu); color: var(--yazi); }
+button.sayi-kutu.secili { border-color: var(--kehribar); }
+button.sayi-kutu.secili b { color: var(--kehribar); }
+/* Bekleyen arkadaşlık isteği: sayının köşesinde küçük bir nokta */
+button.sayi-kutu.bekleyen::after {
+    content: ""; position: absolute; top: 6px; right: 6px;
+    width: 7px; height: 7px; border-radius: 50%; background: var(--kehribar);
+}
+
+/* [hidden] varsayilan olarak display:none demek, ama .sayi-kutu'nun
+   kendi display:flex'i onu eziyordu: baskasinin profilinde BENIM
+   arkadas sayim gorunuyordu. Bir kez oldu. */
+.sayi-kutu[hidden], .sekme-govde[hidden], [hidden] { display: none !important; }
+
+#profilUstEk:empty { display: none; }
+#profilUstEk { margin-top: 14px; }
+#profilUstEk .arkadas-kutu { margin: 0; }
+#profilUstEk .gezgin-islem { margin: 10px 0 0; }
+#kullaniciAdiBolum .kullanici-adi-not { margin-bottom: 8px; }
+
+/* --- sekme şeridi --- */
+#profilSekmeler {
+    display: flex; gap: 0;
+    margin-top: 18px;
+    border-bottom: 1px solid var(--kil);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+#profilSekmeler::-webkit-scrollbar { display: none; }
+.sekme-btn {
+    flex: 0 0 auto;
+    background: none; border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: var(--yazi-soluk);
+    font-family: inherit; font-size: 12px; letter-spacing: 0.01em;
+    padding: 9px 7px; cursor: pointer; white-space: nowrap;
+}
+.sekme-btn:hover  { color: var(--yazi); }
+.sekme-btn.secili { color: var(--yazi); border-bottom-color: var(--kehribar); }
+
+/* --- sekme gövdeleri --- */
+.sekme-baslik {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--yazi-soluk);
+    margin: 20px 0 9px;
+}
+.sekme-govde > .sekme-baslik:first-child { margin-top: 12px; }
+.sekme-not { font-size: 11.5px; color: var(--yazi-soluk); opacity: 0.8;
+             margin: -3px 0 10px; line-height: 1.45; }
+.sekme-govde .arkadas-bos { padding: 14px 0; }
+.sekme-govde .gezgin-kilit { margin-top: 14px; }
+.kayit-satir.tiklanir { cursor: pointer; }
+.kayit-satir.tiklanir:hover { background: rgba(190, 212, 218, 0.05); }
+.foto-kart.tiklanir { cursor: pointer; }
+/* Profildeki fotoğraf ızgarasında "gizli" rozeti: hangisinin herkese
+   açık olduğunu başka türlü göremiyordum. */
+.foto-rozet {
+    position: absolute; top: 6px; left: 6px;
+    background: rgba(6, 10, 17, 0.72);
+    color: var(--yazi-soluk);
+    font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    letter-spacing: 0.04em;
+}
+
+/* --- Ayarlar'a taşınan profil düzenleme --- */
+#profilDuzenle #profilFotolar { margin-bottom: 14px; }
+#profilDuzenle input[type="text"] { margin-bottom: 8px; }
+
+@media (max-width: 720px), (max-height: 520px) {
+    /* Telefonda da üst kısım sabit: panelin kendisi kaymıyor,
+       içindeki sekme gövdesi kayıyor. */
+    #profilKart {
+        overflow: hidden;
+        padding: 20px 0 0;
+        height: 82vh; height: 82dvh;
+    }
+    #profilUst, #profilSayilar, #profilUstEk, #profilSekmeler {
+        padding-left: 18px; padding-right: 18px;
+    }
+    #profilUst { padding-right: 62px; }
+    #profilIcerik { padding: 4px 18px calc(78px + env(safe-area-inset-bottom)); }
+    #profilAd { font-size: 18px; }
+    .sekme-btn { font-size: 12.5px; padding: 10px 9px; }
+    .sayi-kutu b { font-size: 16px; }
+}

@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260910b">
+    <link rel="stylesheet" href="style.css?v=20260910c">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -205,6 +205,12 @@
         </div>
     </div>
 
+    <!-- PROFIL EKRANI
+         Ust kisim sabit: fotograf, kullanici adi, isim, konum, sayilar.
+         Altinda sekmeler; sadece sekme govdesi kayiyor.
+         AYNI iskelet baskasinin profili icin de kullaniliyor -- iki ayri
+         cizim kodu tutmak, birinde duzeltilen seyin otekinde durmasi
+         demekti. Fark sadece hangi verinin ciziligi ve gizlilik suzgeci. -->
     <div id="profilKart">
         <button id="profilKapat">×</button>
         <button id="ayarlarAc" type="button" title="Ayarlar" aria-label="Ayarlar">
@@ -215,34 +221,41 @@
             </svg>
         </button>
 
-        <div id="profilFotolar">
-            <input type="file" id="profilFotoInput" accept="image/*" hidden>
+        <div id="profilUst">
             <div id="profilAvatar" class="avatar avatar-buyuk"></div>
-            <div id="profilFotoIsler">
-                <label for="profilFotoInput" id="profilFotoEkle">Fotoğraf Seç</label>
-                <button id="profilFotoKaldir" class="metin-btn">Kaldır</button>
+            <div id="profilKimlik">
+                <div id="profilAd">—</div>
+                <div id="profilIsimYazi"></div>
+                <div id="profilKonumYazi"></div>
             </div>
-            <div id="profilFotoDurum"></div>
         </div>
 
-        <div class="profil-bolum">
-            <label>İSİM</label>
-            <input type="text" id="profilIsim" placeholder="Adın" disabled>
+        <div id="profilSayilar">
+            <div class="sayi-kutu"><b id="sayiKita">0</b><span>kıta</span></div>
+            <div class="sayi-kutu"><b id="sayiUlke">0</b><span>ülke</span></div>
+            <div class="sayi-kutu"><b id="sayiSehir">0</b><span>şehir</span></div>
+            <button type="button" class="sayi-kutu" id="sayiArkadasBtn">
+                <b id="sayiArkadas">0</b><span>arkadaş</span>
+            </button>
         </div>
 
-        <div class="profil-bolum">
-            <label>KONUM</label>
-            <input type="text" id="profilKonum" placeholder="Şehir, Ülke" disabled>
+        <!-- Kullanici adi alma kutusu (adi yoksa) ya da misafir profilinde
+             arkadaslik / engelle-sikayet dugmeleri buraya giriyor. -->
+        <div id="profilUstEk"></div>
+
+        <div id="profilSekmeler">
+            <button type="button" class="sekme-btn secili" data-sekme="gezdim">Gezdiklerim</button>
+            <button type="button" class="sekme-btn" data-sekme="istek">Gitmek İstediklerim</button>
+            <button type="button" class="sekme-btn" data-sekme="foto">Fotoğraflar</button>
+            <button type="button" class="sekme-btn" data-sekme="favori">Favoriler</button>
         </div>
 
-        <div class="profil-bolum">
-            <label>GEZİ KAYDIN</label>
-            <div id="profilSonGezilen"></div>
-        </div>
-
-        <div id="profilButonlar">
-            <button id="profilKaydet">KAYDET</button>
-            <button id="profilDegistir">DEĞİŞTİR</button>
+        <div id="profilIcerik">
+            <div class="sekme-govde" id="sekmeGezdim"></div>
+            <div class="sekme-govde" id="sekmeIstek" hidden></div>
+            <div class="sekme-govde" id="sekmeFoto" hidden></div>
+            <div class="sekme-govde" id="sekmeFavori" hidden></div>
+            <div class="sekme-govde" id="sekmeArkadas" hidden></div>
         </div>
     </div>
     <!-- Ayarlar profilden AYRI bir ekran. Sebebi sadece yer darligi degil:
@@ -256,6 +269,28 @@
         <div class="profil-bolum">
             <label>HESAP</label>
             <div class="ayar-satir"><span>E-posta</span><b id="ayarEposta">—</b></div>
+        </div>
+
+        <!-- Isim, konum ve fotograf duzenleme profilden buraya tasindi:
+             profilin ust kismi "sabit" olacaksa icinde acilip kapanan
+             bir duzenleme formu olamaz. -->
+        <div class="profil-bolum" id="profilDuzenle">
+            <label>PROFİL</label>
+            <div id="profilFotolar">
+                <input type="file" id="profilFotoInput" accept="image/*" hidden>
+                <div id="ayarAvatar" class="avatar avatar-buyuk"></div>
+                <div id="profilFotoIsler">
+                    <label for="profilFotoInput" id="profilFotoEkle">Fotoğraf Seç</label>
+                    <button id="profilFotoKaldir" class="metin-btn">Kaldır</button>
+                </div>
+                <div id="profilFotoDurum"></div>
+            </div>
+            <input type="text" id="profilIsim" placeholder="Adın" disabled>
+            <input type="text" id="profilKonum" placeholder="Şehir, Ülke" disabled>
+            <div id="profilButonlar">
+                <button id="profilKaydet">KAYDET</button>
+                <button id="profilDegistir">DEĞİŞTİR</button>
+            </div>
         </div>
 
         <div class="profil-bolum">
@@ -333,7 +368,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260910b"></script>
+    <script src="script.js?v=20260910c"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
