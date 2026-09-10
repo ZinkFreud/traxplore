@@ -1021,6 +1021,7 @@ function sehirKarti(ulkeAdi, s) {
     : gezildiMi(ulkeAdi, s.ad);
   const kart = document.createElement("div");
   kart.className = "sehir-kart" + (secili ? " secili" : "");
+  kart.dataset.sehir = s.ad;        // detay ekranindan tazelemek icin
   if (!misafir) kart.addEventListener("click", function () { sehirDetayAc(ulkeAdi, s.ad); });
 
   if (misafir) {
@@ -1108,8 +1109,10 @@ function paneliKapat() {
 /* =====================================================================
    ŞEHİR SEÇME
    ===================================================================== */
+/* btn NULL olabilir: sehir kartindan degil, sehir detay ekranindaki
+   "Buraya gittim" dugmesinden de cagriliyor. */
 async function sehirSec(btn, ulke, s) {
-  const kart = btn.closest(".sehir-kart");
+  const kart = btn ? btn.closest(".sehir-kart") : null;
   const varMi = gezildiMi(ulke, s.ad);
   const { data: oturum } = await db.auth.getSession();
   const kul = oturum.session ? oturum.session.user.id : null;
@@ -1118,7 +1121,7 @@ async function sehirSec(btn, ulke, s) {
     gezilenler.push({ ulke: ulke, sehir: s.ad });
     gezilenKoord[anahtar(ulke, s.ad)] = { lat: s.enlem, lng: s.boylam, nufus: s.nufus || 0 };
     if (kart) kart.classList.add("secili");
-    btn.classList.add("aktif"); btn.textContent = "✓";
+    if (btn) { btn.classList.add("aktif"); btn.textContent = "✓"; }
     if (kul) {
       const { error } = await db.from("gezilenler")
         .insert({ user_id: kul, ulke: ulke, sehir: s.ad });
@@ -1130,7 +1133,7 @@ async function sehirSec(btn, ulke, s) {
     });
     delete gezilenKoord[anahtar(ulke, s.ad)];
     if (kart) kart.classList.remove("secili");
-    btn.classList.remove("aktif"); btn.textContent = "+";
+    if (btn) { btn.classList.remove("aktif"); btn.textContent = "+"; }
     if (kul) {
       const { error } = await db.from("gezilenler").delete()
         .eq("user_id", kul).eq("ulke", ulke).eq("sehir", s.ad);
@@ -1357,12 +1360,22 @@ async function sehirDetayAc(ulke, sehir) {
   document.getElementById("sehirDetayBaslik").textContent = sehir;
 
   const kapak = document.getElementById("sehirKapak");
+  const sar = document.getElementById("sehirKapakSar");
   kapak.style.display = "none";
+  sar.classList.add("kapaksiz");
+  /* Isaretlemek icin sehrin koordinati lazim; o da bu sorgudan geliyor.
+     Gelene kadar dugme kapali duruyor -- koordinatsiz isaretlersek
+     kurede pin dusmez. */
+  aktifDetay.kayit = null;
+  gittimDugmesi(false);
   db.rpc("ulke_sehirleri", { p_ulke: ulke, p_limit: 1, p_offset: 0, p_arama: sehir })
     .then(function (r) {
       const s = r.data && r.data[0];
-      if (s && s.foto && aktifDetay.sehir === sehir) {
+      if (!s || aktifDetay.sehir !== sehir) return;
+      if (s.ad === sehir) { aktifDetay.kayit = s; gittimDugmesi(true); }
+      if (s.foto) {
         kapak.src = s.foto; kapak.style.display = "block";
+        sar.classList.remove("kapaksiz");
       }
     });
 
@@ -1383,12 +1396,50 @@ async function sehirDetayAc(ulke, sehir) {
   fotoDurum("");
   fotolariGoster();
 
-  const gitti = gezildiMi(ulke, sehir);
-  document.getElementById("detayGovde").style.display = gitti ? "block" : "none";
-  document.getElementById("kilitUyari").style.display = gitti ? "none" : "block";
-
+  detayKilidiTazele();
   sadeceBuPanel("sehirDetayPanel", true);
 }
+
+/* Gittim mi gitmedim mi -- panelin govdesi ve dugmenin yazisi buna bagli */
+function detayKilidiTazele() {
+  const gitti = gezildiMi(aktifDetay.ulke, aktifDetay.sehir);
+  document.getElementById("detayGovde").style.display = gitti ? "block" : "none";
+  document.getElementById("kilitUyari").style.display = gitti ? "none" : "block";
+  const btn = document.getElementById("gittimBtn");
+  btn.textContent = gitti ? "✓ Gittim" : "Buraya gittim";
+  btn.classList.toggle("gidildi", gitti);
+}
+
+function gittimDugmesi(acik) {
+  const btn = document.getElementById("gittimBtn");
+  if (btn) btn.disabled = !acik;
+  detayKilidiTazele();
+}
+
+/* Ulke paneli arkada aciksa oradaki kart da guncellensin; yoksa
+   kullanici geri dondugunde eski hali goruyor. */
+function ulkeKartiTazele(ulke, sehirAd) {
+  if (aktifUlke !== ulke) return;
+  const kartlar = document.querySelectorAll("#sehirListe .sehir-kart");
+  for (let i = 0; i < kartlar.length; i++) {
+    if (kartlar[i].dataset.sehir !== sehirAd) continue;
+    const secili = gezildiMi(ulke, sehirAd);
+    kartlar[i].classList.toggle("secili", secili);
+    const d = kartlar[i].querySelector(".gittim-btn");
+    if (d) { d.classList.toggle("aktif", secili); d.textContent = secili ? "✓" : "+"; }
+  }
+}
+
+document.getElementById("gittimBtn").addEventListener("click", async function () {
+  const k = aktifDetay.kayit;
+  if (!k) return;
+  this.disabled = true;
+  await sehirSec(null, aktifDetay.ulke, k);
+  this.disabled = false;
+  detayKilidiTazele();
+  ulkeKartiTazele(aktifDetay.ulke, k.ad);
+  if (gezildiMi(aktifDetay.ulke, aktifDetay.sehir)) { tarihiGoster(aktifDetay.ulke, aktifDetay.sehir); }
+});
 
 
 /* =====================================================================
@@ -2510,6 +2561,34 @@ function mobilSeritTazele() {
       !!(hedef && hedef.classList.contains("acik")));
   }
 }
+
+/* Telefonda acik bir panelin ustunde kalan harita alani "kapat" alani.
+   #ortu zaten vardi ama hicbir yerde acilmiyordu; artik kullaniliyor.
+   Hangi fonksiyonun hangi paneli kapattigini tek tek kovalamak yerine
+   sinif degisikliklerini izliyoruz -- ileride yeni bir panel eklenirse
+   kendiliginden calisir. Masaustunde kapali: orada paneller yanda
+   duruyor ve kure kullanilabilir kalmali. */
+const ORTU_IZLENEN = ["panel", "sehirDetayPanel", "profilKart",
+                      "istatistikPanel", "gecmisPanel", "aramaKutu"];
+
+function ortuTazele() {
+  const ortu = document.getElementById("ortu");
+  if (!ortu) return;
+  const acik = MOBIL && ORTU_IZLENEN.some(function (id) {
+    const el = document.getElementById(id);
+    return el && el.classList.contains("acik");
+  });
+  ortu.classList.toggle("acik", acik);
+}
+
+(function ortuyuIzle() {
+  if (typeof MutationObserver !== "function") return;
+  const g = new MutationObserver(ortuTazele);
+  for (let i = 0; i < ORTU_IZLENEN.length; i++) {
+    const el = document.getElementById(ORTU_IZLENEN[i]);
+    if (el) g.observe(el, { attributes: true, attributeFilter: ["class"] });
+  }
+})();
 
 function sadeceBuPanel(id, itsin) {
   /* Arama kutusu SAG_PANELLER'de degil -- ayri bir katman. O yuzden bir

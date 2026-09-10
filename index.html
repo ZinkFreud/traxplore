@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260909g">
+    <link rel="stylesheet" href="style.css?v=20260910a">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -95,9 +95,17 @@
     <div id="sehirDetayPanel">
         <button id="sehirDetayKapat">×</button>
         <h2 id="sehirDetayBaslik"></h2>
-        <img id="sehirKapak" src="" alt="">
 
-        <div id="kilitUyari">Bu şehri değerlendirmek için önce <b>gittim</b> olarak işaretle.</div>
+        <!-- "Gittim" dugmesi burada, cunku isaretlemek icin ulke paneline
+             geri donmek gerekiyordu. Kapak fotografi varsa onun sag ust
+             kosesinde duruyor, yoksa baslik altinda tam genislikte. -->
+        <div id="sehirKapakSar" class="kapaksiz">
+            <img id="sehirKapak" src="" alt="">
+            <button id="gittimBtn" type="button">Buraya gittim</button>
+        </div>
+
+        <div id="kilitUyari">Buraya gittiğini işaretleyince puan verebilir,
+            not tutabilir, tarih girebilir ve fotoğraf ekleyebilirsin.</div>
 
         <div class="detay-bolum" id="gezenlerBolum">
             <label>BURAYI GEZENLER</label>
@@ -281,7 +289,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260909g"></script>
+    <script src="script.js?v=20260910a"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
