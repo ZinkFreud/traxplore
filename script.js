@@ -1800,7 +1800,8 @@ function profilKaynagi() {
       gorebilir: misafir.gorebilir !== false,
       kayitAcik: misafir.hareketAcik === true,
       sehirler:  misafir.sehirler || [],
-      kayit:     misafir.kayit || []
+      kayit:     misafir.kayit || [],
+      favoriler: misafir.favoriler || []
     };
   }
   const ulkeler = [], kitalar = [];
@@ -1823,7 +1824,10 @@ function profilKaynagi() {
     kita: kitalar.length, ulke: ulkeler.length, sehir: gezilenler.length,
     gorebilir: true, kayitAcik: true,
     sehirler: sehirler,
-    kayit: gezileriSirala(gezilenler)
+    kayit: gezileriSirala(gezilenler),
+    /* Favoriler henuz sunucuda yok; adim 4'te dolacak. Cizim kodu
+       simdiden duruyor ki yeri ve yuksekligi olculebilsin. */
+    favoriler: favoriListesi
   };
 }
 
@@ -1851,29 +1855,19 @@ function profilEkraniCiz() {
 
   document.getElementById("profilAd").textContent =
     k.ad ? "@" + k.ad : (k.isim || "Profil");
-  const isimEl  = document.getElementById("profilIsimYazi");
-  const konumEl = document.getElementById("profilKonumYazi");
-  isimEl.textContent  = k.isim;
-  isimEl.hidden       = !k.isim;
-  konumEl.textContent = k.konum;
-  konumEl.hidden      = !k.konum;
+  /* Isim ve konum ayni satirda: avatar 76 piksel, yanindaki yazi bloku
+     uc satir olunca onunla hizalaniyor. */
+  const alt = document.getElementById("profilAltSatir");
+  const parcalar = [k.isim, k.konum].filter(Boolean);
+  alt.textContent = parcalar.join(" · ");
+  alt.hidden = !parcalar.length;
   avatarKur(document.getElementById("profilAvatar"), k.foto);
 
-  document.getElementById("sayiKita").textContent  = k.kita  || 0;
-  document.getElementById("sayiUlke").textContent  = k.ulke  || 0;
-  document.getElementById("sayiSehir").textContent = k.sehir || 0;
+  sayilariYaz(k);
+  favorileriCiz(k);
 
-  /* Cark ve arkadas sayisi sadece kendi profilimde. Baskasinin
-     profilinde arkadas listesi gostermek istemedigimiz icin degil --
-     o listeyi sunucu zaten vermiyor. */
-  const cark = document.getElementById("ayarlarAc");
-  cark.hidden = !k.benim;
-  const arkBtn = document.getElementById("sayiArkadasBtn");
-  arkBtn.hidden = !k.benim;
-  if (k.benim) {
-    document.getElementById("sayiArkadas").textContent = arkadasListesi.length;
-    arkBtn.classList.toggle("bekleyen", gelenIstekler.length > 0);
-  }
+  /* Cark sadece kendi profilimde. */
+  document.getElementById("ayarlarAc").hidden = !k.benim;
 
   ustEkiCiz(k);
 
@@ -1887,6 +1881,75 @@ function profilEkraniCiz() {
 
   if (!k.benim && acikSekme === "arkadas") acikSekme = "gezdim";
   sekmeSec(acikSekme);
+}
+
+/* Sayilar tek cumle halinde. Arkadas sayisini saga yaslamiyoruz:
+   telefonda avatarin yaninda ~250 piksel yer var, "6 kita · 84 ulke ·
+   312 sehir" tek basina 175 piksel ediyor -- saga yaslanmis bir sayi
+   orada sikisirdi. Cumlenin icinde olunca uzun sayilarda satir
+   kendiliginden alta kayiyor. */
+function sayiParcasi(sayi, ad) {
+  const s = document.createElement("span");
+  s.className = "sayi-parca";
+  const b = document.createElement("b");
+  b.textContent = sayi || 0;
+  s.appendChild(b);
+  s.appendChild(document.createTextNode(" " + ad));
+  return s;
+}
+
+function sayilariYaz(k) {
+  const kutu = document.getElementById("profilSayiYazi");
+  kutu.innerHTML = "";
+  kutu.appendChild(sayiParcasi(k.kita,  "kıta"));
+  kutu.appendChild(sayiParcasi(k.ulke,  "ülke"));
+  kutu.appendChild(sayiParcasi(k.sehir, "şehir"));
+  if (!k.benim) return;          // baskasinin arkadas listesi sunucudan gelmiyor
+  const dgm = document.createElement("button");
+  dgm.type = "button";
+  dgm.id = "arkadasSayiBtn";
+  dgm.className = "sayi-parca sayi-baglanti" +
+                  (acikSekme === "arkadas" ? " secili" : "") +
+                  (gelenIstekler.length ? " bekleyen" : "");
+  const b = document.createElement("b");
+  b.textContent = arkadasListesi.length;
+  dgm.appendChild(b);
+  dgm.appendChild(document.createTextNode(" arkadaş"));
+  dgm.addEventListener("click", function () { sekmeSec("arkadas"); });
+  kutu.appendChild(dgm);
+}
+
+/* Favoriler: en fazla 6 sehir, profilin ust kisminda. Kapali profilde
+   gosterilmiyor -- nereleri sevdigin de nereye gittigin bilgisi. */
+const FAVORI_SINIR = 6;
+let favoriListesi = [];
+
+function favorileriCiz(k) {
+  const kutu = document.getElementById("profilFavoriler");
+  const liste = (k.gorebilir ? (k.favoriler || []) : []).slice(0, FAVORI_SINIR);
+  kutu.innerHTML = "";
+  kutu.hidden = !liste.length;
+  if (!liste.length) return;
+  const yildiz = document.createElement("span");
+  yildiz.className = "favori-yildiz";
+  yildiz.textContent = "★";
+  kutu.appendChild(yildiz);
+  for (let i = 0; i < liste.length; i++) {
+    (function (f) {
+      const e = document.createElement("button");
+      e.type = "button";
+      e.className = "favori-etiket";
+      e.textContent = f.sehir;
+      e.title = f.sehir + " — " + f.ulke;
+      e.addEventListener("click", function () {
+        const s = k.sehirler.find(function (x) {
+          return x.ulke === f.ulke && x.sehir === f.sehir; });
+        if (s && s.enlem != null) kureyeGit(s.enlem, s.boylam, true);
+        if (k.benim) sehirDetayAc(f.ulke, f.sehir);
+      });
+      kutu.appendChild(e);
+    })(liste[i]);
+  }
 }
 
 /* Ust kismin altindaki degisken satir: kendi profilimde kullanici adi
@@ -1906,7 +1969,7 @@ function ustEkiCiz(k) {
 }
 
 const SEKME_GOVDE = { gezdim: "sekmeGezdim", istek: "sekmeIstek",
-                      foto: "sekmeFoto", favori: "sekmeFavori",
+                      foto: "sekmeFoto", yorum: "sekmeYorum",
                       arkadas: "sekmeArkadas" };
 
 function sekmeSec(ad) {
@@ -1915,7 +1978,8 @@ function sekmeSec(ad) {
   const dgm = document.querySelectorAll("#profilSekmeler .sekme-btn");
   for (let i = 0; i < dgm.length; i++)
     dgm[i].classList.toggle("secili", dgm[i].dataset.sekme === ad);
-  document.getElementById("sayiArkadasBtn").classList.toggle("secili", ad === "arkadas");
+  const arkDgm = document.getElementById("arkadasSayiBtn");
+  if (arkDgm) arkDgm.classList.toggle("secili", ad === "arkadas");
   for (const s in SEKME_GOVDE)
     document.getElementById(SEKME_GOVDE[s]).hidden = (s !== ad);
   const govde = document.getElementById("profilIcerik");
@@ -1929,10 +1993,10 @@ function sekmeSec(ad) {
     yerTutucu("sekmeIstek", k,
       "Gitmek istediğin yerler yakında burada olacak.",
       "Gitmek istediği yerler yakında burada olacak.");
-  else if (ad === "favori")
-    yerTutucu("sekmeFavori", k,
-      "Favori yerlerin yakında burada olacak.",
-      "Favori yerleri yakında burada olacak.");
+  else if (ad === "yorum")
+    yerTutucu("sekmeYorum", k,
+      "Yazdığın yorumlar yakında burada toplanacak. Asıl yerleri şehir sayfaları olacak.",
+      "Yazdığı yorumlar yakında burada görünecek.");
 }
 
 /* --- kucuk yapi taslari ------------------------------------------- */
@@ -2164,8 +2228,6 @@ function kullaniciAdiKutusu() {
   for (let i = 0; i < dgm.length; i++) {
     dgm[i].addEventListener("click", function () { sekmeSec(this.dataset.sekme); });
   }
-  const ark = document.getElementById("sayiArkadasBtn");
-  if (ark) ark.addEventListener("click", function () { sekmeSec("arkadas"); });
 })();
 
 
@@ -2844,6 +2906,13 @@ document.addEventListener("keydown", function (e) {
     e.preventDefault(); aramaAc(); return;
   }
   if (e.key === "Escape") {
+    /* Ayarlar profilin ALTINDAN acilan bir ekran; Esc once bir kademe
+       geri gitmeli. Eskiden hepsini kapatiyordu, hatta ayarlar
+       acikPanelVarMi listesinde olmadigi icin kapanmiyor, sadece kure
+       basa donuyordu. */
+    if (document.getElementById("ayarlarPanel").classList.contains("acik")) {
+      profilAc(); return;
+    }
     if (acikPanelVarMi()) hepsiniKapat();
     else if (misafirdeysemCik()) { /* kendi haritana donuldu */ }
     else kureyiSifirla();

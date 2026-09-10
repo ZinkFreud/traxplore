@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260910c">
+    <link rel="stylesheet" href="style.css?v=20260910d">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -225,19 +225,16 @@
             <div id="profilAvatar" class="avatar avatar-buyuk"></div>
             <div id="profilKimlik">
                 <div id="profilAd">—</div>
-                <div id="profilIsimYazi"></div>
-                <div id="profilKonumYazi"></div>
+                <div id="profilAltSatir"></div>
+                <!-- Sayilar kutu degil duz yazi: kendi profilinde ayni
+                     sayilar zaten haritanin tepesinde de yaziyor, iki
+                     yerde birden kutu icinde bagirmasi fazlaydi. -->
+                <div id="profilSayiYazi"></div>
             </div>
         </div>
 
-        <div id="profilSayilar">
-            <div class="sayi-kutu"><b id="sayiKita">0</b><span>kıta</span></div>
-            <div class="sayi-kutu"><b id="sayiUlke">0</b><span>ülke</span></div>
-            <div class="sayi-kutu"><b id="sayiSehir">0</b><span>şehir</span></div>
-            <button type="button" class="sayi-kutu" id="sayiArkadasBtn">
-                <b id="sayiArkadas">0</b><span>arkadaş</span>
-            </button>
-        </div>
+        <!-- Favoriler (en fazla 6 sehir). Bos oldugunda gizli. -->
+        <div id="profilFavoriler" hidden></div>
 
         <!-- Kullanici adi alma kutusu (adi yoksa) ya da misafir profilinde
              arkadaslik / engelle-sikayet dugmeleri buraya giriyor. -->
@@ -247,14 +244,14 @@
             <button type="button" class="sekme-btn secili" data-sekme="gezdim">Gezdiklerim</button>
             <button type="button" class="sekme-btn" data-sekme="istek">Gitmek İstediklerim</button>
             <button type="button" class="sekme-btn" data-sekme="foto">Fotoğraflar</button>
-            <button type="button" class="sekme-btn" data-sekme="favori">Favoriler</button>
+            <button type="button" class="sekme-btn" data-sekme="yorum">Yorumlar</button>
         </div>
 
         <div id="profilIcerik">
             <div class="sekme-govde" id="sekmeGezdim"></div>
             <div class="sekme-govde" id="sekmeIstek" hidden></div>
             <div class="sekme-govde" id="sekmeFoto" hidden></div>
-            <div class="sekme-govde" id="sekmeFavori" hidden></div>
+            <div class="sekme-govde" id="sekmeYorum" hidden></div>
             <div class="sekme-govde" id="sekmeArkadas" hidden></div>
         </div>
     </div>
@@ -368,7 +365,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260910c"></script>
+    <script src="script.js?v=20260910d"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
