@@ -769,12 +769,14 @@ async function gezginiAc(kullaniciAdi) {
          { data: harita, error: hh },
          { data: fotolar },
          { data: kayit },
-         { data: listeler }] = await Promise.all([
+         { data: listeler },
+         { data: yorumlar }] = await Promise.all([
     db.rpc("gezgin_profil",      { p_kullanici_adi: kullaniciAdi }),
     db.rpc("gezgin_haritasi",    { p_kullanici_adi: kullaniciAdi }),
     db.rpc("gezgin_fotograflari",{ p_kullanici_adi: kullaniciAdi }),
     db.rpc("gezgin_gezi_kaydi",  { p_kullanici_adi: kullaniciAdi }),
-    db.rpc("gezgin_listeleri",   { p_kullanici_adi: kullaniciAdi })
+    db.rpc("gezgin_listeleri",   { p_kullanici_adi: kullaniciAdi }),
+    db.rpc("gezgin_yorumlari",   { p_kullanici_adi: kullaniciAdi })
   ]);
   if (ph || hh || !profil || !profil.length) {
     console.log("Gezgin acilamadi", ph || hh);
@@ -796,7 +798,8 @@ async function gezginiAc(kullaniciAdi) {
     ulkeler: new Set((harita || []).map(function (r) { return r.ulke; })),
     fotolar: fotolar || [],
     istekler:  (listeler || []).filter(function (r) { return r.tur === "istek"; }),
-    favoriler: (listeler || []).filter(function (r) { return r.tur === "favori"; })
+    favoriler: (listeler || []).filter(function (r) { return r.tur === "favori"; }),
+    yorumlar:  yorumlar || []
   };
   misafirBariGoster();
   kureRenkTazele();
@@ -1287,9 +1290,12 @@ async function sehirDetayAc(ulke, sehir) {
       }
     });
 
-  const d = sehirDetaylari[anahtar(ulke, sehir)] || { puan: 0, not: "" };
+  const d = sehirDetaylari[anahtar(ulke, sehir)] || { puan: 0, not: "", acik: false };
   yildizGoster(d.puan || 0);
   document.getElementById("sehirNot").value = d.not || "";
+  document.getElementById("notAcikAnahtar").checked = d.acik === true;
+  notAnahtariniCiz();
+  yorumlariGoster();
   tarihKutulariniDoldur();
   tarihiGoster(ulke, sehir);
   /* Suzgec her sehirde bastan basliyor. Yapismis birakinca kullanici
@@ -1758,6 +1764,117 @@ async function tarihiKaydet() {
   if (document.getElementById("profilKart").classList.contains("acik")) profilDoldur();
 }
 
+/* =====================================================================
+   YORUMLAR
+   Sehir sayfasindaki not kutusu tek; uzerindeki anahtar acikken ayni
+   metin bu sehrin sayfasinda herkese gorunuyor.
+
+   Kisi basi sehir basina TEK yorum: sehir_detaylari'nda zaten
+   (user_id, ulke, sehir) tek satir. Kimse kimseye cevap yazamiyor --
+   sehir sayfasi sohbete donmesin diye.
+
+   Yorum gizlilik anahtarindan ETKILENMIYOR. Kapali profilin yorumu da
+   burada gorunuyor; acik bir sayfaya yazilmis bir seyi profilde
+   gizlemek gostermelik olurdu.
+   ===================================================================== */
+function notDurumu(metin) {
+  let el = document.getElementById("notDurum");
+  if (!el) {
+    const bolum = document.getElementById("notBolum");
+    if (!bolum) return;
+    el = document.createElement("div");
+    el.id = "notDurum";
+    bolum.appendChild(el);
+  }
+  el.textContent = metin || "";
+}
+
+function notAnahtariniCiz() {
+  const kutu = document.getElementById("notAcikAnahtar");
+  if (!kutu) return;
+  const acik = kutu.checked;
+  document.getElementById("notAcikBaslik").textContent =
+    acik ? "Herkese açık yorum" : "Sadece sen görüyorsun";
+  document.getElementById("notAcikNot").textContent = acik
+    ? "Bu şehrin sayfasında adınla birlikte görünüyor."
+    : "Açarsan bu şehrin sayfasında yorum olarak görünür.";
+  const sayac = document.getElementById("notSayac");
+  const uz = (document.getElementById("sehirNot").value || "").length;
+  if (sayac) sayac.textContent = uz ? "(" + uz + "/600)" : "";
+  notDurumu("");
+}
+
+async function yorumlariGoster() {
+  const ulke = aktifDetay.ulke, sehir = aktifDetay.sehir;
+  const bolum = document.getElementById("yorumBolum");
+  const liste = document.getElementById("yorumListe");
+  if (!liste) return;
+  liste.innerHTML = "";
+  const { data, error } = await db.rpc("sehir_yorumlari",
+    { p_ulke: ulke, p_sehir: sehir });
+  if (aktifDetay.ulke !== ulke || aktifDetay.sehir !== sehir) return;
+  if (error) { console.log("yorumlar alinamadi:", error.message); }
+  const satirlar = data || [];
+  document.getElementById("yorumSayac").textContent =
+    satirlar.length ? "(" + satirlar.length + ")" : "";
+  /* Hic yorum yoksa bolumu hic gostermiyoruz: bos bir baslik, sehrin
+     sayfasinda "burada bir sey olmali" hissi veriyor. */
+  bolum.style.display = satirlar.length ? "block" : "none";
+  for (let i = 0; i < satirlar.length; i++) liste.appendChild(yorumKarti(satirlar[i]));
+}
+
+function yorumKarti(y) {
+  const kart = document.createElement("div");
+  kart.className = "yorum-kart" + (y.benim ? " benim" : "");
+
+  const ust = document.createElement("div");
+  ust.className = "yorum-ust";
+  ust.appendChild(avatarYap(y.sahip_foto, "kucuk"));
+
+  const ad = document.createElement("span");
+  ad.className = "yorum-ad";
+  ad.textContent = y.benim ? "sen" : y.sahip;
+  if (!y.benim && y.kullanici_adi) {
+    ad.classList.add("tiklanir");
+    ad.title = "@" + y.kullanici_adi + " haritasına git";
+    ad.addEventListener("click", function () {
+      hepsiniKapat(); gezginiAc(y.kullanici_adi);
+    });
+  }
+  ust.appendChild(ad);
+
+  if (y.puan) {
+    const pu = document.createElement("span");
+    pu.className = "yorum-puan";
+    pu.textContent = "★".repeat(y.puan);
+    pu.title = y.puan + "/5";
+    ust.appendChild(pu);
+  }
+
+  const sag = document.createElement("span");
+  sag.className = "yorum-sag";
+  if (y.benim) {
+    sag.textContent = "aşağıdan düzenle";
+  } else {
+    const sik = document.createElement("button");
+    sik.className = "foto-sikayet";
+    sik.textContent = "şikayet";
+    sik.title = "Bu yorumu şikayet et";
+    sik.addEventListener("click", function () {
+      sikayetAc("yorum", null, y.kullanici_adi, aktifDetay.ulke, aktifDetay.sehir);
+    });
+    sag.appendChild(sik);
+  }
+  ust.appendChild(sag);
+  kart.appendChild(ust);
+
+  const metin = document.createElement("p");
+  metin.className = "yorum-metin";
+  metin.textContent = y.metin;
+  kart.appendChild(metin);
+  return kart;
+}
+
 /* Burayi gezenler. Sehir sayfasinin GOVDESININ DISINDA duruyor:
    gitmedigin bir sehirde de gorunmesi gerekiyor -- asil ise yaradigi
    yer orasi, "gidecegim, kimler gitmis" durumu. */
@@ -1908,7 +2025,8 @@ function profilKaynagi() {
       sehirler:  misafir.sehirler || [],
       kayit:     misafir.kayit || [],
       istekler:  misafir.istekler  || [],
-      favoriler: misafir.favoriler || []
+      favoriler: misafir.favoriler || [],
+      yorumlar:  misafir.yorumlar  || []
     };
   }
   const ulkeler = [], kitalar = [];
@@ -1933,7 +2051,8 @@ function profilKaynagi() {
     sehirler: sehirler,
     kayit: gezileriSirala(gezilenler),
     istekler:  istekListesi,
-    favoriler: favoriListesi
+    favoriler: favoriListesi,
+    yorumlar:  null            /* kendi yorumlarim sekme acilinca cekiliyor */
   };
 }
 
@@ -2093,10 +2212,7 @@ function sekmeSec(ad) {
   else if (ad === "foto")    sekmeFotoCiz(k);
   else if (ad === "arkadas") arkadasBolumu();
   else if (ad === "istek")   sekmeIstekCiz(k);
-  else if (ad === "yorum")
-    yerTutucu("sekmeYorum", k,
-      "Yazdığın yorumlar yakında burada toplanacak. Asıl yerleri şehir sayfaları olacak.",
-      "Yazdığı yorumlar yakında burada görünecek.");
+  else if (ad === "yorum")   sekmeYorumCiz(k);
 }
 
 /* --- kucuk yapi taslari ------------------------------------------- */
@@ -2222,6 +2338,60 @@ function sekmeIstekCiz(k) {
     })(liste[i]);
   }
   kutu.appendChild(kutu2);
+}
+
+/* --- YORUMLAR ------------------------------------------------------
+   Gizlilik anahtarina bagli DEGIL: yorum sehir sayfasinda zaten acik
+   duruyor, profilde gizlemek gostermelik olurdu. Fotograflarda da
+   ayni mantik var. */
+let yorumSekmeDamgasi = 0;
+
+async function sekmeYorumCiz(k) {
+  const kutu = document.getElementById("sekmeYorum");
+  const damga = ++yorumSekmeDamgasi;
+  kutu.innerHTML = "<p class='panel-durum'>Yükleniyor…</p>";
+  let liste = k.yorumlar;
+  if (liste === null || liste === undefined) {
+    const { data, error } = await db.rpc("yorumlarim");
+    if (damga !== yorumSekmeDamgasi) return;
+    if (error) { console.log("yorumlar alinamadi:", error.message); liste = []; }
+    else liste = data || [];
+  }
+  if (damga !== yorumSekmeDamgasi) return;
+
+  kutu.innerHTML = "";
+  if (!liste.length) {
+    kutu.appendChild(bosYazi(k.benim
+      ? "Henüz yorum yazmadın. Gittiğin bir şehrin sayfasını aç, notunu yaz ve “herkese açık” yap."
+      : "Yazdığı bir yorum yok."));
+    return;
+  }
+  kutu.appendChild(sekmeBasligi("YORUMLAR (" + liste.length + ")"));
+  for (let i = 0; i < liste.length; i++) {
+    (function (y) {
+      const kart = document.createElement("div");
+      kart.className = "yorum-kart tiklanir";
+      const ust = document.createElement("div");
+      ust.className = "yorum-ust";
+      const yer = document.createElement("span");
+      yer.className = "yorum-ad";
+      yer.innerHTML = kacisla(y.sehir) + " <em>— " + kacisla(y.ulke) + "</em>";
+      ust.appendChild(yer);
+      if (y.puan) {
+        const pu = document.createElement("span");
+        pu.className = "yorum-puan";
+        pu.textContent = "★".repeat(y.puan);
+        ust.appendChild(pu);
+      }
+      kart.appendChild(ust);
+      const metin = document.createElement("p");
+      metin.className = "yorum-metin";
+      metin.textContent = y.metin;
+      kart.appendChild(metin);
+      kart.addEventListener("click", function () { sehirDetayAc(y.ulke, y.sehir); });
+      kutu.appendChild(kart);
+    })(liste[i]);
+  }
 }
 
 /* --- FOTOGRAFLAR --------------------------------------------------- */
@@ -2392,13 +2562,16 @@ const SIKAYET_SEBEPLERI = [
 ];
 let sikayetHedef = null;
 
-function sikayetAc(tur, fotoId, kullaniciAdi) {
-  sikayetHedef = { tur: tur, foto: fotoId || null, ad: kullaniciAdi || null };
+function sikayetAc(tur, fotoId, kullaniciAdi, ulke, sehir) {
+  sikayetHedef = { tur: tur, foto: fotoId || null, ad: kullaniciAdi || null,
+                   ulke: ulke || null, sehir: sehir || null };
   /* Basliga kullanici adini ek alarak koymuyoruz: Turkce'de ek sesli
      harfe gore degisiyor (@mert'i ama @ayse'yi) ve kullanici adi ne
      olacagi belli degil. Adi ayri satirda yaziyoruz. */
   document.getElementById("sikayetBaslik").textContent =
-    tur === "fotograf" ? "Fotoğrafı şikayet et" : "Kullanıcıyı şikayet et";
+    tur === "fotograf" ? "Fotoğrafı şikayet et"
+  : tur === "yorum"    ? "Yorumu şikayet et"
+                       : "Kullanıcıyı şikayet et";
   document.querySelector("#sikayetKutu .sikayet-not").textContent =
     (kullaniciAdi ? "@" + kullaniciAdi + " — " : "") + "ne oldu?";
   const kutu = document.getElementById("sikayetSebepler");
@@ -2442,7 +2615,9 @@ document.getElementById("sikayetGonder").addEventListener("click", async functio
     p_foto_id: sikayetHedef.foto,
     p_kullanici_adi: sikayetHedef.ad,
     p_sebep: secili.dataset.sebep,
-    p_aciklama: document.getElementById("sikayetAciklama").value
+    p_aciklama: document.getElementById("sikayetAciklama").value,
+    p_ulke: sikayetHedef.ulke,
+    p_sehir: sikayetHedef.sehir
   });
   this.disabled = false;
   if (error) { durum.textContent = hataYaz(error.message); return; }
@@ -3115,12 +3290,13 @@ async function detaylariYukle() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) { sehirDetaylari = yerelOku("sehirDetaylari", {}); return; }
   const { data, error } = await db.from("sehir_detaylari")
-    .select("ulke,sehir,puan,notlar").eq("user_id", oturum.session.user.id);
+    .select("ulke,sehir,puan,notlar,not_acik").eq("user_id", oturum.session.user.id);
   if (error) { sehirDetaylari = yerelOku("sehirDetaylari", {}); return; }
   sehirDetaylari = {};
   for (let i = 0; i < data.length; i++) {
     sehirDetaylari[anahtar(data[i].ulke, data[i].sehir)] =
-      { puan: data[i].puan || 0, not: data[i].notlar || "" };
+      { puan: data[i].puan || 0, not: data[i].notlar || "",
+        acik: data[i].not_acik === true };
   }
   yerelYaz("sehirDetaylari", sehirDetaylari);
 }
@@ -3219,22 +3395,35 @@ function fotoAlaniHazirla() {
   bolum.parentElement.insertBefore(diger, bolum.nextSibling);
 }
 
+document.getElementById("notAcikAnahtar").addEventListener("change", notAnahtariniCiz);
+document.getElementById("sehirNot").addEventListener("input", notAnahtariniCiz);
+
 document.getElementById("sehirDetayKaydet").addEventListener("click", async function () {
   const btn = this;
   btn.disabled = true;
   const not = document.getElementById("sehirNot").value;
+  const acik = document.getElementById("notAcikAnahtar").checked &&
+               not.trim() !== "";
   const a = anahtar(aktifDetay.ulke, aktifDetay.sehir);
   // Fotograflar artik burada degil, sehir_fotolari tablosunda.
-  sehirDetaylari[a] = { puan: seciliPuan, not: not };
-  yerelYaz("sehirDetaylari", sehirDetaylari);
   const { data: oturum } = await db.auth.getSession();
   if (oturum.session) {
     const { error } = await db.from("sehir_detaylari").upsert({
       user_id: oturum.session.user.id, ulke: aktifDetay.ulke,
-      sehir: aktifDetay.sehir, puan: seciliPuan, notlar: not
+      sehir: aktifDetay.sehir, puan: seciliPuan, notlar: not,
+      not_acik: acik
     }, { onConflict: "user_id,ulke,sehir" });
-    if (error) console.log("detay kaydedilemedi:", error.message);
+    /* Sunucu reddedebilir (susturulmus hesap, gidilmemis sehir).
+       Once yerele yazip sonra kaydetseydik ekranda kaydedilmis gibi
+       gorunurdu; o yuzden sira boyle. */
+    if (error) {
+      btn.disabled = false;
+      notDurumu(hataYaz(error.message));
+      return;
+    }
   }
+  sehirDetaylari[a] = { puan: seciliPuan, not: not, acik: acik };
+  yerelYaz("sehirDetaylari", sehirDetaylari);
   btn.disabled = false;
   sehirDetayKapat();
 });

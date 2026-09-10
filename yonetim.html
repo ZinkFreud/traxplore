@@ -241,7 +241,9 @@ function sikayetKarti(s) {
   ust.className = "ust";
   const t = document.createElement("span");
   t.className = "etiket";
-  t.textContent = s.tur === "fotograf" ? "fotoğraf" : "kullanıcı";
+  t.textContent = s.tur === "fotograf" ? "fotoğraf"
+                : s.tur === "yorum"    ? "yorum"
+                                       : "kullanıcı";
   const sb = document.createElement("span");
   sb.className = "etiket sebep";
   sb.textContent = SEBEPLER[s.sebep] || s.sebep;
@@ -267,7 +269,9 @@ function sikayetKarti(s) {
   }
   satir("Şikayet eden", s.eden_adi ? "@" + s.eden_adi : "(hesap silinmiş)");
   satir("Şikayet edilen", s.hedef_adi ? "@" + s.hedef_adi : "(hesap silinmiş)");
-  if (s.foto_sehir) satir("Yer", s.foto_sehir + ", " + (s.foto_ulke || ""));
+  if (s.foto_sehir)  satir("Yer", s.foto_sehir + ", " + (s.foto_ulke || ""));
+  if (s.yorum_sehir) satir("Yer", s.yorum_sehir + ", " + (s.yorum_ulke || ""));
+  if (s.tur === "yorum") satir("Yorum", s.yorum_duruyor ? "duruyor" : "kaldırılmış");
   if (s.hedef_yasakli)     satir("Durum", "hesap yasaklı");
   else if (s.hedef_susturulmus) satir("Durum", "hesap susturulmuş");
 
@@ -276,6 +280,16 @@ function sikayetKarti(s) {
     a.className = "aciklama";
     a.textContent = s.aciklama;
     kart.appendChild(a);
+  }
+
+  /* Yorumun metni sikayet aninda kopyalanmisti; silinse bile
+     yonetici neye baktigini gormeli. Duran metin varsa onu, yoksa
+     kopyayi gosteriyoruz -- ikisi de yoksa satir hic cikmiyor. */
+  if (s.tur === "yorum" && s.yorum_metin) {
+    const y = document.createElement("div");
+    y.className = "aciklama yorum";
+    y.textContent = s.yorum_metin;
+    kart.appendChild(y);
   }
 
   if (s.tur === "fotograf" && s.foto_yol) {
@@ -344,6 +358,19 @@ function sikayetKarti(s) {
       const { error } = await db.storage.from("sehir-fotolari").remove([s.foto_yol]);
       if (error) throw new Error("Dosya silinemedi: " + error.message);
       return rpc("yonetici_foto_sil", { p_id: s.foto_id });
+    });
+  }
+
+  if (s.tur === "yorum" && s.yorum_duruyor && s.hedef_adi) {
+    const sil = document.createElement("button");
+    sil.className = "tehlike"; sil.textContent = "Yorumu sil";
+    dugmeler.push(sil); isler.appendChild(sil);
+    calistir(sil, dugmeler, "Siliniyor", function () {
+      if (!confirm("Yorumun metni silinecek. Not kutusu tek olduğu için " +
+                   "kullanıcının o şehirdeki özel notu da gider. Emin misin?"))
+        throw new Error("Vazgeçildi.");
+      return rpc("yonetici_yorum_sil", { p_kullanici_adi: s.hedef_adi,
+                                         p_ulke: s.yorum_ulke, p_sehir: s.yorum_sehir });
     });
   }
 
