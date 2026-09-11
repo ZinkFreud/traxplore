@@ -461,14 +461,37 @@ body {
     letter-spacing: 1px;
 }
 
+#sehirKapakSar { position: relative; margin-bottom: 20px; }
 #sehirKapak {
     width: 100%;
     height: 160px;
     object-fit: cover;
     border-radius: 10px;
-    margin-bottom: 20px;
     display: none;
 }
+/* Kapak varsa dugme fotografin ustunde, sag ust kosede */
+#gittimBtn {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    background: rgba(6,9,14,0.82);
+    border: 1px solid var(--kehribar);
+    color: var(--kehribar);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+#gittimBtn:hover:not(:disabled) { background: rgba(233,162,59,0.16); }
+#gittimBtn:disabled { opacity: 0.45; cursor: default; }
+#gittimBtn.gidildi {
+    background: rgba(233,162,59,0.18);
+    border-color: rgba(233,162,59,0.55);
+}
+#sehirKapakSar:not(.kapaksiz) #gittimBtn { position: absolute; top: 10px; right: 10px; }
+/* Kapak yoksa baslik altinda tam genislikte dursun */
+#sehirKapakSar.kapaksiz #gittimBtn { display: block; width: 100%; }
 
 #kilitUyari {
     display: none;
@@ -541,8 +564,8 @@ body {
     text-align: center;
 }
 
-/* Profil kartı - sağdan kayan */
-#profilKart {
+/* Profil kartı ve ayarlar — sağdan kayan, aynı yüzey */
+#profilKart, #ayarlarPanel {
     position: fixed;
     top: 0;
     right: 0;
@@ -561,11 +584,11 @@ body {
     box-sizing: border-box;
     pointer-events: none;
 }
-#profilKart.acik {
+#profilKart.acik, #ayarlarPanel.acik {
     transform: translateX(0);
     pointer-events: auto;
 }
-#profilKapat {
+#profilKapat, #ayarlarKapat {
     position: absolute; top: 20px; right: 20px;
     background: none; border: none; color: #888;
     font-size: 24px; cursor: pointer;
@@ -1084,6 +1107,9 @@ body {
     font-size: 14px;
 }
 .gezgin-ulke:hover { background: #1A222B; }
+/* Ülke adı eğik durmasın: gezi kaydında ve yorum kartında upright,
+   burada eğikti — aynı kalıbın üç yerde iki türlü görünmesi. */
+.gezgin-ulke em { font-style: normal; color: var(--yazi-soluk); }
 .gezgin-ulke b { color: #5FB6C4; }
 
 /* Misafir modunda "gittim" işareti tıklanamaz */
@@ -1288,7 +1314,7 @@ body {
     border-left: 1px solid var(--kil);
     box-shadow: none;
 }
-#gecmisPanel, #profilKart, #logo, #kitaChart, #istatistik, #sifirlaBtn, .arama-kutu {
+#gecmisPanel, #profilKart, #ayarlarPanel, #logo, #kitaChart, #istatistik, #sifirlaBtn, .arama-kutu {
     background: var(--yuzey);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
@@ -1623,7 +1649,7 @@ body {
     }
 
     /* --- bütün paneller: alttan açılan tam sayfa --- */
-    #panel, #sehirDetayPanel, #istatistikPanel, #profilKart, #gecmisPanel {
+    #panel, #sehirDetayPanel, #istatistikPanel, #profilKart, #ayarlarPanel, #gecmisPanel {
         position: fixed;
         left: 0; right: 0; bottom: 0;
         top: auto;
@@ -1642,7 +1668,7 @@ body {
         box-sizing: border-box;
     }
     #panel.acik, #sehirDetayPanel.acik, #istatistikPanel.acik,
-    #profilKart.acik, #gecmisPanel.acik {
+    #profilKart.acik, #ayarlarPanel.acik, #gecmisPanel.acik {
         transform: translateY(0);
         pointer-events: auto;
     }
@@ -2147,3 +2173,409 @@ body {
         font-size: 16px !important;
     }
 }
+
+/* --- açık panelin üstündeki harita: dokununca kapat ----------------- */
+/* Telefonda paneller alttan açılıyor ve uzun listelerde kapatmak için
+   ta yukarı kaydırıp çarpıya basmak gerekiyordu. Panelin üstünde kalan
+   harita alanı artık kapatma alanı. Örtü sadece telefonda açılıyor;
+   masaüstünde paneller yanda duruyor ve küre kullanılabilir kalmalı. */
+@media (max-width: 720px), (max-height: 520px) {
+    #ortu { background: rgba(4,7,12,0.45); }
+}
+
+/* --- ayarlar ekranı ------------------------------------------------- */
+#ayarlarAc {
+    position: absolute; top: 19px; right: 54px;
+    background: none; border: none; color: var(--yazi-soluk);
+    cursor: pointer; padding: 2px; line-height: 0;
+}
+#ayarlarAc:hover { color: var(--kehribar); }
+#ayarlarGeri {
+    display: inline-block; margin-bottom: 4px; padding: 0;
+    font-size: 13px;
+}
+h2.ayar-baslik {
+    margin: 0 0 22px; font-size: 22px; font-weight: 600; color: var(--yazi);
+}
+.ayar-satir {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 12px; font-size: 14px; color: var(--yazi-soluk);
+    padding: 10px 12px; border-radius: 8px; background: #080D14;
+}
+.ayar-satir b {
+    color: var(--yazi); font-weight: 500; word-break: break-all; text-align: right;
+}
+.ayar-durum { font-size: 12.5px; color: var(--yazi-soluk); min-height: 16px; margin-top: 8px; }
+.ayar-durum.hata { color: #e8b9b9; }
+#yeniSifre1 { margin-bottom: 8px; }
+#yeniSifre2 { margin-bottom: 10px; }
+#sifreDegistir { width: 100%; }
+#ayarlarPanel .yasal { justify-content: flex-start; margin-top: 0; }
+#engelListe:empty { display: none; }
+
+/* =====================================================================
+   PROFİL EKRANI — sabit üst + kayan sekme gövdesi
+   Üstteki kimlik ve sayılar kaymıyor; kayan tek yer #profilIcerik.
+   Aynı iskelet başkasının profili için de kullanılıyor.
+   ===================================================================== */
+#profilKart {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;                 /* kayan tek yer #profilIcerik */
+    padding: 26px 0 0;
+}
+#profilUst, #profilFavoriler, #profilUstEk, #profilSekmeler {
+    flex: 0 0 auto;
+    padding-left: 26px;
+    padding-right: 26px;
+}
+#profilIcerik {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 26px 26px;
+}
+
+/* Kapat ve çark düğmeleri üstte mutlak duruyor. Sağdan yeri SADECE
+   kullanıcı adı satırı bırakıyor; altındaki iki satır düğmelerin
+   hizasının altında kaldığı için tüm genişliği kullanabiliyor. */
+#profilUst { display: flex; align-items: center; gap: 14px; }
+#profilKimlik { min-width: 0; flex: 1 1 auto; }
+#profilAd {
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-size: 19px; font-weight: 600; letter-spacing: 0.3px;
+    color: var(--yazi);
+    padding-right: 66px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#profilAltSatir {
+    font-size: 13px; color: var(--yazi-soluk); margin-top: 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* --- sayılar: kutu değil, tek cümle --- */
+#profilSayiYazi {
+    display: flex; flex-wrap: wrap; align-items: baseline;
+    gap: 0 10px;
+    margin-top: 6px;
+    font-size: 12.5px;
+    color: var(--yazi-soluk);
+}
+.sayi-parca {
+    position: relative;
+    padding: 2px 0;
+    background: none; border: none; font-family: inherit; font-size: inherit;
+    color: var(--yazi-soluk);
+    white-space: nowrap;
+}
+/* Ayırıcı nokta parçanın kendisinden geliyor: satır sarınca alt satırın
+   başında öksüz bir "·" kalmıyor. */
+.sayi-parca + .sayi-parca::before {
+    content: "·"; position: absolute; left: -7px; opacity: 0.55;
+}
+.sayi-parca b { color: var(--yazi); font-weight: 600; }
+button.sayi-baglanti {
+    cursor: pointer;
+    border-bottom: 1px solid var(--kil-guclu);
+    padding-bottom: 1px;
+}
+button.sayi-baglanti:hover { color: var(--yazi); border-bottom-color: var(--yazi-soluk); }
+button.sayi-baglanti.secili { color: var(--kehribar); border-bottom-color: var(--kehribar); }
+button.sayi-baglanti.secili b { color: var(--kehribar); }
+button.sayi-baglanti.bekleyen::after {
+    content: ""; display: inline-block; margin-left: 5px;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--kehribar);
+    vertical-align: middle;
+}
+
+/* --- favoriler: en fazla 6 şehir, üst kısımda --- */
+#profilFavoriler {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+    margin-top: 14px;
+}
+.favori-yildiz { color: var(--kehribar); font-size: 12px; margin-right: 1px; }
+.favori-etiket {
+    background: rgba(190, 212, 218, 0.05);
+    border: 1px solid var(--kil);
+    border-radius: 20px;
+    color: var(--yazi);
+    font-family: inherit; font-size: 12px;
+    padding: 4px 11px;
+    cursor: pointer;
+    max-width: 46%;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.favori-etiket:hover { border-color: var(--kehribar); color: var(--kehribar); }
+
+/* [hidden] varsayilan olarak display:none demek, ama flex/grid kuralları
+   onu eziyordu: başkasının profilinde BENİM arkadaş sayım görünüyordu.
+   Bir kez oldu. */
+[hidden] { display: none !important; }
+
+#profilUstEk:empty { display: none; }
+#profilUstEk { margin-top: 14px; }
+#profilUstEk .arkadas-kutu { margin: 0; }
+#profilUstEk .gezgin-islem { margin: 10px 0 0; }
+#kullaniciAdiBolum .kullanici-adi-not { margin-bottom: 8px; }
+
+/* --- sekme şeridi --- */
+#profilSekmeler {
+    display: flex; gap: 0;
+    margin-top: 18px;
+    border-bottom: 1px solid var(--kil);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+#profilSekmeler::-webkit-scrollbar { display: none; }
+.sekme-btn {
+    flex: 0 0 auto;
+    background: none; border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: var(--yazi-soluk);
+    font-family: inherit; font-size: 12px; letter-spacing: 0.01em;
+    padding: 9px 7px; cursor: pointer; white-space: nowrap;
+}
+.sekme-btn:hover  { color: var(--yazi); }
+.sekme-btn.secili { color: var(--yazi); border-bottom-color: var(--kehribar); }
+
+/* --- sekme gövdeleri --- */
+.sekme-baslik {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--yazi-soluk);
+    margin: 20px 0 9px;
+}
+.sekme-govde > .sekme-baslik:first-child { margin-top: 12px; }
+.sekme-not { font-size: 11.5px; color: var(--yazi-soluk); opacity: 0.8;
+             margin: -3px 0 10px; line-height: 1.45; }
+.sekme-govde .arkadas-bos { padding: 14px 0; }
+.sekme-govde .gezgin-kilit { margin-top: 14px; }
+.kayit-satir.tiklanir { cursor: pointer; }
+.kayit-satir.tiklanir:hover { background: rgba(190, 212, 218, 0.05); }
+.foto-kart.tiklanir { cursor: pointer; }
+/* Profildeki fotoğraf ızgarasında "gizli" rozeti: hangisinin herkese
+   açık olduğunu başka türlü göremiyordum. */
+.foto-rozet {
+    position: absolute; top: 6px; left: 6px;
+    background: rgba(6, 10, 17, 0.72);
+    color: var(--yazi-soluk);
+    font-size: 10px; padding: 2px 6px; border-radius: 4px;
+    letter-spacing: 0.04em;
+}
+
+/* --- Ayarlar'a taşınan profil düzenleme --- */
+#profilDuzenle #profilFotolar { margin-bottom: 14px; }
+#profilDuzenle input[type="text"] { margin-bottom: 8px; }
+
+@media (max-width: 720px), (max-height: 520px) {
+    /* Telefonda da üst kısım sabit: panelin kendisi kaymıyor,
+       içindeki sekme gövdesi kayıyor. */
+    #profilKart {
+        overflow: hidden;
+        padding: 20px 0 0;
+        height: 82vh; height: 82dvh;
+    }
+    #profilUst, #profilFavoriler, #profilUstEk, #profilSekmeler {
+        padding-left: 18px; padding-right: 18px;
+    }
+    #profilAd { padding-right: 56px; }
+    #profilIcerik { padding: 4px 18px calc(78px + env(safe-area-inset-bottom)); }
+    #profilAd { font-size: 18px; }
+    .sekme-btn { font-size: 12.5px; padding: 10px 9px; }
+    #profilSayiYazi { font-size: 12.5px; }
+    .favori-etiket { max-width: 44%; }
+}
+
+/* --- şehir kartındaki liste düğmeleri ------------------------------
+   "Gitmek istiyorum" gittiğin şehirde hiç görünmüyor; favori ise
+   gitmediğin şehirde kapalı duruyor (sebebi üstüne gelince yazıyor).
+   Aynı kurallar sunucuda da var. */
+#listeDugmeler {
+    display: flex; gap: 8px;
+    margin: 12px 0 0;
+}
+#listeDugmeler button {
+    flex: 1 1 0;
+    background: none;
+    border: 1px solid var(--kil);
+    border-radius: 6px;
+    color: var(--yazi-soluk);
+    font-family: inherit; font-size: 12.5px;
+    padding: 9px 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+}
+#listeDugmeler button:hover:not(:disabled) { border-color: var(--kil-guclu); color: var(--yazi); }
+#listeDugmeler button.aktif {
+    border-color: var(--kehribar);
+    color: var(--kehribar);
+}
+#listeDugmeler button:disabled { opacity: 0.38; cursor: default; }
+#listeDurum { font-size: 11.5px; color: #e8b9b9; margin-top: 7px; min-height: 15px; line-height: 1.4; }
+#listeDurum:empty { min-height: 0; margin-top: 0; }
+/* Düğmelerle altındaki uyarı kutusu birbirine yapışmasın */
+#listeDugmeler + #listeDurum + #kilitUyari,
+#listeDugmeler + #listeDurum + #kilitUyari + .detay-bolum { margin-top: 14px; }
+
+/* --- şehir sayfasındaki yorumlar -----------------------------------
+   Kişi başı şehir başına tek yorum; kimse kimseye cevap yazamıyor.
+   Şehir sayfası sohbete dönmesin diye. */
+#yorumBolum { display: none; }
+#yorumListe { display: flex; flex-direction: column; gap: 10px; }
+.yorum-kart {
+    background: rgba(190, 212, 218, 0.035);
+    border: 1px solid var(--kil);
+    border-radius: 8px;
+    padding: 11px 13px;
+}
+.yorum-kart.benim { border-color: rgba(233, 162, 59, 0.28); }
+.yorum-kart.tiklanir { cursor: pointer; }
+.yorum-kart.tiklanir:hover { border-color: var(--kil-guclu); }
+.yorum-ust {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--yazi-soluk);
+    margin-bottom: 7px;
+}
+.yorum-ad { color: var(--yazi); }
+.yorum-ad em { color: var(--yazi-soluk); font-style: normal; }
+.yorum-ad.tiklanir { cursor: pointer; }
+.yorum-ad.tiklanir:hover { color: var(--kehribar); }
+.yorum-puan { color: var(--kehribar); font-size: 11px; letter-spacing: 1px; }
+.yorum-sag { margin-left: auto; font-size: 11px; color: var(--yazi-soluk); opacity: 0.7; }
+.yorum-sag .foto-sikayet { position: static; opacity: 1; }
+.yorum-metin {
+    margin: 0;
+    font-size: 13px; line-height: 1.55;
+    color: var(--yazi);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.sekme-govde .yorum-kart { margin-bottom: 0; }
+.sekme-govde .yorum-kart + .yorum-kart { margin-top: 10px; }
+
+/* --- notun herkese açık anahtarı --- */
+#notBolum #notAnahtarSatir { margin-top: 10px !important; }
+#notSayac, #yorumSayac { font-size: 10.5px; opacity: 0.65; margin-left: 5px; letter-spacing: 0; }
+#notDurum { font-size: 11.5px; color: #e8b9b9; margin-top: 8px; line-height: 1.4; }
+#notDurum:empty { margin-top: 0; }
+
+/* --- misafir kipi: üstteki şerit çakışıyordu ------------------------
+   #misafirBar ile #mobilUst ikisi de z-index 1100 ve ikisi de üstte;
+   bar logonun ve sayacın üstüne biniyordu. Ayrıca o sayaç SENİN
+   sayılarını gösteriyor — başkasının haritasına bakarken yanıltıcı.
+   Misafirdeyken ikisini de gizleyip yerini bara bırakıyoruz. */
+body.misafirde #istatistik { display: none; }
+.misafir-yazi { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 720px), (max-height: 520px) {
+    body.misafirde #mobilUst { display: none !important; }
+    body.misafirde #misafirBar {
+        top: 0; left: 0; right: 0;
+        transform: none;
+        justify-content: space-between;
+        border-radius: 0 0 12px 12px;
+        border-top: none;
+        padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+        font-size: 13px;
+    }
+    body.misafirde #misafirBar button { flex: 0 0 auto; }
+}
+
+/* =====================================================================
+   KÜRE ALTI SAYAÇ (sadece telefon)
+   Uygulamanın verdiği tek "puan" bu. Sağ üst köşede 12 punto gri
+   duruyordu; küreyle alt şerit arasındaki boş alana, ortaya alındı.
+   Kehribar kullanılmıyor — küreyle yarışmasın, iri olması yetiyor.
+   ===================================================================== */
+#kureSayac { display: none; }
+
+@media (max-width: 720px), (max-height: 520px) {
+    #kureSayac {
+        display: flex;
+        position: fixed;
+        left: 0; right: 0;
+        bottom: calc(74px + env(safe-area-inset-bottom));
+        z-index: 900;
+        justify-content: center;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: 2px 18px;
+        background: none;
+        border: none;
+        padding: 6px 16px;
+        font-family: inherit;
+        font-size: 12px;
+        color: var(--yazi-soluk);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .kure-sayac-parca { white-space: nowrap; }
+    /* Ayırıcı nokta yok: yıldızlı gökyüzünün önünde toz gibi duruyordu,
+       üstelik iri rakamla küçük yazının arasında hizası tutmuyordu.
+       Boşluk zaten ayırıyor. */
+    .kure-sayac-parca b {
+        font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+        font-size: 23px; font-weight: 600;
+        color: var(--yazi);
+        margin-right: 2px;
+        transition: color 0.25s ease;
+    }
+    /* Yeni şehir işaretlenince sayı bir an parlasın. Ödül o sayı. */
+    #kureSayac.parla b { animation: sayacParla 0.9s ease; }
+    @keyframes sayacParla {
+        0%   { color: var(--yazi); }
+        25%  { color: var(--kehribar); text-shadow: 0 0 14px rgba(233,162,59,0.55); }
+        100% { color: var(--yazi); text-shadow: none; }
+    }
+
+    /* Aynı sayıyı iki yerde bağırmayalım: büyük sayaç varken üstteki
+       küçük yazı gidiyor, logo kalıyor. */
+    #mobilSayac { display: none; }
+
+    /* Başkasının haritasındayken kendi sayın ortada durmasın. */
+    body.misafirde #kureSayac { display: none; }
+
+    /* Panel açıkken haritanın üstündeki mobilya görünmesin. "Son
+       Gezdiklerin" paneli de z-index 900'deydi; eşitlikte HTML sırası
+       kazandığı için sayaç panelin ÖNÜNDE çıkıp yazıya karışıyordu.
+       Panelin katını yükseltiyoruz, ayrıca ikisini de gizliyoruz. */
+    #gecmisPanel { z-index: 1001; }
+    body.panelde #kureSayac,
+    body.panelde #altBilgi { display: none !important; }
+
+    /* Alt bilgi bağlantısı sayacın altında kalsın */
+    #altBilgi { bottom: calc(52px + env(safe-area-inset-bottom)); }
+}
+
+/* Kısa ekran (telefon yan çevrilince): kürenin altında yer kalmıyor.
+   Sayaç üst şeride çıkıyor, logonun yerini alıyor. */
+@media (max-height: 520px) {
+    #kureSayac { display: none !important; }
+    #mobilLogo  { display: none; }
+    #mobilSayac {
+        display: block;
+        font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+        font-size: 17px;
+        color: var(--yazi);
+        letter-spacing: 0.2px;
+    }
+    #mobilUst { justify-content: flex-start; }
+}
+
+/* --- parmağın altındakinin adı (sadece telefon) ---------------------
+   Masaüstünde imleçle çıkan ipucunun telefondaki karşılığı. Kalıcı bir
+   yazı katmanı değil: bir seferde tek isim, o da parmak küredeyken. */
+#kureEtiket {
+    position: fixed;
+    z-index: 950;
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.14s ease;
+    text-align: center;
+    max-width: 70vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#kureEtiket.acik { opacity: 1; }

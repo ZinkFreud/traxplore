@@ -186,6 +186,35 @@ function yerelSahibiniAyarla(uid) {
   return true;                       // temizlik yapildi
 }
 function anahtar(ulke, sehir) { return ulke + "|" + sehir; }
+
+/* =====================================================================
+   LISTELER — gitmek istediklerim ve favorilerim
+   Ikisi de acilista bir kez cekiliyor; sehir kartinda ve profilde
+   buradan okunuyor. Kurallar (6 sinir, "once gitmis olmalisin",
+   isaretleyince istek listesinden dusme) SUNUCUDA; burasi sadece
+   ekrani ona uyduruyor.
+   ===================================================================== */
+let istekListesi  = [];
+let favoriListesi = [];
+
+function listedeMi(liste, ulke, sehir) {
+  for (let i = 0; i < liste.length; i++)
+    if (liste[i].ulke === ulke && liste[i].sehir === sehir) return true;
+  return false;
+}
+function listedenCikar(liste, ulke, sehir) {
+  return liste.filter(function (x) {
+    return !(x.ulke === ulke && x.sehir === sehir); });
+}
+
+async function listeleriYukle() {
+  const { data: oturum } = await db.auth.getSession();
+  if (!oturum.session) { istekListesi = []; favoriListesi = []; return; }
+  const { data, error } = await db.rpc("listelerim");
+  if (error) { console.log("listeler alinamadi:", error.message); return; }
+  istekListesi  = (data || []).filter(function (r) { return r.tur === "istek"; });
+  favoriListesi = (data || []).filter(function (r) { return r.tur === "favori"; });
+}
 function gezildiMi(ulke, sehir) {
   return gezilenler.some(function (g) { return g.ulke === ulke && g.sehir === sehir; });
 }
@@ -196,6 +225,12 @@ function gezildiMi(ulke, sehir) {
 let kure = null;
 let ulkeOzellikleri = [];        // GeoJSON feature listesi
 let hoverUlke = null;
+let hoverSehir = null;          // dokunma anında parmağın altındaki pin
+let sonAcilanUlke = "";         // aynı ülkeyi iki kez açmayalım
+let sonAcilanAn   = 0;
+let kureDurdu     = false;      // çizim duraklatıldı mı
+let kureUykuda    = false;      // 30 sn dokunulmadı
+let kameraBitis   = 0;          // kamera animasyonu bitiş anı
 let pinListesi = [];             // kurede gorunen pinler
 let sonYukseklik = 2.5;
 let sonEsik = -1;                // en son uygulanan nufus esigi
@@ -256,6 +291,7 @@ function kureKur() {
       hoverUlke = yeni;
       document.getElementById("harita").style.cursor = d ? "pointer" : "grab";
       kure.polygonCapColor(kure.polygonCapColor());
+      etiketiTazele();
     })
     .onPolygonClick(function (d) { panelAc(d.properties.name); })
     /* Izgara kurenin yuzeyinde (0.0006), ulke dolgulari 0.003'te.
@@ -283,6 +319,7 @@ function kureKur() {
     .pointAltitude(0.0141)
     .pointResolution(MOBIL ? 8 : 14)
     .pointLabel(function (d) { return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>"; })
+    .onPointHover(function (d) { hoverSehir = d || null; etiketiTazele(); })
     .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); });
 
   /* Kapak ucgenlerinin kureyi kac derecede bir takip edecegi.
@@ -666,6 +703,11 @@ function pinBoyutu() {
 function pinleriTazele() { yogunlukGuncelle(true); }
 
 function kureyeGit(lat, lng, yakin) {
+  /* Kamera hareket ederken cizimi duraklatmayalim, yoksa animasyon
+     gorunmuyor. Bittikten sonra karar yeniden veriliyor. */
+  kameraBitis = Date.now() + 1800;
+  kureyiUyandir();
+  setTimeout(kureAnimasyonTazele, 1850);
   if (!kure) return;
   kure.controls().autoRotate = false;
   kure.pointOfView({ lat: lat, lng: lng, altitude: yakin ? 0.28 : 1.7 }, 900);
@@ -739,11 +781,15 @@ async function gezginiAc(kullaniciAdi) {
   const [{ data: profil, error: ph },
          { data: harita, error: hh },
          { data: fotolar },
-         { data: kayit }] = await Promise.all([
+         { data: kayit },
+         { data: listeler },
+         { data: yorumlar }] = await Promise.all([
     db.rpc("gezgin_profil",      { p_kullanici_adi: kullaniciAdi }),
     db.rpc("gezgin_haritasi",    { p_kullanici_adi: kullaniciAdi }),
     db.rpc("gezgin_fotograflari",{ p_kullanici_adi: kullaniciAdi }),
-    db.rpc("gezgin_gezi_kaydi",  { p_kullanici_adi: kullaniciAdi })
+    db.rpc("gezgin_gezi_kaydi",  { p_kullanici_adi: kullaniciAdi }),
+    db.rpc("gezgin_listeleri",   { p_kullanici_adi: kullaniciAdi }),
+    db.rpc("gezgin_yorumlari",   { p_kullanici_adi: kullaniciAdi })
   ]);
   if (ph || hh || !profil || !profil.length) {
     console.log("Gezgin acilamadi", ph || hh);
@@ -763,17 +809,21 @@ async function gezginiAc(kullaniciAdi) {
     kayit: kayit || [],
     sehirler: harita || [],
     ulkeler: new Set((harita || []).map(function (r) { return r.ulke; })),
-    fotolar: fotolar || []
+    fotolar: fotolar || [],
+    istekler:  (listeler || []).filter(function (r) { return r.tur === "istek"; }),
+    favoriler: (listeler || []).filter(function (r) { return r.tur === "favori"; }),
+    yorumlar:  yorumlar || []
   };
   misafirBariGoster();
   kureRenkTazele();
   pinleriTazele();
-  gezginPaneli();
+  profilAc();
 }
 
 function misafirdenCik() {
   if (!misafir) return;
   misafir = null;
+  document.body.classList.remove("misafirde");
   const bar = document.getElementById("misafirBar");
   if (bar) bar.remove();
   hepsiniKapat();
@@ -782,7 +832,13 @@ function misafirdenCik() {
   kureyiSifirla();
 }
 
+/* Bar ustte duruyor ve telefonda #mobilUst seridiyle ayni yere
+   dusuyordu: logo ve sayac barin altinda kaliyordu. Ustelik o sayac
+   SENIN sayilarini gosteriyor -- baskasinin haritasina bakarken
+   yaniltici. Misafir kipinde ustteki serit tamamen barin yerini
+   aliyor; masaustunde de ayni sebeple istatistik seridi gizleniyor. */
 function misafirBariGoster() {
+  document.body.classList.add("misafirde");
   let bar = document.getElementById("misafirBar");
   if (!bar) {
     bar = document.createElement("div");
@@ -791,6 +847,7 @@ function misafirBariGoster() {
   }
   bar.innerHTML = "";
   const yazi = document.createElement("span");
+  yazi.className = "misafir-yazi";
   yazi.textContent = "@" + misafir.kullanici_adi + " haritasına bakıyorsun";
   const cik = document.createElement("button");
   cik.textContent = "kendi haritama dön";
@@ -798,140 +855,8 @@ function misafirBariGoster() {
   bar.appendChild(yazi); bar.appendChild(cik);
 }
 
-/* Gezginin profili sagdaki panele ciziliyor: sayilar, herkese acik
-   fotograflari ve gittigi ulkeler. */
-async function gezginPaneli() {
-  if (!misafir) return;
-  document.getElementById("panelBaslik").textContent = "@" + misafir.kullanici_adi;
-  document.getElementById("panelAltBaslik").textContent =
-    (misafir.isim || "") + (misafir.konum ? " — " + misafir.konum : "");
-
-  const arama = document.getElementById("panelArama");
-  if (arama) arama.style.display = "none";
-  const eski = document.getElementById("dahaFazla");
-  if (eski) eski.remove();
-
-  const liste = document.getElementById("sehirListe");
-  liste.innerHTML = "";
-  liste.style.display = "block";
-
-  const ustSatir = document.createElement("div");
-  ustSatir.className = "gezgin-ust";
-  ustSatir.appendChild(avatarYap(misafir.foto, "orta"));
-  const kim = document.createElement("div");
-  kim.className = "gezgin-kim";
-  kim.textContent = "@" + misafir.kullanici_adi;
-  ustSatir.appendChild(kim);
-  liste.appendChild(ustSatir);
-
-  const sayilar = document.createElement("div");
-  sayilar.className = "gezgin-sayilar";
-  sayilar.innerHTML =
-    "<b>" + misafir.kita + "</b> kıta <b>" + misafir.ulke + "</b> ülke <b>" +
-    misafir.sehirSayisi + "</b> şehir";
-  liste.appendChild(sayilar);
-
-  if (!misafir.benim) {
-    liste.appendChild(arkadaslikDugmesi());
-    liste.appendChild(gezginIslemleri());
-  }
-
-  /* Kapali profil: kimlik ve sayilar duruyor, harita ve fotograflar yok.
-     Sunucu zaten bos donuyor; burasi kullaniciya NEDEN bos oldugunu
-     soyluyor, yoksa "veri gelmedi" sanir. */
-  if (!misafir.gorebilir) {
-    const kilit = document.createElement("div");
-    kilit.className = "gezgin-kilit";
-    kilit.textContent = "@" + misafir.kullanici_adi +
-      " haritasını sadece arkadaşlarına gösteriyor. " +
-      "Arkadaş olduğunuzda gezdiği yerleri ve fotoğraflarını görebilirsin.";
-    liste.appendChild(kilit);
-    /* Panelin acilmasi fonksiyonun SONUNDA; buradan erken donunce
-       icerik doluyor ama panel kapali kaliyordu. Bir kez yasandi. */
-    sadeceBuPanel("panel", true);
-    return;
-  }
-
-  if (misafir.fotolar.length) {
-    const bas = document.createElement("div");
-    bas.className = "gezgin-baslik"; bas.textContent = "FOTOĞRAFLARI";
-    liste.appendChild(bas);
-    const izgara = document.createElement("div");
-    izgara.className = "foto-izgara";
-    liste.appendChild(izgara);
-    const adres = await imzaliAdresler(misafir.fotolar.map(function (f) { return f.yol; }));
-    if (!misafir) return;
-    for (let i = 0; i < misafir.fotolar.length; i++) {
-      const f = misafir.fotolar[i];
-      const kart = document.createElement("div");
-      kart.className = "foto-kart";
-      const im = document.createElement("img");
-      im.loading = "lazy";
-      if (adres[f.yol]) im.src = adres[f.yol];
-      kart.appendChild(im);
-      const yer = document.createElement("span");
-      yer.className = "foto-sahip";
-      yer.textContent = f.sehir;
-      kart.appendChild(yer);
-      kart.addEventListener("click", function () {
-        const s = misafir.sehirler.find(function (x) {
-          return x.ulke === f.ulke && x.sehir === f.sehir; });
-        if (s && s.enlem != null) kureyeGit(s.enlem, s.boylam, true);
-      });
-      izgara.appendChild(kart);
-    }
-  }
-
-  if (misafir.hareketAcik && misafir.kayit.length) {
-    const kb = document.createElement("div");
-    kb.className = "gezgin-baslik"; kb.textContent = "GEZİ KAYDI";
-    liste.appendChild(kb);
-    const kutu2 = document.createElement("div");
-    for (let i = 0; i < misafir.kayit.length && i < 20; i++) {
-      const g = misafir.kayit[i];
-      const sat = document.createElement("div");
-      sat.className = "kayit-satir";
-      const yer = document.createElement("span");
-      yer.className = "kayit-yer";
-      yer.innerHTML = kacisla(g.sehir) + " <em>— " + kacisla(g.ulke) + "</em>";
-      const tar = document.createElement("span");
-      tar.className = "kayit-tarih" + (g.gidilen ? "" : " yok");
-      tar.textContent = g.gidilen ? tarihYaz(g.gidilen) : "tarih yok";
-      sat.appendChild(yer); sat.appendChild(tar);
-      kutu2.appendChild(sat);
-    }
-    liste.appendChild(kutu2);
-  }
-
-  const bas2 = document.createElement("div");
-  bas2.className = "gezgin-baslik"; bas2.textContent = "GEZDİĞİ ÜLKELER";
-  liste.appendChild(bas2);
-
-  const sayim = {};
-  for (let i = 0; i < misafir.sehirler.length; i++) {
-    const u = misafir.sehirler[i].ulke;
-    sayim[u] = (sayim[u] || 0) + 1;
-  }
-  const kutu = document.createElement("div");
-  kutu.className = "gezgin-ulkeler";
-  Object.keys(sayim).sort(function (a, b) { return sayim[b] - sayim[a]; })
-    .forEach(function (u) {
-      const sat = document.createElement("div");
-      sat.className = "gezgin-ulke";
-      sat.innerHTML = "<span>" + kacisla(u) + "</span><b>" + sayim[u] + "</b>";
-      sat.addEventListener("click", function () {
-        const s = misafir.sehirler.find(function (x) { return x.ulke === u && x.enlem != null; });
-        if (s) kureyeGit(s.enlem, s.boylam, false);
-        panelAc(u);
-      });
-      kutu.appendChild(sat);
-    });
-  liste.appendChild(kutu);
-
-  sadeceBuPanel("panel", true);
-}
-
 function panelAc(ulkeAdi) {
+  sonAcilanUlke = ulkeAdi; sonAcilanAn = Date.now();
   const arama = document.getElementById("panelArama");
   if (arama) arama.style.display = "";
   document.getElementById("sehirListe").style.display = "";
@@ -1021,6 +946,7 @@ function sehirKarti(ulkeAdi, s) {
     : gezildiMi(ulkeAdi, s.ad);
   const kart = document.createElement("div");
   kart.className = "sehir-kart" + (secili ? " secili" : "");
+  kart.dataset.sehir = s.ad;        // detay ekranindan tazelemek icin
   if (!misafir) kart.addEventListener("click", function () { sehirDetayAc(ulkeAdi, s.ad); });
 
   if (misafir) {
@@ -1108,8 +1034,10 @@ function paneliKapat() {
 /* =====================================================================
    ŞEHİR SEÇME
    ===================================================================== */
+/* btn NULL olabilir: sehir kartindan degil, sehir detay ekranindaki
+   "Buraya gittim" dugmesinden de cagriliyor. */
 async function sehirSec(btn, ulke, s) {
-  const kart = btn.closest(".sehir-kart");
+  const kart = btn ? btn.closest(".sehir-kart") : null;
   const varMi = gezildiMi(ulke, s.ad);
   const { data: oturum } = await db.auth.getSession();
   const kul = oturum.session ? oturum.session.user.id : null;
@@ -1118,7 +1046,7 @@ async function sehirSec(btn, ulke, s) {
     gezilenler.push({ ulke: ulke, sehir: s.ad });
     gezilenKoord[anahtar(ulke, s.ad)] = { lat: s.enlem, lng: s.boylam, nufus: s.nufus || 0 };
     if (kart) kart.classList.add("secili");
-    btn.classList.add("aktif"); btn.textContent = "✓";
+    if (btn) { btn.classList.add("aktif"); btn.textContent = "✓"; }
     if (kul) {
       const { error } = await db.from("gezilenler")
         .insert({ user_id: kul, ulke: ulke, sehir: s.ad });
@@ -1130,24 +1058,47 @@ async function sehirSec(btn, ulke, s) {
     });
     delete gezilenKoord[anahtar(ulke, s.ad)];
     if (kart) kart.classList.remove("secili");
-    btn.classList.remove("aktif"); btn.textContent = "+";
+    if (btn) { btn.classList.remove("aktif"); btn.textContent = "+"; }
     if (kul) {
       const { error } = await db.from("gezilenler").delete()
         .eq("user_id", kul).eq("ulke", ulke).eq("sehir", s.ad);
       if (error) console.log("silme hatası:", error.message);
     }
   }
+  /* Sunucuda tetikleyici var: isaretleyince istek listesinden, isareti
+     kaldirinca favorilerden dusuyor. Ayni seyi burada da yapiyoruz ki
+     ekran sayfa yenilenmeden dogru gorunsun. */
+  if (!varMi) istekListesi  = listedenCikar(istekListesi,  ulke, s.ad);
+  else        favoriListesi = listedenCikar(favoriListesi, ulke, s.ad);
+
   yerelYaz("gezilenler", gezilenler);
   istatistikGuncelle();
   gecmisGuncelle();
   kitaChartCiz();
   kureRenkTazele();
   pinleriTazele();
+  if (document.getElementById("profilKart").classList.contains("acik") && !misafir)
+    profilEkraniCiz();
 }
 
 /* =====================================================================
    İSTATİSTİK
    ===================================================================== */
+/* Telefondaki buyuk sayac: kurenin altinda, ortada. Sag ust kosedeki
+   kucuk yazi uygulamanin verdigi tek "puani" gomuyordu. Sayi ARTINCA
+   bir an parliyor -- odul o sayi, arttigini gormek gerekiyor. */
+let sonSehirSayisi = null;
+
+function sayacParcasi(sayi, ad) {
+  const s = document.createElement("span");
+  s.className = "kure-sayac-parca";
+  const b = document.createElement("b");
+  b.textContent = sayi;
+  s.appendChild(b);
+  s.appendChild(document.createTextNode(" " + ad));
+  return s;
+}
+
 function istatistikGuncelle() {
   const ulkeler = [], kitalar = [];
   for (let i = 0; i < gezilenler.length; i++) {
@@ -1159,6 +1110,22 @@ function istatistikGuncelle() {
     kitalar.length + " Kıta — " + ulkeler.length + " Ülke — " + gezilenler.length + " Şehir gezdin";
   const kisa = document.getElementById("mobilSayac");
   if (kisa) kisa.textContent = ulkeler.length + " ülke · " + gezilenler.length + " şehir";
+
+  const buyuk = document.getElementById("kureSayac");
+  if (buyuk) {
+    buyuk.innerHTML = "";
+    buyuk.appendChild(sayacParcasi(kitalar.length, "kıta"));
+    buyuk.appendChild(sayacParcasi(ulkeler.length, "ülke"));
+    buyuk.appendChild(sayacParcasi(gezilenler.length, "şehir"));
+    /* Ilk yukleme parlamasin; sadece SONRADAN artinca. */
+    if (sonSehirSayisi !== null && gezilenler.length > sonSehirSayisi) {
+      buyuk.classList.remove("parla");
+      void buyuk.offsetWidth;               // animasyonu bastan baslat
+      buyuk.classList.add("parla");
+      setTimeout(function () { buyuk.classList.remove("parla"); }, 900);
+    }
+    sonSehirSayisi = gezilenler.length;
+  }
 }
 
 /* =====================================================================
@@ -1357,18 +1324,31 @@ async function sehirDetayAc(ulke, sehir) {
   document.getElementById("sehirDetayBaslik").textContent = sehir;
 
   const kapak = document.getElementById("sehirKapak");
+  const sar = document.getElementById("sehirKapakSar");
   kapak.style.display = "none";
+  sar.classList.add("kapaksiz");
+  /* Isaretlemek icin sehrin koordinati lazim; o da bu sorgudan geliyor.
+     Gelene kadar dugme kapali duruyor -- koordinatsiz isaretlersek
+     kurede pin dusmez. */
+  aktifDetay.kayit = null;
+  gittimDugmesi(false);
   db.rpc("ulke_sehirleri", { p_ulke: ulke, p_limit: 1, p_offset: 0, p_arama: sehir })
     .then(function (r) {
       const s = r.data && r.data[0];
-      if (s && s.foto && aktifDetay.sehir === sehir) {
+      if (!s || aktifDetay.sehir !== sehir) return;
+      if (s.ad === sehir) { aktifDetay.kayit = s; gittimDugmesi(true); }
+      if (s.foto) {
         kapak.src = s.foto; kapak.style.display = "block";
+        sar.classList.remove("kapaksiz");
       }
     });
 
-  const d = sehirDetaylari[anahtar(ulke, sehir)] || { puan: 0, not: "" };
+  const d = sehirDetaylari[anahtar(ulke, sehir)] || { puan: 0, not: "", acik: false };
   yildizGoster(d.puan || 0);
   document.getElementById("sehirNot").value = d.not || "";
+  document.getElementById("notAcikAnahtar").checked = d.acik === true;
+  notAnahtariniCiz();
+  yorumlariGoster();
   tarihKutulariniDoldur();
   tarihiGoster(ulke, sehir);
   /* Suzgec her sehirde bastan basliyor. Yapismis birakinca kullanici
@@ -1383,12 +1363,115 @@ async function sehirDetayAc(ulke, sehir) {
   fotoDurum("");
   fotolariGoster();
 
-  const gitti = gezildiMi(ulke, sehir);
-  document.getElementById("detayGovde").style.display = gitti ? "block" : "none";
-  document.getElementById("kilitUyari").style.display = gitti ? "none" : "block";
-
+  listeDurumu("");
+  detayKilidiTazele();
   sadeceBuPanel("sehirDetayPanel", true);
 }
+
+/* Gittim mi gitmedim mi -- panelin govdesi ve dugmenin yazisi buna bagli */
+function detayKilidiTazele() {
+  const gitti = gezildiMi(aktifDetay.ulke, aktifDetay.sehir);
+  document.getElementById("detayGovde").style.display = gitti ? "block" : "none";
+  document.getElementById("kilitUyari").style.display = gitti ? "none" : "block";
+  const btn = document.getElementById("gittimBtn");
+  btn.textContent = gitti ? "✓ Gittim" : "Buraya gittim";
+  btn.classList.toggle("gidildi", gitti);
+  listeDugmeleriniTazele();
+}
+
+function gittimDugmesi(acik) {
+  const btn = document.getElementById("gittimBtn");
+  if (btn) btn.disabled = !acik;
+  detayKilidiTazele();
+}
+
+/* Ulke paneli arkada aciksa oradaki kart da guncellensin; yoksa
+   kullanici geri dondugunde eski hali goruyor. */
+function ulkeKartiTazele(ulke, sehirAd) {
+  if (aktifUlke !== ulke) return;
+  const kartlar = document.querySelectorAll("#sehirListe .sehir-kart");
+  for (let i = 0; i < kartlar.length; i++) {
+    if (kartlar[i].dataset.sehir !== sehirAd) continue;
+    const secili = gezildiMi(ulke, sehirAd);
+    kartlar[i].classList.toggle("secili", secili);
+    const d = kartlar[i].querySelector(".gittim-btn");
+    if (d) { d.classList.toggle("aktif", secili); d.textContent = secili ? "✓" : "+"; }
+  }
+}
+
+document.getElementById("gittimBtn").addEventListener("click", async function () {
+  const k = aktifDetay.kayit;
+  if (!k) return;
+  this.disabled = true;
+  await sehirSec(null, aktifDetay.ulke, k);
+  this.disabled = false;
+  detayKilidiTazele();
+  ulkeKartiTazele(aktifDetay.ulke, k.ad);
+  if (gezildiMi(aktifDetay.ulke, aktifDetay.sehir)) { tarihiGoster(aktifDetay.ulke, aktifDetay.sehir); }
+});
+
+/* --- Gitmek istiyorum / Favori --------------------------------------
+   Iki dugme de "vardiysa cikar, yoksa ekle". Favori gitmedigin sehirde
+   kapali: gitmedigin bir yeri favorileyebilseydin o zaten "gitmek
+   istediklerim" olurdu. Ayni kural sunucuda da var, buradaki sadece
+   kullaniciya sebebini soyluyor. */
+function listeDurumu(metin) {
+  const el = document.getElementById("listeDurum");
+  if (el) el.textContent = metin || "";
+}
+
+function listeDugmeleriniTazele() {
+  const ist = document.getElementById("istekBtn");
+  const fav = document.getElementById("favoriBtn");
+  if (!ist || !fav) return;
+  const u = aktifDetay.ulke, s = aktifDetay.sehir;
+  const gitti   = gezildiMi(u, s);
+  const istekte = listedeMi(istekListesi, u, s);
+  const favoride= listedeMi(favoriListesi, u, s);
+
+  /* Gittigin yer artik "gitmek istedigim" degil; dugme de kalmasin. */
+  ist.hidden = gitti;
+  ist.textContent = istekte ? "✓ Gitmek istiyorum" : "Gitmek istiyorum";
+  ist.classList.toggle("aktif", istekte);
+
+  fav.disabled = !gitti;
+  fav.textContent = favoride ? "★ Favorin" : "☆ Favori";
+  fav.classList.toggle("aktif", favoride);
+  fav.title = !gitti
+    ? "Favorilere eklemek için önce buraya gittiğini işaretle"
+    : (favoride ? "Favorilerinden çıkar"
+                : "Favorilerine ekle (en fazla " + FAVORI_SINIR + ")");
+}
+
+function listeSonrasiTazele() {
+  listeDugmeleriniTazele();
+  if (document.getElementById("profilKart").classList.contains("acik") && !misafir)
+    profilEkraniCiz();
+}
+
+bagla("istekBtn", "click", async function () {
+  const u = aktifDetay.ulke, s = aktifDetay.sehir, k = aktifDetay.kayit;
+  this.disabled = true; listeDurumu("");
+  const { data, error } = await db.rpc("gitmek_istiyorum", { p_ulke: u, p_sehir: s });
+  this.disabled = false;
+  if (error) { listeDurumu(hataYaz(error.message)); return; }
+  if (data) istekListesi = istekListesi.concat([{ ulke:u, sehir:s,
+              enlem: k ? k.enlem : null, boylam: k ? k.boylam : null }]);
+  else      istekListesi = listedenCikar(istekListesi, u, s);
+  listeSonrasiTazele();
+});
+
+bagla("favoriBtn", "click", async function () {
+  const u = aktifDetay.ulke, s = aktifDetay.sehir, k = aktifDetay.kayit;
+  this.disabled = true; listeDurumu("");
+  const { data, error } = await db.rpc("favori_degistir", { p_ulke: u, p_sehir: s });
+  this.disabled = false;
+  if (error) { listeDurumu(hataYaz(error.message)); listeDugmeleriniTazele(); return; }
+  if (data) favoriListesi = favoriListesi.concat([{ ulke:u, sehir:s,
+              enlem: k ? k.enlem : null, boylam: k ? k.boylam : null }]);
+  else      favoriListesi = listedenCikar(favoriListesi, u, s);
+  listeSonrasiTazele();
+});
 
 
 /* =====================================================================
@@ -1734,6 +1817,117 @@ async function tarihiKaydet() {
   if (document.getElementById("profilKart").classList.contains("acik")) profilDoldur();
 }
 
+/* =====================================================================
+   YORUMLAR
+   Sehir sayfasindaki not kutusu tek; uzerindeki anahtar acikken ayni
+   metin bu sehrin sayfasinda herkese gorunuyor.
+
+   Kisi basi sehir basina TEK yorum: sehir_detaylari'nda zaten
+   (user_id, ulke, sehir) tek satir. Kimse kimseye cevap yazamiyor --
+   sehir sayfasi sohbete donmesin diye.
+
+   Yorum gizlilik anahtarindan ETKILENMIYOR. Kapali profilin yorumu da
+   burada gorunuyor; acik bir sayfaya yazilmis bir seyi profilde
+   gizlemek gostermelik olurdu.
+   ===================================================================== */
+function notDurumu(metin) {
+  let el = document.getElementById("notDurum");
+  if (!el) {
+    const bolum = document.getElementById("notBolum");
+    if (!bolum) return;
+    el = document.createElement("div");
+    el.id = "notDurum";
+    bolum.appendChild(el);
+  }
+  el.textContent = metin || "";
+}
+
+function notAnahtariniCiz() {
+  const kutu = document.getElementById("notAcikAnahtar");
+  if (!kutu) return;
+  const acik = kutu.checked;
+  document.getElementById("notAcikBaslik").textContent =
+    acik ? "Herkese açık yorum" : "Sadece sen görüyorsun";
+  document.getElementById("notAcikNot").textContent = acik
+    ? "Bu şehrin sayfasında adınla birlikte görünüyor."
+    : "Açarsan bu şehrin sayfasında yorum olarak görünür.";
+  const sayac = document.getElementById("notSayac");
+  const uz = (document.getElementById("sehirNot").value || "").length;
+  if (sayac) sayac.textContent = uz ? "(" + uz + "/600)" : "";
+  notDurumu("");
+}
+
+async function yorumlariGoster() {
+  const ulke = aktifDetay.ulke, sehir = aktifDetay.sehir;
+  const bolum = document.getElementById("yorumBolum");
+  const liste = document.getElementById("yorumListe");
+  if (!liste) return;
+  liste.innerHTML = "";
+  const { data, error } = await db.rpc("sehir_yorumlari",
+    { p_ulke: ulke, p_sehir: sehir });
+  if (aktifDetay.ulke !== ulke || aktifDetay.sehir !== sehir) return;
+  if (error) { console.log("yorumlar alinamadi:", error.message); }
+  const satirlar = data || [];
+  document.getElementById("yorumSayac").textContent =
+    satirlar.length ? "(" + satirlar.length + ")" : "";
+  /* Hic yorum yoksa bolumu hic gostermiyoruz: bos bir baslik, sehrin
+     sayfasinda "burada bir sey olmali" hissi veriyor. */
+  bolum.style.display = satirlar.length ? "block" : "none";
+  for (let i = 0; i < satirlar.length; i++) liste.appendChild(yorumKarti(satirlar[i]));
+}
+
+function yorumKarti(y) {
+  const kart = document.createElement("div");
+  kart.className = "yorum-kart" + (y.benim ? " benim" : "");
+
+  const ust = document.createElement("div");
+  ust.className = "yorum-ust";
+  ust.appendChild(avatarYap(y.sahip_foto, "kucuk"));
+
+  const ad = document.createElement("span");
+  ad.className = "yorum-ad";
+  ad.textContent = y.benim ? "sen" : y.sahip;
+  if (!y.benim && y.kullanici_adi) {
+    ad.classList.add("tiklanir");
+    ad.title = "@" + y.kullanici_adi + " haritasına git";
+    ad.addEventListener("click", function () {
+      hepsiniKapat(); gezginiAc(y.kullanici_adi);
+    });
+  }
+  ust.appendChild(ad);
+
+  if (y.puan) {
+    const pu = document.createElement("span");
+    pu.className = "yorum-puan";
+    pu.textContent = "★".repeat(y.puan);
+    pu.title = y.puan + "/5";
+    ust.appendChild(pu);
+  }
+
+  const sag = document.createElement("span");
+  sag.className = "yorum-sag";
+  if (y.benim) {
+    sag.textContent = "aşağıdan düzenle";
+  } else {
+    const sik = document.createElement("button");
+    sik.className = "foto-sikayet";
+    sik.textContent = "şikayet";
+    sik.title = "Bu yorumu şikayet et";
+    sik.addEventListener("click", function () {
+      sikayetAc("yorum", null, y.kullanici_adi, aktifDetay.ulke, aktifDetay.sehir);
+    });
+    sag.appendChild(sik);
+  }
+  ust.appendChild(sag);
+  kart.appendChild(ust);
+
+  const metin = document.createElement("p");
+  metin.className = "yorum-metin";
+  metin.textContent = y.metin;
+  kart.appendChild(metin);
+  return kart;
+}
+
 /* Burayi gezenler. Sehir sayfasinin GOVDESININ DISINDA duruyor:
    gitmedigin bir sehirde de gorunmesi gerekiyor -- asil ise yaradigi
    yer orasi, "gidecegim, kimler gitmis" durumu. */
@@ -1853,81 +2047,507 @@ function wikiFotoBul(sehir, ulke, geri) {
 }
 
 /* =====================================================================
-   PROFİL
+   PROFIL EKRANI
+   Tek bir cizim yolu var: kendi profilim de, baskasinin profili de ayni
+   #profilKart icine ciziliyor. Onceden iki ayri kod vardi -- kendi
+   profilim kartta, baskasininki sag paneldeydi. Birinde duzelttigimiz
+   sey otekinde duruyordu; ornegin avatar boyu iki yerde iki turluydu.
+   Simdi once bir "kaynak" hazirlaniyor (kim, hangi sayilar, hangi
+   sehirler, neyi gorebiliyorum), sonra ust kisim ve secili sekme o
+   kaynaktan doluyor.
+
+   Ust kisim SABIT: fotograf, kullanici adi, isim, konum, sayilar.
+   Kayan tek yer sekme govdesi.
    ===================================================================== */
+let acikSekme  = "gezdim";
+let sonKaynak  = null;
+let fotoSekmeDamgasi = 0;      // yavas gelen fotograf istegi eski sekmeye yazmasin
+
+function profilKaynagi() {
+  if (misafir) {
+    return {
+      benim:     false,
+      benimHesabim: misafir.benim === true,   // kendi profilime disaridan bakiyorum
+      ad:        misafir.kullanici_adi,
+      isim:      misafir.isim  || "",
+      konum:     misafir.konum || "",
+      foto:      misafir.foto  || "",
+      kita:      misafir.kita, ulke: misafir.ulke, sehir: misafir.sehirSayisi,
+      gorebilir: misafir.gorebilir !== false,
+      kayitAcik: misafir.hareketAcik === true,
+      sehirler:  misafir.sehirler || [],
+      kayit:     misafir.kayit || [],
+      istekler:  misafir.istekler  || [],
+      favoriler: misafir.favoriler || [],
+      yorumlar:  misafir.yorumlar  || []
+    };
+  }
+  const ulkeler = [], kitalar = [];
+  for (let i = 0; i < gezilenler.length; i++) {
+    if (ulkeler.indexOf(gezilenler[i].ulke) === -1) ulkeler.push(gezilenler[i].ulke);
+    const k = ulkeKita[gezilenler[i].ulke];
+    if (k && kitalar.indexOf(k) === -1) kitalar.push(k);
+  }
+  const sehirler = gezilenler.map(function (g) {
+    const k = gezilenKoord[anahtar(g.ulke, g.sehir)];
+    return { ulke: g.ulke, sehir: g.sehir,
+             enlem: k ? k.lat : null, boylam: k ? k.lng : null };
+  });
+  return {
+    benim: true, benimHesabim: true,
+    ad:    profilVeri.kullanici_adi || "",
+    isim:  profilVeri.isim  || "",
+    konum: profilVeri.konum || "",
+    foto:  profilVeri.foto  || "",
+    kita: kitalar.length, ulke: ulkeler.length, sehir: gezilenler.length,
+    gorebilir: true, kayitAcik: true,
+    sehirler: sehirler,
+    kayit: gezileriSirala(gezilenler),
+    istekler:  istekListesi,
+    favoriler: favoriListesi,
+    yorumlar:  null            /* kendi yorumlarim sekme acilinca cekiliyor */
+  };
+}
+
 function profilAc() {
-  profilDuzenleme = false;
-  profilDoldur();
-  arkadasNabiz(true);            // istek gelmis olabilir, bakalim
-  engelListesiniYukle();
-  profilKilitle(true);
+  if (!misafir) arkadasNabiz(true);      // istek gelmis olabilir, bakalim
+  profilEkraniCiz();
   sadeceBuPanel("profilKart", true);
 }
+
+/* Baskasinin haritasindayken "Profil"e basmak kendi profilimi acmali.
+   Yoksa dugme hicbir sey yapmiyormus gibi gorunuyordu. */
+function kendiProfilim() {
+  if (misafir) misafirdenCik();          // hepsiniKapat() da cagiriyor
+  profilAc();
+}
+
 function profilKapat() {
   document.getElementById("profilKart").classList.remove("acik");
   document.getElementById("harita").classList.remove("itili");
 }
+
+function profilEkraniCiz() {
+  const k = profilKaynagi();
+  sonKaynak = k;
+
+  document.getElementById("profilAd").textContent =
+    k.ad ? "@" + k.ad : (k.isim || "Profil");
+  /* Isim ve konum ayni satirda: avatar 76 piksel, yanindaki yazi bloku
+     uc satir olunca onunla hizalaniyor. */
+  const alt = document.getElementById("profilAltSatir");
+  const parcalar = [k.isim, k.konum].filter(Boolean);
+  alt.textContent = parcalar.join(" · ");
+  alt.hidden = !parcalar.length;
+  avatarKur(document.getElementById("profilAvatar"), k.foto);
+
+  sayilariYaz(k);
+  favorileriCiz(k);
+
+  /* Cark sadece kendi profilimde. */
+  document.getElementById("ayarlarAc").hidden = !k.benim;
+
+  ustEkiCiz(k);
+
+  /* Gorunmeyen sekmelerin icini bosalt. Yoksa baskasinin profilinden
+     kendi profilime gecerken, o an kapali olan sekmede ONUN icerigi
+     duruyor; sekmeye basana kadar da yeniden cizilmiyor. */
+  for (const s in SEKME_GOVDE) {
+    const g = document.getElementById(SEKME_GOVDE[s]);
+    if (g) g.innerHTML = "";
+  }
+
+  if (!k.benim && acikSekme === "arkadas") acikSekme = "gezdim";
+  sekmeSec(acikSekme);
+}
+
+/* Sayilar tek cumle halinde. Arkadas sayisini saga yaslamiyoruz:
+   telefonda avatarin yaninda ~250 piksel yer var, "6 kita · 84 ulke ·
+   312 sehir" tek basina 175 piksel ediyor -- saga yaslanmis bir sayi
+   orada sikisirdi. Cumlenin icinde olunca uzun sayilarda satir
+   kendiliginden alta kayiyor. */
+function sayiParcasi(sayi, ad) {
+  const s = document.createElement("span");
+  s.className = "sayi-parca";
+  const b = document.createElement("b");
+  b.textContent = sayi || 0;
+  s.appendChild(b);
+  s.appendChild(document.createTextNode(" " + ad));
+  return s;
+}
+
+function sayilariYaz(k) {
+  const kutu = document.getElementById("profilSayiYazi");
+  kutu.innerHTML = "";
+  kutu.appendChild(sayiParcasi(k.kita,  "kıta"));
+  kutu.appendChild(sayiParcasi(k.ulke,  "ülke"));
+  kutu.appendChild(sayiParcasi(k.sehir, "şehir"));
+  if (!k.benim) return;          // baskasinin arkadas listesi sunucudan gelmiyor
+  const dgm = document.createElement("button");
+  dgm.type = "button";
+  dgm.id = "arkadasSayiBtn";
+  dgm.className = "sayi-parca sayi-baglanti" +
+                  (acikSekme === "arkadas" ? " secili" : "") +
+                  (gelenIstekler.length ? " bekleyen" : "");
+  const b = document.createElement("b");
+  b.textContent = arkadasListesi.length;
+  dgm.appendChild(b);
+  dgm.appendChild(document.createTextNode(" arkadaş"));
+  dgm.addEventListener("click", function () { sekmeSec("arkadas"); });
+  kutu.appendChild(dgm);
+}
+
+/* Favoriler: en fazla 6 sehir, profilin ust kisminda. Kapali profilde
+   gosterilmiyor -- nereleri sevdigin de nereye gittigin bilgisi. */
+const FAVORI_SINIR = 6;
+
+function favorileriCiz(k) {
+  const kutu = document.getElementById("profilFavoriler");
+  const liste = (k.gorebilir ? (k.favoriler || []) : []).slice(0, FAVORI_SINIR);
+  kutu.innerHTML = "";
+  kutu.hidden = !liste.length;
+  if (!liste.length) return;
+  const yildiz = document.createElement("span");
+  yildiz.className = "favori-yildiz";
+  yildiz.textContent = "★";
+  kutu.appendChild(yildiz);
+  for (let i = 0; i < liste.length; i++) {
+    (function (f) {
+      const e = document.createElement("button");
+      e.type = "button";
+      e.className = "favori-etiket";
+      e.textContent = f.sehir;
+      e.title = f.sehir + " — " + f.ulke;
+      e.addEventListener("click", function () {
+        if (f.enlem != null) kureyeGit(f.enlem, f.boylam, true);
+        if (k.benim) sehirDetayAc(f.ulke, f.sehir);
+      });
+      kutu.appendChild(e);
+    })(liste[i]);
+  }
+}
+
+/* Ust kismin altindaki degisken satir: kendi profilimde kullanici adi
+   alma kutusu (adim yoksa), baskasinin profilinde arkadaslik ve
+   engelle/sikayet dugmeleri. */
+function ustEkiCiz(k) {
+  const ek = document.getElementById("profilUstEk");
+  ek.innerHTML = "";
+  if (k.benim) {
+    if (!k.ad) ek.appendChild(kullaniciAdiKutusu());
+    return;
+  }
+  if (!k.benimHesabim) {
+    ek.appendChild(arkadaslikDugmesi());
+    ek.appendChild(gezginIslemleri());
+  }
+}
+
+const SEKME_GOVDE = { gezdim: "sekmeGezdim", istek: "sekmeIstek",
+                      foto: "sekmeFoto", yorum: "sekmeYorum",
+                      arkadas: "sekmeArkadas" };
+
+function sekmeSec(ad) {
+  if (!SEKME_GOVDE[ad]) ad = "gezdim";
+  acikSekme = ad;
+  const dgm = document.querySelectorAll("#profilSekmeler .sekme-btn");
+  for (let i = 0; i < dgm.length; i++)
+    dgm[i].classList.toggle("secili", dgm[i].dataset.sekme === ad);
+  const arkDgm = document.getElementById("arkadasSayiBtn");
+  if (arkDgm) arkDgm.classList.toggle("secili", ad === "arkadas");
+  for (const s in SEKME_GOVDE)
+    document.getElementById(SEKME_GOVDE[s]).hidden = (s !== ad);
+  const govde = document.getElementById("profilIcerik");
+  if (govde) govde.scrollTop = 0;
+
+  const k = sonKaynak || profilKaynagi();
+  if (ad === "gezdim")       sekmeGezdimCiz(k);
+  else if (ad === "foto")    sekmeFotoCiz(k);
+  else if (ad === "arkadas") arkadasBolumu();
+  else if (ad === "istek")   sekmeIstekCiz(k);
+  else if (ad === "yorum")   sekmeYorumCiz(k);
+}
+
+/* --- kucuk yapi taslari ------------------------------------------- */
+function sekmeBasligi(metin) {
+  const b = document.createElement("div");
+  b.className = "sekme-baslik";
+  b.textContent = metin;
+  return b;
+}
+function bosYazi(metin) {
+  const b = document.createElement("div");
+  b.className = "arkadas-bos";
+  b.textContent = metin;
+  return b;
+}
+function yerTutucu(id, k, benimMetin, onunMetni) {
+  const kutu = document.getElementById(id);
+  kutu.innerHTML = "";
+  kutu.appendChild(bosYazi(k.benim ? benimMetin : onunMetni));
+}
+/* Kapali profil GIZLI degil: kimlik ve sayilar duruyor, harita ve
+   fotograflar yok. Sunucu zaten bos donuyor; burasi kullaniciya NEDEN
+   bos oldugunu soyluyor, yoksa "veri gelmedi" saniyor. */
+function kilitYazisi(k) {
+  const kilit = document.createElement("div");
+  kilit.className = "gezgin-kilit";
+  kilit.textContent = "@" + k.ad + " haritasını sadece arkadaşlarına gösteriyor. " +
+    "Arkadaş olduğunuzda gezdiği yerleri ve fotoğraflarını görebilirsin.";
+  return kilit;
+}
+
+/* --- GEZDIKLERIM: once ulkeler, sonra gezi kaydi ------------------- */
+function sekmeGezdimCiz(k) {
+  const kutu = document.getElementById("sekmeGezdim");
+  kutu.innerHTML = "";
+  if (!k.gorebilir) { kutu.appendChild(kilitYazisi(k)); return; }
+  if (!k.sehirler.length) {
+    kutu.appendChild(bosYazi(k.benim
+      ? "Henüz gezdiğin yer yok. Küreden bir ülkeye tıklayarak başla."
+      : "Henüz gezdiği bir yer görünmüyor."));
+    return;
+  }
+
+  const sayim = {};
+  for (let i = 0; i < k.sehirler.length; i++) {
+    const u = k.sehirler[i].ulke;
+    sayim[u] = (sayim[u] || 0) + 1;
+  }
+  const adlar = Object.keys(sayim).sort(function (a, b) { return sayim[b] - sayim[a]; });
+  kutu.appendChild(sekmeBasligi("ÜLKELER (" + adlar.length + ")"));
+
+  const ulkeKutu = document.createElement("div");
+  ulkeKutu.className = "gezgin-ulkeler";
+  adlar.forEach(function (u) {
+    const sat = document.createElement("div");
+    sat.className = "gezgin-ulke";
+    sat.innerHTML = "<span>" + kacisla(u) + "</span><b>" + sayim[u] + "</b>";
+    sat.addEventListener("click", function () {
+      const s = k.sehirler.find(function (x) { return x.ulke === u && x.enlem != null; });
+      if (s) kureyeGit(s.enlem, s.boylam, false);
+      panelAc(u);
+    });
+    ulkeKutu.appendChild(sat);
+  });
+  kutu.appendChild(ulkeKutu);
+
+  if (k.kayitAcik && k.kayit.length) {
+    kutu.appendChild(sekmeBasligi("GEZİ KAYDI"));
+    const kayitKutu = document.createElement("div");
+    for (let i = 0; i < k.kayit.length && i < 30; i++) {
+      const g = k.kayit[i];
+      const sat = document.createElement("div");
+      sat.className = "kayit-satir";
+      const yer = document.createElement("span");
+      yer.className = "kayit-yer";
+      yer.innerHTML = kacisla(g.sehir) + " <em>— " + kacisla(g.ulke) + "</em>";
+      const tar = document.createElement("span");
+      tar.className = "kayit-tarih" + (g.gidilen ? "" : " yok");
+      tar.textContent = g.gidilen ? tarihYaz(g.gidilen) : "tarih yok";
+      sat.appendChild(yer); sat.appendChild(tar);
+      if (k.benim) {
+        sat.classList.add("tiklanir");
+        sat.addEventListener("click", function () { sehirDetayAc(g.ulke, g.sehir); });
+      }
+      kayitKutu.appendChild(sat);
+    }
+    kutu.appendChild(kayitKutu);
+  } else if (!k.benim && !k.kayitAcik) {
+    kutu.appendChild(sekmeBasligi("GEZİ KAYDI"));
+    kutu.appendChild(bosYazi("Nereye ne zaman gittiğini paylaşmıyor."));
+  }
+}
+
+/* --- GITMEK ISTEDIKLERIM ------------------------------------------
+   Kurede gosterilmiyor: gezdiklerinle ayni kurede iki farkli anlam
+   tasiyan isaret olurdu, karisirdi. Liste olarak duruyor. */
+function sekmeIstekCiz(k) {
+  const kutu = document.getElementById("sekmeIstek");
+  kutu.innerHTML = "";
+  if (!k.gorebilir) { kutu.appendChild(kilitYazisi(k)); return; }
+  const liste = k.istekler || [];
+  if (!liste.length) {
+    kutu.appendChild(bosYazi(k.benim
+      ? "Henüz bir yer eklemedin. Bir şehrin sayfasını açıp \u201cGitmek istiyorum\u201d de."
+      : "Gitmek istediği bir yer görünmüyor."));
+    return;
+  }
+  kutu.appendChild(sekmeBasligi("GİTMEK İSTEDİKLERİ" + (k.benim ? "M" : "") +
+                                " (" + liste.length + ")"));
+  const kutu2 = document.createElement("div");
+  kutu2.className = "gezgin-ulkeler";
+  for (let i = 0; i < liste.length; i++) {
+    (function (r) {
+      const sat = document.createElement("div");
+      sat.className = "gezgin-ulke";
+      sat.innerHTML = "<span>" + kacisla(r.sehir) +
+                      " <em>— " + kacisla(r.ulke) + "</em></span>";
+      sat.addEventListener("click", function () {
+        if (r.enlem != null) kureyeGit(r.enlem, r.boylam, true);
+        if (k.benim) sehirDetayAc(r.ulke, r.sehir);
+      });
+      kutu2.appendChild(sat);
+    })(liste[i]);
+  }
+  kutu.appendChild(kutu2);
+}
+
+/* --- YORUMLAR ------------------------------------------------------
+   Gizlilik anahtarina bagli DEGIL: yorum sehir sayfasinda zaten acik
+   duruyor, profilde gizlemek gostermelik olurdu. Fotograflarda da
+   ayni mantik var. */
+let yorumSekmeDamgasi = 0;
+
+async function sekmeYorumCiz(k) {
+  const kutu = document.getElementById("sekmeYorum");
+  const damga = ++yorumSekmeDamgasi;
+  kutu.innerHTML = "<p class='panel-durum'>Yükleniyor…</p>";
+  let liste = k.yorumlar;
+  if (liste === null || liste === undefined) {
+    const { data, error } = await db.rpc("yorumlarim");
+    if (damga !== yorumSekmeDamgasi) return;
+    if (error) { console.log("yorumlar alinamadi:", error.message); liste = []; }
+    else liste = data || [];
+  }
+  if (damga !== yorumSekmeDamgasi) return;
+
+  kutu.innerHTML = "";
+  if (!liste.length) {
+    kutu.appendChild(bosYazi(k.benim
+      ? "Henüz yorum yazmadın. Gittiğin bir şehrin sayfasını aç, notunu yaz ve “herkese açık” yap."
+      : "Yazdığı bir yorum yok."));
+    return;
+  }
+  kutu.appendChild(sekmeBasligi("YORUMLAR (" + liste.length + ")"));
+  for (let i = 0; i < liste.length; i++) {
+    (function (y) {
+      const kart = document.createElement("div");
+      kart.className = "yorum-kart tiklanir";
+      const ust = document.createElement("div");
+      ust.className = "yorum-ust";
+      const yer = document.createElement("span");
+      yer.className = "yorum-ad";
+      yer.innerHTML = kacisla(y.sehir) + " <em>— " + kacisla(y.ulke) + "</em>";
+      ust.appendChild(yer);
+      if (y.puan) {
+        const pu = document.createElement("span");
+        pu.className = "yorum-puan";
+        pu.textContent = "★".repeat(y.puan);
+        ust.appendChild(pu);
+      }
+      kart.appendChild(ust);
+      const metin = document.createElement("p");
+      metin.className = "yorum-metin";
+      metin.textContent = y.metin;
+      kart.appendChild(metin);
+      kart.addEventListener("click", function () { sehirDetayAc(y.ulke, y.sehir); });
+      kutu.appendChild(kart);
+    })(liste[i]);
+  }
+}
+
+/* --- FOTOGRAFLAR --------------------------------------------------- */
+/* Kendi fotograflarim icin ayri bir sunucu fonksiyonuna gerek yok:
+   sehir_fotolari'nin okuma kurali zaten "benimse ya da herkese acikssa"
+   diyor, yani kendi satirlarimi dogrudan cekebiliyorum. */
+async function kendiFotolarim() {
+  const { data: oturum } = await db.auth.getSession();
+  if (!oturum.session) return [];
+  const { data, error } = await db.from("sehir_fotolari")
+    .select("id,ulke,sehir,yol,gorunurluk,created_at")
+    .eq("user_id", oturum.session.user.id)
+    .order("created_at", { ascending: false });
+  if (error) { console.log("fotograflar alinamadi:", error.message); return []; }
+  return data || [];
+}
+
+async function sekmeFotoCiz(k) {
+  const kutu = document.getElementById("sekmeFoto");
+  kutu.innerHTML = "";
+  if (!k.gorebilir) { kutu.appendChild(kilitYazisi(k)); return; }
+
+  const damga = ++fotoSekmeDamgasi;
+  kutu.innerHTML = "<p class='panel-durum'>Yükleniyor…</p>";
+  const liste = k.benim ? await kendiFotolarim()
+                        : ((misafir && misafir.fotolar) || []);
+  if (damga !== fotoSekmeDamgasi) return;          // baska sekmeye gecildi
+  const adres = await imzaliAdresler(liste.map(function (f) { return f.yol; }));
+  if (damga !== fotoSekmeDamgasi) return;
+
+  kutu.innerHTML = "";
+  if (!liste.length) {
+    kutu.appendChild(bosYazi(k.benim
+      ? "Henüz fotoğraf eklemedin. Bir şehrin sayfasını açıp ekleyebilirsin."
+      : "Paylaştığı bir fotoğraf yok."));
+    return;
+  }
+  kutu.appendChild(sekmeBasligi("FOTOĞRAFLAR (" + liste.length + ")"));
+  if (k.benim) {
+    const not = document.createElement("div");
+    not.className = "sekme-not";
+    not.textContent = "Silmek ya da gizlemek için fotoğrafa dokun; şehrin sayfası açılır.";
+    kutu.appendChild(not);
+  }
+
+  const izgara = document.createElement("div");
+  izgara.className = "foto-izgara";
+  for (let i = 0; i < liste.length; i++) {
+    (function (f) {
+      const kart = document.createElement("div");
+      kart.className = "foto-kart tiklanir";
+      const im = document.createElement("img");
+      im.loading = "lazy"; im.alt = "";
+      if (adres[f.yol]) im.src = adres[f.yol];
+      kart.appendChild(im);
+      const yer = document.createElement("span");
+      yer.className = "foto-sahip";
+      yer.textContent = f.sehir;
+      kart.appendChild(yer);
+      /* Kendi fotografimda "gizli/acik" rozeti ise yariyor: profilde
+         hangisinin herkese acik oldugunu yoksa goremiyorum. */
+      if (k.benim && f.gorunurluk !== "herkes") {
+        const rz = document.createElement("span");
+        rz.className = "foto-rozet";
+        rz.textContent = "gizli";
+        kart.appendChild(rz);
+      }
+      kart.addEventListener("click", function () {
+        const s = k.sehirler.find(function (x) {
+          return x.ulke === f.ulke && x.sehir === f.sehir; });
+        if (s && s.enlem != null) kureyeGit(s.enlem, s.boylam, true);
+        if (k.benim) sehirDetayAc(f.ulke, f.sehir);
+      });
+      izgara.appendChild(kart);
+    })(liste[i]);
+  }
+  kutu.appendChild(izgara);
+}
+
+/* Eski adiyla duruyor: bircok yerden cagriliyor. Isim/konum/fotograf
+   artik Ayarlar'da, o yuzden iki yeri birden tazeliyor. */
 function profilDoldur() {
-  kullaniciAdiAlani();
-  arkadasBolumu();
-  document.getElementById("profilIsim").value = profilVeri.isim || "";
+  ayarProfilDoldur();
+  if (document.getElementById("profilKart").classList.contains("acik")) profilEkraniCiz();
+}
+
+function ayarProfilDoldur() {
+  const isim = document.getElementById("profilIsim");
+  if (!isim) return;
+  isim.value = profilVeri.isim || "";
   document.getElementById("profilKonum").value = profilVeri.konum || "";
-  avatarKur(document.getElementById("profilAvatar"), profilVeri.foto);
-  gizlilikAnahtariniCiz();
+  avatarKur(document.getElementById("ayarAvatar"), profilVeri.foto);
   document.getElementById("profilFotoKaldir").style.display =
     profilVeri.foto ? "inline-block" : "none";
-  const son = document.getElementById("profilSonGezilen");
-  son.innerHTML = "";
-  const sirali = gezileriSirala(gezilenler).slice(0, 20);
-  if (!sirali.length) {
-    const bos = document.createElement("div");
-    bos.className = "arkadas-bos";
-    bos.textContent = "Henüz gezdiğin yer yok.";
-    son.appendChild(bos);
-  }
-  for (let i = 0; i < sirali.length; i++) {
-    const g = sirali[i];
-    const sat = document.createElement("div");
-    sat.className = "kayit-satir";
-    const yer = document.createElement("span");
-    yer.className = "kayit-yer";
-    yer.innerHTML = kacisla(g.sehir) + " <em>— " + kacisla(g.ulke) + "</em>";
-    const tar = document.createElement("span");
-    tar.className = "kayit-tarih" + (g.gidilen ? "" : " yok");
-    tar.textContent = g.gidilen ? tarihYaz(g.gidilen) : "tarih yok";
-    sat.appendChild(yer); sat.appendChild(tar);
-    son.appendChild(sat);
-  }
-  hareketAnahtariniCiz();
-  engelListesiniCiz();
   profilButonFotoGuncelle();
 }
 
-/* Kullanici adi bolumu. Bir kez alindiktan sonra degistirilmiyor —
-   baskalari o adla profiline gidiyor. index.html'e dokunmamak icin
-   alani buradan olusturuyoruz. */
-function kullaniciAdiAlani() {
-  const kart = document.getElementById("profilKart");
-  let bolum = document.getElementById("kullaniciAdiBolum");
-  if (!bolum) {
-    bolum = document.createElement("div");
-    bolum.id = "kullaniciAdiBolum";
-    bolum.className = "profil-bolum";
-    const ilk = kart.querySelector(".profil-bolum");
-    kart.insertBefore(bolum, ilk);
-  }
-  bolum.innerHTML = "";
-  const et = document.createElement("label");
-  et.textContent = "KULLANICI ADI";
-  bolum.appendChild(et);
-
-  if (profilVeri.kullanici_adi) {
-    const ad = document.createElement("div");
-    ad.className = "kullanici-adi";
-    ad.textContent = "@" + profilVeri.kullanici_adi;
-    bolum.appendChild(ad);
-    return;
-  }
+/* Kullanici adi. Bir kez alindiktan sonra degistirilmiyor -- baskalari
+   o adla profiline gidiyor. Adi olmayan hesap zaten giriste kapiya
+   takiliyor; bu kutu eski hesaplar icin duruyor. */
+function kullaniciAdiKutusu() {
+  const bolum = document.createElement("div");
+  bolum.id = "kullaniciAdiBolum";
 
   const not = document.createElement("div");
   not.className = "kullanici-adi-not";
@@ -1952,11 +2572,20 @@ function kullaniciAdiAlani() {
     if (error) { uyari.textContent = error.message; return; }
     profilVeri.kullanici_adi = data;
     yerelYaz("profilVeri", profilVeri);
-    profilDoldur();
+    profilEkraniCiz();
   });
   satir.appendChild(gir); satir.appendChild(dgm);
   bolum.appendChild(satir); bolum.appendChild(uyari);
+  return bolum;
 }
+
+/* Sekme dugmeleri */
+(function sekmeleriBagla() {
+  const dgm = document.querySelectorAll("#profilSekmeler .sekme-btn");
+  for (let i = 0; i < dgm.length; i++) {
+    dgm[i].addEventListener("click", function () { sekmeSec(this.dataset.sekme); });
+  }
+})();
 
 
 /* =====================================================================
@@ -1986,13 +2615,16 @@ const SIKAYET_SEBEPLERI = [
 ];
 let sikayetHedef = null;
 
-function sikayetAc(tur, fotoId, kullaniciAdi) {
-  sikayetHedef = { tur: tur, foto: fotoId || null, ad: kullaniciAdi || null };
+function sikayetAc(tur, fotoId, kullaniciAdi, ulke, sehir) {
+  sikayetHedef = { tur: tur, foto: fotoId || null, ad: kullaniciAdi || null,
+                   ulke: ulke || null, sehir: sehir || null };
   /* Basliga kullanici adini ek alarak koymuyoruz: Turkce'de ek sesli
      harfe gore degisiyor (@mert'i ama @ayse'yi) ve kullanici adi ne
      olacagi belli degil. Adi ayri satirda yaziyoruz. */
   document.getElementById("sikayetBaslik").textContent =
-    tur === "fotograf" ? "Fotoğrafı şikayet et" : "Kullanıcıyı şikayet et";
+    tur === "fotograf" ? "Fotoğrafı şikayet et"
+  : tur === "yorum"    ? "Yorumu şikayet et"
+                       : "Kullanıcıyı şikayet et";
   document.querySelector("#sikayetKutu .sikayet-not").textContent =
     (kullaniciAdi ? "@" + kullaniciAdi + " — " : "") + "ne oldu?";
   const kutu = document.getElementById("sikayetSebepler");
@@ -2036,7 +2668,9 @@ document.getElementById("sikayetGonder").addEventListener("click", async functio
     p_foto_id: sikayetHedef.foto,
     p_kullanici_adi: sikayetHedef.ad,
     p_sebep: secili.dataset.sebep,
-    p_aciklama: document.getElementById("sikayetAciklama").value
+    p_aciklama: document.getElementById("sikayetAciklama").value,
+    p_ulke: sikayetHedef.ulke,
+    p_sehir: sikayetHedef.sehir
   });
   this.disabled = false;
   if (error) { durum.textContent = hataYaz(error.message); return; }
@@ -2062,6 +2696,10 @@ function gezginIslemleri() {
     if (error) { alert(hataYaz(error.message)); return; }
     misafirdenCik();
     arkadasVeriTazele();
+    /* Engel listesi kendiliginden tazelenmiyordu: birini engelledikten
+       sonra Ayarlar'a girince liste bos gorunuyor, ancak sayfa
+       yenilenince beliriyordu. */
+    engelListesiniYukle();
   });
 
   const sik = document.createElement("button");
@@ -2093,7 +2731,7 @@ function arkadaslikDugmesi() {
       if (error) { kutu.querySelector(".arkadas-uyari").textContent = error.message; return; }
       misafir.arkadaslik = data;
       arkadasVeriTazele();
-      gezginPaneli();
+      profilEkraniCiz();
     });
     return b;
   }
@@ -2202,21 +2840,12 @@ function mobilRozetTazele() {
 
 /* Profil kartindaki arkadas bolumu: once gelen istekler, sonra liste. */
 function arkadasBolumu() {
-  const kart = document.getElementById("profilKart");
-  let bolum = document.getElementById("arkadasBolum");
-  if (!bolum) {
-    bolum = document.createElement("div");
-    bolum.id = "arkadasBolum";
-    bolum.className = "profil-bolum";
-    const btnlar = document.getElementById("profilButonlar");
-    kart.insertBefore(bolum, btnlar);
-  }
+  const bolum = document.getElementById("sekmeArkadas");
+  if (!bolum) return;
   bolum.innerHTML = "";
 
   if (gelenIstekler.length) {
-    const et = document.createElement("label");
-    et.textContent = "GELEN İSTEKLER";
-    bolum.appendChild(et);
+    bolum.appendChild(sekmeBasligi("GELEN İSTEKLER"));
     for (let i = 0; i < gelenIstekler.length; i++) {
       (function (g) {
         const sat = document.createElement("div");
@@ -2247,10 +2876,8 @@ function arkadasBolumu() {
     }
   }
 
-  const et2 = document.createElement("label");
-  et2.textContent = "ARKADAŞLARIN" +
-    (arkadasListesi.length ? " (" + arkadasListesi.length + ")" : "");
-  bolum.appendChild(et2);
+  bolum.appendChild(sekmeBasligi("ARKADAŞLARIN" +
+    (arkadasListesi.length ? " (" + arkadasListesi.length + ")" : "")));
 
   if (!arkadasListesi.length) {
     const bos = document.createElement("div");
@@ -2274,7 +2901,6 @@ function arkadasBolumu() {
       sat.appendChild(sag2);
       sat.title = g.isim || "";
       sat.addEventListener("click", function () {
-        profilKapat();
         gezginiAc(g.kullanici_adi);
       });
       bolum.appendChild(sat);
@@ -2282,16 +2908,69 @@ function arkadasBolumu() {
   }
 }
 
+/* =====================================================================
+   AYARLAR
+   Profilden ayri bir ekran. "Haritayi Sifirla" ve "Hesabimi Sil" her
+   acilista goz onunde durmasin diye; ayrica profil kartini kisaltiyor.
+   ===================================================================== */
+async function ayarlariAc() {
+  sadeceBuPanel("ayarlarPanel", true);
+  profilDuzenleme = false;
+  ayarProfilDoldur();
+  profilKilitle(true);
+  gizlilikAnahtariniCiz();
+  hareketAnahtariniCiz();
+  engelListesiniYukle();
+  sifreDurumu("");
+  const { data: oturum } = await db.auth.getSession();
+  document.getElementById("ayarEposta").textContent =
+    (oturum.session && oturum.session.user && oturum.session.user.email) || "—";
+}
+
+function sifreDurumu(metin, hata) {
+  const d = document.getElementById("sifreDurum");
+  if (!d) return;
+  d.className = "ayar-durum" + (hata ? " hata" : "");
+  d.textContent = metin || "";
+}
+
+bagla("ayarlarAc", "click", ayarlariAc);
+bagla("ayarlarKapat", "click", hepsiniKapat);
+bagla("ayarlarGeri", "click", function () { profilAc(); });
+
+/* Sifre degistirme. Supabase'de "guvenli sifre degisikligi" ayari aciksa
+   yakin zamanda giris yapmis olmak gerekiyor; o durumda anlasilir bir
+   mesaj veriyoruz, ham hatayi degil. */
+document.getElementById("sifreDegistir").addEventListener("click", async function () {
+  const a = document.getElementById("yeniSifre1").value;
+  const b = document.getElementById("yeniSifre2").value;
+  if (a.length < 6) { sifreDurumu("Şifre en az 6 karakter olmalı.", true); return; }
+  if (a !== b)      { sifreDurumu("İki şifre aynı değil.", true); return; }
+  this.disabled = true;
+  sifreDurumu("Değiştiriliyor…");
+  const { error } = await db.auth.updateUser({ password: a });
+  this.disabled = false;
+  if (error) {
+    sifreDurumu(/reauth|recent|session|login/i.test(error.message)
+      ? "Güvenlik için yeniden giriş yapman gerekiyor. Çıkış yapıp tekrar gir, sonra dene."
+      : hataYaz(error.message), true);
+    return;
+  }
+  document.getElementById("yeniSifre1").value = "";
+  document.getElementById("yeniSifre2").value = "";
+  sifreDurumu("Şifren değişti.");
+});
+
 function profilKilitle(kilitli) {
   document.getElementById("profilIsim").disabled = kilitli;
   document.getElementById("profilKonum").disabled = kilitli;
   document.getElementById("profilKaydet").style.display = kilitli ? "none" : "block";
   document.getElementById("profilDegistir").style.display = kilitli ? "block" : "none";
   document.getElementById("profilFotoIsler").style.display = kilitli ? "none" : "flex";
-  document.getElementById("profilAcikAnahtar").disabled = kilitli;
-  document.getElementById("hareketAnahtar").disabled = kilitli;
-  document.getElementById("hareketBolum").style.opacity = kilitli ? "0.55" : "1";
-  document.getElementById("gizlilikBolum").style.opacity = kilitli ? "0.55" : "1";
+  const cerceve = document.getElementById("profilDuzenle");
+  if (cerceve) cerceve.classList.toggle("duzenlenir", !kilitli);
+  /* Gorunurluk anahtarlari artik Ayarlar ekraninda; profil duzenleme
+     kilidiyle iliskileri kalmadi. */
 }
 /* Profil acik mi kapali mi. Kapali profil GIZLI degil: aramada cikiyor,
    kullanici adi, avatar ve sayilar gorunuyor. Sadece harita ve
@@ -2319,24 +2998,18 @@ let engelListesi = [];
 async function engelListesiniYukle() {
   const { data } = await db.rpc("engellilerim");
   engelListesi = data || [];
-  if (document.getElementById("profilKart").classList.contains("acik")) engelListesiniCiz();
+  engelListesiniCiz();
 }
 
 function engelListesiniCiz() {
-  const kart = document.getElementById("profilKart");
-  let bolum = document.getElementById("engelBolum");
-  if (!engelListesi.length) { if (bolum) bolum.remove(); return; }
-  if (!bolum) {
-    bolum = document.createElement("div");
-    bolum.id = "engelBolum";
-    bolum.className = "profil-bolum";
-    const btnlar = document.getElementById("profilButonlar");
-    kart.insertBefore(bolum, btnlar);
-  }
-  bolum.innerHTML = "";
-  const et = document.createElement("label");
-  et.textContent = "ENGELLEDİKLERİN (" + engelListesi.length + ")";
-  bolum.appendChild(et);
+  const bolum = document.getElementById("engelBolum");
+  const kutu  = document.getElementById("engelListe");
+  if (!bolum || !kutu) return;
+  /* Kimseyi engellememis birine bos bir baslik gostermenin anlami yok */
+  bolum.style.display = engelListesi.length ? "block" : "none";
+  document.getElementById("engelBaslik").textContent =
+    "ENGELLEDİKLERİN (" + engelListesi.length + ")";
+  kutu.innerHTML = "";
   for (let i = 0; i < engelListesi.length; i++) {
     (function (g) {
       const sat = document.createElement("div");
@@ -2357,7 +3030,7 @@ function engelListesiniCiz() {
         engelListesiniYukle();
       });
       sat.appendChild(kaldir);
-      bolum.appendChild(sat);
+      kutu.appendChild(sat);
     })(engelListesi[i]);
   }
 }
@@ -2486,7 +3159,7 @@ function acikPanelVarMi() {
 /* gecmisPanel masaustunde sag ustte hep duran bir pencere; "acik"
    sinifinin orada bir karsiligi yok. Mobilde ise alttan acilan bir
    sayfaya donusuyor, o yuzden listeye onu da katiyoruz. */
-const SAG_PANELLER = ["panel", "sehirDetayPanel", "profilKart",
+const SAG_PANELLER = ["panel", "sehirDetayPanel", "profilKart", "ayarlarPanel",
                       "istatistikPanel", "gecmisPanel"];
 /* Alt seritteki uc dugme. Acik olana tekrar basinca kapaniyor --
    gecmis panelinin kapatma dugmesi yok, kapanmanin baska yolu olmali. */
@@ -2497,7 +3170,7 @@ function mobilBolumAc(id) {
   /* Masaustunde aramayi herhangi bir harfe basarak aciyoruz; telefonda
      klavye yok, bir dugme gerekiyor. */
   if (id === "aramaKutu") { hepsiniKapat(); aramaAc(); mobilSeritTazele(); return; }
-  if (id === "profilKart") { profilAc(); return; }
+  if (id === "profilKart") { kendiProfilim(); return; }
   if (id === "istatistikPanel") { istatistikPaneliAc(); return; }
   sadeceBuPanel(id, false);
 }
@@ -2510,6 +3183,232 @@ function mobilSeritTazele() {
       !!(hedef && hedef.classList.contains("acik")));
   }
 }
+
+/* Telefonda acik bir panelin ustunde kalan harita alani "kapat" alani.
+   #ortu zaten vardi ama hicbir yerde acilmiyordu; artik kullaniliyor.
+   Hangi fonksiyonun hangi paneli kapattigini tek tek kovalamak yerine
+   sinif degisikliklerini izliyoruz -- ileride yeni bir panel eklenirse
+   kendiliginden calisir. Masaustunde kapali: orada paneller yanda
+   duruyor ve kure kullanilabilir kalmali. */
+const ORTU_IZLENEN = ["panel", "sehirDetayPanel", "profilKart", "ayarlarPanel",
+                      "istatistikPanel", "gecmisPanel", "aramaKutu"];
+
+/* =====================================================================
+   KURENIN CIZIMINI DURDURMA
+   Kure durmadan ciziliyor: kimse dokunmasa da saniyede 60 kare. Telefon
+   isiniyor, isininca islemciyi kendisi yavaslatiyor, yavaslayinca da
+   dokunuslar kaciyor. Iki yerde duruyoruz:
+
+     1. Telefonda bir panel acikken. Panel ekranin %82'sini kapliyor,
+        arkasindaki kureyi cizmenin kimseye faydasi yok.
+     2. 30 saniye hic dokunulmayinca. Telefon masada acik dururken bile
+        kure donuyordu.
+
+   Ikisi de sadece TELEFONDA. Masaustunde kure ekranin yarisinda duruyor
+   ve donmesi uygulamanin ilk izlenimi; orada durdurmuyoruz.
+   ===================================================================== */
+const UYKU_SURESI = 30000;
+let uykuSayaci = null;
+
+function kureAnimasyonTazele() {
+  if (!kure || typeof kure.pauseAnimation !== "function") return;
+  const panelAcik = MOBIL && ORTU_IZLENEN.some(function (id) {
+    const el = document.getElementById(id);
+    return el && el.classList.contains("acik");
+  });
+  const kameraOynuyor = Date.now() < kameraBitis;
+  const dursun = !kameraOynuyor && (kureUykuda || panelAcik);
+  if (dursun === kureDurdu) return;
+  kureDurdu = dursun;
+  try {
+    if (dursun) kure.pauseAnimation();
+    else        kure.resumeAnimation();
+  } catch (e) { kureDurdu = false; }
+}
+
+/* Uyku SADECE cizimi durduruyor, autoRotate'e dokunmuyor. Sebebi:
+   cizim dururken kontroller de guncellenmiyor, yani kure oldugu yerde
+   kaliyor ve uyaninca kaldigi yerden devam ediyor -- sicrama olmuyor.
+   autoRotate'i kapatip acsaydik, kullanicinin bir sehre yaklasip
+   birakmis oldugu duruma dokunmus olurduk: ekrana her dokunusunda kure
+   yeniden donmeye baslardi. */
+function kureyiUyandir() {
+  if (!MOBIL) return;
+  kureUykuda = false;
+  clearTimeout(uykuSayaci);
+  uykuSayaci = setTimeout(function () {
+    kureUykuda = true;
+    kureAnimasyonTazele();
+  }, UYKU_SURESI);
+  kureAnimasyonTazele();
+}
+
+if (MOBIL) {
+  ["touchstart", "pointerdown", "wheel", "keydown"].forEach(function (o) {
+    document.addEventListener(o, kureyiUyandir, { passive: true });
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) kureyiUyandir();
+  });
+  kureyiUyandir();               // sayaci baslat
+}
+
+/* =====================================================================
+   PARMAGIN ALTINDAKININ ADI
+   Masaustunde imleci ulkenin uzerine getirince adi cikiyor. Telefonda
+   "uzerine getirmek" diye bir sey yok, o yuzden telefonda bir ulkenin
+   adini ogrenmenin hicbir yolu yoktu -- sekilden tanimak zorundaydin.
+
+   Cozum: parmak kurenin uzerindeyken altindakinin adi kurenin uzerinde
+   yaziyor. Parmagi kaydirinca isim degisiyor, yani parmagini gezdirerek
+   haritayi okuyabiliyorsun. Kalici bir yazi katmani KOYMUYORUZ: kurenin
+   sadeligi ve gezilen sehirlerin sari isiklari en onemli goruntu, yazi
+   onlarla yarisiyor. Bir seferde tek isim, o da sadece parmak ustundeyken.
+   ===================================================================== */
+let etiketEl = null, etiketSayaci = null;
+let sonDokunusNoktasi = null;
+
+function kureEtiketiGoster(metin, ek) {
+  if (!MOBIL || !metin) return;
+  if (!etiketEl) {
+    etiketEl = document.createElement("div");
+    etiketEl.id = "kureEtiket";
+    etiketEl.className = "kure-etiket";
+    document.body.appendChild(etiketEl);
+  }
+  etiketEl.innerHTML = "";
+  etiketEl.appendChild(document.createTextNode(metin));
+  if (ek) {
+    const s = document.createElement("span");
+    s.textContent = ek;
+    etiketEl.appendChild(s);
+  }
+  const n = sonDokunusNoktasi;
+  if (n) {
+    /* Parmagin 56 piksel USTUNDE: yoksa basparmagin altinda kalir. */
+    etiketEl.style.left = Math.round(n.x) + "px";
+    etiketEl.style.top  = Math.round(n.y - 56) + "px";
+  }
+  etiketEl.classList.add("acik");
+  clearTimeout(etiketSayaci);
+}
+
+function kureEtiketiGizle(gecikme) {
+  if (!etiketEl) return;
+  clearTimeout(etiketSayaci);
+  etiketSayaci = setTimeout(function () {
+    if (etiketEl) etiketEl.classList.remove("acik");
+  }, gecikme || 0);
+}
+
+/* Hover degisince etiketi tazele. Kure kutuphanesi dokunmada da hover
+   uretiyor -- ulke renginin degismesi bunun kaniti. */
+function etiketiTazele() {
+  if (!MOBIL) return;
+  if (document.body.classList.contains("panelde")) { kureEtiketiGizle(0); return; }
+  if (hoverSehir) {
+    kureEtiketiGoster(hoverSehir.sehir, hoverSehir.ulke);
+    return;
+  }
+  if (hoverUlke && hoverUlke.properties) {
+    const ad = hoverUlke.properties.name;
+    const say = misafir
+      ? misafir.sehirler.filter(function (g) { return g.ulke === ad; }).length
+      : gezilenler.filter(function (g) { return g.ulke === ad; }).length;
+    kureEtiketiGoster(ad, say ? say + " şehir" : "");
+    return;
+  }
+  kureEtiketiGizle(0);
+}
+
+/* =====================================================================
+   DOKUNMAYLA ULKE / SEHIR ACMA
+   Kure kutuphanesi dokunmada tiklamayi guvenilir uretmiyor: parmak
+   basinca ulke rengi degisiyor (yani kutuphane parmagin altindakini
+   BILIYOR) ama tiklama gelmiyor. Telefonda "bazi ulkeler aciliyor,
+   bazilari acmiyor" bundan.
+
+   Cozum: parmak kalkarken kaydirma degil de dokunussa (12 pikselden az
+   hareket, yarim saniyeden kisa), parmagin altindaki neyse onu biz
+   aciyoruz. Kutuphanenin tiklamasi da gelirse ayni sey iki kez
+   acilmasin diye kisa bir koruma var.
+   ===================================================================== */
+(function dokunmayiBagla() {
+  const harita = document.getElementById("harita");
+  if (!harita) return;
+  let bas = null;
+
+  harita.addEventListener("touchstart", function (e) {
+    if (e.touches.length !== 1) { bas = null; sonDokunusNoktasi = null; return; }
+    const t = e.touches[0];
+    bas = { x: t.clientX, y: t.clientY, an: Date.now() };
+    sonDokunusNoktasi = { x: t.clientX, y: t.clientY };
+  }, { passive: true });
+
+  harita.addEventListener("touchmove", function (e) {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    sonDokunusNoktasi = { x: t.clientX, y: t.clientY };
+    if (etiketEl && etiketEl.classList.contains("acik")) {
+      etiketEl.style.left = Math.round(t.clientX) + "px";
+      etiketEl.style.top  = Math.round(t.clientY - 56) + "px";
+    }
+  }, { passive: true });
+
+  harita.addEventListener("touchend", function (e) {
+    const b = bas; bas = null;
+    /* Parmak kalkinca isim biraz daha dursun: hizli bir dokunusta
+       okumaya vakit kalsin. */
+    kureEtiketiGizle(900);
+    if (!b) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    if (!t) return;
+    const dx = t.clientX - b.x, dy = t.clientY - b.y;
+    if (Math.sqrt(dx * dx + dy * dy) > 12) return;      // kureyi cevirmis
+    if (Date.now() - b.an > 500) return;                // basili tutmus
+
+    /* Pin, ulkenin ustunde duruyor: parmak pinin uzerindeyse sehri ac. */
+    if (hoverSehir) {
+      const s = hoverSehir;
+      if (aktifDetay.ulke === s.ulke && aktifDetay.sehir === s.sehir &&
+          document.getElementById("sehirDetayPanel").classList.contains("acik")) return;
+      sehirDetayAc(s.ulke, s.sehir);
+      return;
+    }
+    if (!hoverUlke || !hoverUlke.properties) return;
+    const ad = hoverUlke.properties.name;
+    if (!ad) return;
+    if (ad === sonAcilanUlke && Date.now() - sonAcilanAn < 700) return;  // zaten acildi
+    panelAc(ad);
+  }, { passive: true });
+})();
+
+function ortuTazele() {
+  const ortu = document.getElementById("ortu");
+  if (!ortu) return;
+  const acik = MOBIL && ORTU_IZLENEN.some(function (id) {
+    const el = document.getElementById(id);
+    return el && el.classList.contains("acik");
+  });
+  ortu.classList.toggle("acik", acik);
+  /* Harita ustundeki mobilya (buyuk sayac, yasal baglanti) panel
+     acikken gorunmesin. Ikisi de z-index 900'de; "Son Gezdiklerin"
+     paneli de 900'deydi ve esitlikte HTML sirasi kazandigi icin sayac
+     panelin ONUNDE cikip yaziya karisiyordu. */
+  document.body.classList.toggle("panelde", acik);
+  /* Panel acilirken parmagin altindaki isim ekranda asili kalmasin. */
+  if (acik) kureEtiketiGizle(0);
+  kureAnimasyonTazele();
+}
+
+(function ortuyuIzle() {
+  if (typeof MutationObserver !== "function") return;
+  const g = new MutationObserver(ortuTazele);
+  for (let i = 0; i < ORTU_IZLENEN.length; i++) {
+    const el = document.getElementById(ORTU_IZLENEN[i]);
+    if (el) g.observe(el, { attributes: true, attributeFilter: ["class"] });
+  }
+})();
 
 function sadeceBuPanel(id, itsin) {
   /* Arama kutusu SAG_PANELLER'de degil -- ayri bir katman. O yuzden bir
@@ -2532,6 +3431,7 @@ function hepsiniKapat() {
   document.getElementById("panel").classList.remove("acik");
   document.getElementById("sehirDetayPanel").classList.remove("acik");
   document.getElementById("profilKart").classList.remove("acik");
+  document.getElementById("ayarlarPanel").classList.remove("acik");
   document.getElementById("istatistikPanel").classList.remove("acik");
   document.getElementById("harita").classList.remove("itili");
   document.getElementById("gecmisPanel").classList.remove("acik");
@@ -2566,6 +3466,13 @@ document.addEventListener("keydown", function (e) {
     e.preventDefault(); aramaAc(); return;
   }
   if (e.key === "Escape") {
+    /* Ayarlar profilin ALTINDAN acilan bir ekran; Esc once bir kademe
+       geri gitmeli. Eskiden hepsini kapatiyordu, hatta ayarlar
+       acikPanelVarMi listesinde olmadigi icin kapanmiyor, sadece kure
+       basa donuyordu. */
+    if (document.getElementById("ayarlarPanel").classList.contains("acik")) {
+      profilAc(); return;
+    }
     if (acikPanelVarMi()) hepsiniKapat();
     else if (misafirdeysemCik()) { /* kendi haritana donuldu */ }
     else kureyiSifirla();
@@ -2634,12 +3541,13 @@ async function detaylariYukle() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) { sehirDetaylari = yerelOku("sehirDetaylari", {}); return; }
   const { data, error } = await db.from("sehir_detaylari")
-    .select("ulke,sehir,puan,notlar").eq("user_id", oturum.session.user.id);
+    .select("ulke,sehir,puan,notlar,not_acik").eq("user_id", oturum.session.user.id);
   if (error) { sehirDetaylari = yerelOku("sehirDetaylari", {}); return; }
   sehirDetaylari = {};
   for (let i = 0; i < data.length; i++) {
     sehirDetaylari[anahtar(data[i].ulke, data[i].sehir)] =
-      { puan: data[i].puan || 0, not: data[i].notlar || "" };
+      { puan: data[i].puan || 0, not: data[i].notlar || "",
+        acik: data[i].not_acik === true };
   }
   yerelYaz("sehirDetaylari", sehirDetaylari);
 }
@@ -2676,13 +3584,28 @@ async function profilYukle() {
 
 /* =====================================================================
    OLAYLAR
-   ===================================================================== */
+
+   bagla(): olmayan bir ogeye baglanmaya calisirsak uygulama olmesin.
+   Neden onemli: index.html ile script.js AYRI dosyalar ve tarayici
+   (ya da servis iscisi, ya da GitHub Pages) birini yenileyip otekini
+   eski birakabiliyor. Eski index.html + yeni script.js oldugunda
+   "document.getElementById(yeni_oge).addEventListener" satiri hata
+   firlatiyor, betik ORADA duruyor ve uygulama giris ekraninda kalip
+   hicbir seye cevap vermiyor. Boyle bir sey bir kez yasandi; artik
+   eksik oge sadece konsola yaziliyor, gerisi calismaya devam ediyor. */
+function bagla(id, olay, islev) {
+  const el = document.getElementById(id);
+  if (!el) { console.log("Oge bulunamadi, atlandi:", id); return null; }
+  el.addEventListener(olay, islev);
+  return el;
+}
 document.getElementById("kapat").addEventListener("click", paneliKapat);
 document.getElementById("ortu").addEventListener("click", hepsiniKapat);
 document.getElementById("sehirDetayKapat").addEventListener("click", sehirDetayKapat);
 document.getElementById("kitaChart").addEventListener("click", istatistikPaneliAc);
+bagla("kureSayac", "click", istatistikPaneliAc);
 document.getElementById("istatistikKapat").addEventListener("click", istatistikPaneliKapat);
-document.getElementById("profilBtn").addEventListener("click", profilAc);
+document.getElementById("profilBtn").addEventListener("click", kendiProfilim);
 document.getElementById("profilKapat").addEventListener("click", profilKapat);
 document.getElementById("profilDegistir").addEventListener("click", function () {
   profilDuzenleme = true; profilKilitle(false);
@@ -2738,22 +3661,35 @@ function fotoAlaniHazirla() {
   bolum.parentElement.insertBefore(diger, bolum.nextSibling);
 }
 
+bagla("notAcikAnahtar", "change", notAnahtariniCiz);
+bagla("sehirNot", "input", notAnahtariniCiz);
+
 document.getElementById("sehirDetayKaydet").addEventListener("click", async function () {
   const btn = this;
   btn.disabled = true;
   const not = document.getElementById("sehirNot").value;
+  const acik = document.getElementById("notAcikAnahtar").checked &&
+               not.trim() !== "";
   const a = anahtar(aktifDetay.ulke, aktifDetay.sehir);
   // Fotograflar artik burada degil, sehir_fotolari tablosunda.
-  sehirDetaylari[a] = { puan: seciliPuan, not: not };
-  yerelYaz("sehirDetaylari", sehirDetaylari);
   const { data: oturum } = await db.auth.getSession();
   if (oturum.session) {
     const { error } = await db.from("sehir_detaylari").upsert({
       user_id: oturum.session.user.id, ulke: aktifDetay.ulke,
-      sehir: aktifDetay.sehir, puan: seciliPuan, notlar: not
+      sehir: aktifDetay.sehir, puan: seciliPuan, notlar: not,
+      not_acik: acik
     }, { onConflict: "user_id,ulke,sehir" });
-    if (error) console.log("detay kaydedilemedi:", error.message);
+    /* Sunucu reddedebilir (susturulmus hesap, gidilmemis sehir).
+       Once yerele yazip sonra kaydetseydik ekranda kaydedilmis gibi
+       gorunurdu; o yuzden sira boyle. */
+    if (error) {
+      btn.disabled = false;
+      notDurumu(hataYaz(error.message));
+      return;
+    }
   }
+  sehirDetaylari[a] = { puan: seciliPuan, not: not, acik: acik };
+  yerelYaz("sehirDetaylari", sehirDetaylari);
   btn.disabled = false;
   sehirDetayKapat();
 });
@@ -3237,7 +4173,7 @@ async function veriYukle() {
   await ulkeleriYukle();
   await gezileriYukle();
   await Promise.all([koordinatlariYukle(), detaylariYukle(), profilYukle(),
-                     arkadasVeriTazele(), engelListesiniYukle()]);
+                     arkadasVeriTazele(), engelListesiniYukle(), listeleriYukle()]);
   istatistikGuncelle();
   gecmisGuncelle();
   kitaChartCiz();

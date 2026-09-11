@@ -12,16 +12,17 @@
    yayinda degistirmek gerekiyor, yoksa telefon eski dosyalari tutar.
    ===================================================================== */
 
-const SURUM  = "traxplore-20260909g";
+const SURUM  = "traxplore-20260910m";
 const KABUK  = [
   "./",
   "./index.html",
-  "./style.css?v=20260909g",
-  "./script.js?v=20260909g",
+  "./style.css?v=20260910m",
+  "./script.js?v=20260910m",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./apple-touch-icon.png"
+  "./apple-touch-icon.png",
+  "./onizleme.png?v=1"
 ];
 /* Bunlar baska sunucudan geliyor; biri inmezse kurulum bozulmasin diye
    tek tek ve hatayi yutarak ekliyoruz. */
@@ -31,13 +32,16 @@ const DISARIDAN = [
 ];
 
 self.addEventListener("install", function (olay) {
+  /* addAll ATOMIK: listedeki tek bir dosya inmezse (404, kesinti, yeni
+     surum daha yayilmamis) kurulum tamamen basarisiz oluyor, yeni
+     servis iscisi hic devreye girmiyor ve telefon eski dosyalarla
+     kaliyor. Tek tek ekleyip hatayi yutuyoruz: eksik kalan dosya
+     internetten gelir, kurulum yine de tamamlanir. */
   olay.waitUntil(
     caches.open(SURUM).then(function (kap) {
-      return kap.addAll(KABUK).then(function () {
-        return Promise.all(DISARIDAN.map(function (a) {
-          return kap.add(a).catch(function () {});
-        }));
-      });
+      return Promise.all(KABUK.concat(DISARIDAN).map(function (a) {
+        return kap.add(a).catch(function () {});
+      }));
     }).then(function () { return self.skipWaiting(); })
   );
 });
