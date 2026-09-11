@@ -1053,6 +1053,20 @@ async function sehirSec(btn, ulke, s) {
       if (error) console.log("yazma hatası:", error.message);
     }
   } else {
+    /* Isaret kalkinca sunucudaki tetikleyici o sehrin puanini ve
+       yorumunu siliyor; geri konulunca geri gelmiyor. Yazi yazmis
+       birinin bunu yanlislikla yapmasi can sikici, once soruyoruz. */
+    const d0 = sehirDetaylari[anahtar(ulke, s.ad)] || {};
+    const yazisiVar = (d0.not || "").trim() !== "";
+    if ((d0.puan > 0 || yazisiVar) &&
+        !confirm(s.ad + " işaretini kaldırıyorsun.\n\n" +
+                 (yazisiVar && d0.puan > 0 ? "Buraya verdiğin puan ve yazdığın not da silinecek."
+                  : yazisiVar ? "Buraya yazdığın not da silinecek."
+                              : "Buraya verdiğin puan da silinecek.") +
+                 " Geri alınamaz.\n\nDevam edilsin mi?")) {
+      return;
+    }
+    delete sehirDetaylari[anahtar(ulke, s.ad)];
     gezilenler = gezilenler.filter(function (g) {
       return !(g.ulke === ulke && g.sehir === s.ad);
     });
@@ -1364,8 +1378,57 @@ async function sehirDetayAc(ulke, sehir) {
   fotolariGoster();
 
   listeDurumu("");
+  document.getElementById("sehirPuanOzet").hidden = true;
+  puanOzetiniYukle();
   detayKilidiTazele();
   sadeceBuPanel("sehirDetayPanel", true);
+}
+
+/* =====================================================================
+   SEHRIN ORTALAMA PUANI
+   Kim kac verdi GORUNMUYOR; sadece ortalama ve kac kisi oldugu. Tek
+   istisna yorum yazanlar: yorumun yaninda kendi puani duruyor, cunku
+   konusmayi kendisi secti.
+
+   Ortalama en az UC puandan sonra cikiyor. Bu sinir sunucuda: 3'ten az
+   puan varken fonksiyon ortalamayi hic dondurmuyor, arayuzde gizlemekle
+   yetinmiyoruz.
+   ===================================================================== */
+let puanDamgasi = 0;
+
+async function puanOzetiniYukle() {
+  const ulke = aktifDetay.ulke, sehir = aktifDetay.sehir;
+  const kutu = document.getElementById("sehirPuanOzet");
+  if (!kutu) return;
+  const damga = ++puanDamgasi;
+  const { data, error } = await db.rpc("sehir_puani", { p_ulke: ulke, p_sehir: sehir });
+  if (damga !== puanDamgasi) return;                  // baska sehre gecildi
+  if (aktifDetay.ulke !== ulke || aktifDetay.sehir !== sehir) return;
+  if (error) { console.log("puan alinamadi:", error.message); kutu.hidden = true; return; }
+
+  const s = (data && data[0]) || {};
+  const adet = s.adet || 0;
+  const ort  = s.ortalama == null ? null : Number(s.ortalama);
+  kutu.hidden = adet === 0;
+  if (!adet) return;
+
+  const dolu = document.querySelector("#sehirPuanOzet .yildiz-dolu");
+  const ortEl = document.getElementById("puanOrtalama");
+  const adetEl = document.getElementById("puanAdet");
+
+  if (ort == null) {
+    /* Uc kisiye ulasmadi: yildiz yok, sadece kac kisi verdigi. Boylece
+       "neden ortalama yok" sorusu ortada kalmiyor. */
+    kutu.classList.add("az");
+    dolu.style.width = "0%";
+    ortEl.textContent = "";
+    adetEl.textContent = adet + " kişi puan verdi";
+  } else {
+    kutu.classList.remove("az");
+    dolu.style.width = (ort / 5 * 100).toFixed(2) + "%";
+    ortEl.textContent = ort.toFixed(1).replace(".", ",");
+    adetEl.textContent = "(" + adet + " kişi)";
+  }
 }
 
 /* Gittim mi gitmedim mi -- panelin govdesi ve dugmenin yazisi buna bagli */
@@ -3798,6 +3861,7 @@ document.getElementById("sehirDetayKaydet").addEventListener("click", async func
   sehirDetaylari[a] = { puan: seciliPuan, not: not, acik: acik };
   yerelYaz("sehirDetaylari", sehirDetaylari);
   btn.disabled = false;
+  puanOzetiniYukle();
   sehirDetayKapat();
 });
 

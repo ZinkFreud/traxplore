@@ -2695,3 +2695,29 @@ body.misafirde #istatistik { display: none; }
     #yasalGovde { padding: 4px 18px calc(30px + env(safe-area-inset-bottom)); }
     #yasalKapat { top: 14px; right: 14px; font-size: 30px; padding: 6px 10px; }
 }
+
+/* --- şehrin ortalama puanı ------------------------------------------
+   Kim kaç verdi görünmüyor. Yıldızlar iki kat: altta gri beşlik, üstte
+   kırpılmış kehribar beşlik. Yarım yıldız böyle çıkıyor — iki katta da
+   aynı yazı olduğu için hizalama kendiliğinden tutuyor. */
+#sehirPuanOzet {
+    display: flex; align-items: center; gap: 9px;
+    margin: -2px 0 14px;
+    font-size: 13px;
+    color: var(--yazi-soluk);
+}
+.yildiz-olcek { position: relative; display: inline-block; line-height: 1; }
+.yildiz-bos { color: rgba(190, 212, 218, 0.22); letter-spacing: 2px; font-size: 16px; }
+.yildiz-dolu {
+    position: absolute; top: 0; left: 0;
+    overflow: hidden; white-space: nowrap;
+    color: var(--kehribar); letter-spacing: 2px; font-size: 16px;
+    pointer-events: none;
+}
+#puanOrtalama {
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px; font-weight: 600; color: var(--yazi);
+}
+#puanOrtalama:empty { display: none; }
+/* Üç kişiye ulaşmadıysa yıldız hiç gösterilmiyor, sadece kaç kişi olduğu */
+#sehirPuanOzet.az .yildiz-olcek { display: none; }

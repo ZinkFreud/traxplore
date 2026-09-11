@@ -40,7 +40,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260911b">
+    <link rel="stylesheet" href="style.css?v=20260911c">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -117,6 +117,17 @@
     <div id="sehirDetayPanel">
         <button id="sehirDetayKapat">×</button>
         <h2 id="sehirDetayBaslik"></h2>
+
+        <!-- Sehrin ortalama puani. Kimin kac verdigi YAZMIYOR; en az uc
+             kisi puan verene kadar ortalama hic gosterilmiyor. -->
+        <div id="sehirPuanOzet" hidden>
+            <span class="yildiz-olcek">
+                <span class="yildiz-bos">★★★★★</span>
+                <span class="yildiz-dolu"><span>★★★★★</span></span>
+            </span>
+            <b id="puanOrtalama"></b>
+            <span id="puanAdet"></span>
+        </div>
 
         <!-- "Gittim" dugmesi burada, cunku isaretlemek icin ulke paneline
              geri donmek gerekiyordu. Kapak fotografi varsa onun sag ust
@@ -436,7 +447,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260911b"></script>
+    <script src="script.js?v=20260911c"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
