@@ -4350,6 +4350,10 @@ async function veriYukle() {
   kitaChartCiz();
   kureRenkTazele();
   pinleriTazele();
+  /* Profil dugmesindeki ad ve avatar SADECE profil acilinca
+     tazeleniyordu; acilista dugmede "PROFIL" yaziyor, profile bir kez
+     girip cikinca "@ad" oluyordu. Veri geldigi anda bir kez cizelim. */
+  profilButonFotoGuncelle();
 }
 
 (async function baslat() {
