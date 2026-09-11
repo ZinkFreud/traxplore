@@ -2043,8 +2043,11 @@ async function gezenleriYukle() {
       sat.appendChild(avatarYap(g.foto, "kucuk"));
       const ad = document.createElement("span");
       ad.className = "gezen-ad";
+      /* Sadece kullanici adi. Kisinin gercek adi burada durmasin --
+         insanlar birbirini kullanici adiyla buluyor, gercek ad ise
+         profiline girmeyi secen birine gosterilecek bir sey. */
       ad.innerHTML = "@" + kacisla(g.kullanici_adi) +
-        (g.benim ? " <em>(sen)</em>" : (g.isim ? " <em>" + kacisla(g.isim) + "</em>" : ""));
+        (g.benim ? " <em>(sen)</em>" : "");
       sat.appendChild(ad);
       if (g.gidilen) {
         const t = document.createElement("span");
