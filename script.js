@@ -1693,7 +1693,15 @@ function fotoKarti(f, adres, benimMi) {
   kart.className = "foto-kart";
 
   const im = document.createElement("img");
-  im.loading = "lazy";
+  /* loading="lazy" BURADA CALISMIYOR: paneller position:fixed ve
+     ekrana transform ile giriyor. Tarayici tembel resimlerin gorunur
+     olup olmadigini yerlesime gore hesapliyor; panel "kapali"
+     konumdayken ekran disinda sayildigi icin resim hic yuklenmiyor,
+     panel acilinca da transform degistigi icin yeniden bakmiyor.
+     Sonuc: yuklenen fotograf sehir sayfasinda hic gorunmuyordu.
+     Canli sitede olculdu: ayni adres yeni bir Image() ile aniden
+     yukleniyor, sayfadaki tembel <img> ise sonsuza kadar bekliyordu.
+     Buradaki liste kisa (kendi 3 + digerleri), tembellige gerek yok. */
   im.alt = "";
   if (adres[f.yol]) im.src = adres[f.yol];
   kart.appendChild(im);
@@ -2497,7 +2505,7 @@ async function sekmeFotoCiz(k) {
       const kart = document.createElement("div");
       kart.className = "foto-kart tiklanir";
       const im = document.createElement("img");
-      im.loading = "lazy"; im.alt = "";
+      im.alt = "";           // tembel yukleme panellerde calismiyor, bkz. fotoKarti()
       if (adres[f.yol]) im.src = adres[f.yol];
       kart.appendChild(im);
       const yer = document.createElement("span");
