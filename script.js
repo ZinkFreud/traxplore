@@ -2917,6 +2917,96 @@ function arkadasBolumu() {
 }
 
 /* =====================================================================
+   YASAL METINLER — uygulamanin icinde
+   Tarayiciya cikmak uygulamadan cikmak gibi hissettiriyor; magazalar da
+   bundan hoslanmiyor. Metni yine ayni dosyadan okuyoruz (gizlilik.html
+   vs.), yani iki kopya tutmuyoruz. Dosyalar ayrica magaza kaydinin
+   istedigi "herkese acik gizlilik politikasi adresi" olarak duruyor --
+   o yuzden silinmiyorlar, sadece uygulama icinden link verilmiyor.
+   ===================================================================== */
+const YASAL_DOSYA = {
+  gizlilik: { tr: "gizlilik.html", en: "privacy.html" },
+  kosullar: { tr: "kosullar.html", en: "terms.html"   }
+};
+const YASAL_BASLIK = {
+  gizlilik: { tr: "Gizlilik Politikası", en: "Privacy Policy" },
+  kosullar: { tr: "Kullanım Koşulları",  en: "Terms of Use"   }
+};
+let yasalTur = "gizlilik", yasalDil = "tr", yasalDonus = "";
+const yasalBellek = {};
+
+async function yasalAc(tur, dil, donus) {
+  yasalTur = YASAL_DOSYA[tur] ? tur : "gizlilik";
+  yasalDil = (dil === "en") ? "en" : "tr";
+  if (donus !== undefined) yasalDonus = donus || "";
+  document.getElementById("yasalBaslik").textContent = YASAL_BASLIK[yasalTur][yasalDil];
+  const geri = document.getElementById("yasalGeri");
+  geri.textContent = yasalDonus === "ayarlar" ? "‹ Ayarlar" : "‹ Kapat";
+  const dgm = document.querySelectorAll("#yasalDiller button");
+  for (let i = 0; i < dgm.length; i++)
+    dgm[i].classList.toggle("secili", dgm[i].dataset.dil === yasalDil);
+
+  const govde = document.getElementById("yasalGovde");
+  const dosya = YASAL_DOSYA[yasalTur][yasalDil];
+  sadeceBuPanel("yasalPanel", true);
+  govde.scrollTop = 0;
+
+  if (yasalBellek[dosya]) { govde.innerHTML = yasalBellek[dosya]; return; }
+  govde.innerHTML = "<p class='panel-durum'>Yükleniyor…</p>";
+  try {
+    const cevap = await fetch(dosya, { cache: "no-cache" });
+    if (!cevap.ok) throw new Error(cevap.status);
+    const metin = await cevap.text();
+    const belge = new DOMParser().parseFromString(metin, "text/html");
+    const sayfa = belge.querySelector(".sayfa");
+    if (!sayfa) throw new Error("icerik bulunamadi");
+    /* Sayfanin kendi basligi ve alt bilgisi panele gerek yok: panelin
+       kendi basligi ve dil dugmeleri zaten var. */
+    const ust = sayfa.querySelector(".ust"); if (ust) ust.remove();
+    const alt = sayfa.querySelector(".alt"); if (alt) alt.remove();
+    /* Sayfanin kendi h1'i panelin basligiyla ayni: iki kere yazmayalim. */
+    const h1 = sayfa.querySelector("h1"); if (h1) h1.remove();
+    /* Metnin icindeki baglantilar da tarayici acmasin. */
+    const baglar = sayfa.querySelectorAll("a");
+    for (let i = 0; i < baglar.length; i++) {
+      const h = baglar[i].getAttribute("href") || "";
+      if (h.indexOf("mailto:") === 0) continue;         // e-posta kalsin
+      baglar[i].removeAttribute("target");
+      baglar[i].setAttribute("href", "#");
+    }
+    yasalBellek[dosya] = sayfa.innerHTML;
+    if (yasalTur === tur && yasalDil === (dil === "en" ? "en" : "tr"))
+      govde.innerHTML = yasalBellek[dosya];
+  } catch (e) {
+    govde.innerHTML = "";
+    const uyari = document.createElement("p");
+    uyari.className = "panel-durum";
+    uyari.textContent = "Metin açılamadı. İnternet bağlantını kontrol et.";
+    govde.appendChild(uyari);
+  }
+}
+
+function yasalGeriDon() {
+  if (yasalDonus === "ayarlar") { ayarlariAc(); return; }
+  hepsiniKapat();
+}
+
+(function yasaliBagla() {
+  document.addEventListener("click", function (e) {
+    const b = e.target.closest && e.target.closest(".yasal-bag");
+    if (!b) return;
+    e.preventDefault();
+    yasalAc(b.dataset.yasal, yasalDil, b.dataset.don || "");
+  });
+  const dgm = document.querySelectorAll("#yasalDiller button");
+  for (let i = 0; i < dgm.length; i++) {
+    dgm[i].addEventListener("click", function () { yasalAc(yasalTur, this.dataset.dil); });
+  }
+  bagla("yasalKapat", "click", hepsiniKapat);
+  bagla("yasalGeri", "click", yasalGeriDon);
+})();
+
+/* =====================================================================
    AYARLAR
    Profilden ayri bir ekran. "Haritayi Sifirla" ve "Hesabimi Sil" her
    acilista goz onunde durmasin diye; ayrica profil kartini kisaltiyor.
@@ -3058,6 +3148,11 @@ function hareketAnahtariniCiz() {
 
 function profilButonFotoGuncelle() {
   avatarKur(document.getElementById("profilFoto"), profilVeri.foto);
+  /* Dugmede "PROFIL" yerine kendi adin yazsin. Adi olmayan eski
+     hesaplarda eski yazi kaliyor -- bos bir dugme olmasin. */
+  const yazi = document.getElementById("profilYazi");
+  if (yazi) yazi.textContent = profilVeri.kullanici_adi
+    ? "@" + profilVeri.kullanici_adi : "PROFİL";
 }
 
 /* =====================================================================
@@ -3168,7 +3263,7 @@ function acikPanelVarMi() {
    sinifinin orada bir karsiligi yok. Mobilde ise alttan acilan bir
    sayfaya donusuyor, o yuzden listeye onu da katiyoruz. */
 const SAG_PANELLER = ["panel", "sehirDetayPanel", "profilKart", "ayarlarPanel",
-                      "istatistikPanel", "gecmisPanel"];
+                      "istatistikPanel", "gecmisPanel", "yasalPanel"];
 /* Alt seritteki uc dugme. Acik olana tekrar basinca kapaniyor --
    gecmis panelinin kapatma dugmesi yok, kapanmanin baska yolu olmali. */
 function mobilBolumAc(id) {
@@ -3199,7 +3294,7 @@ function mobilSeritTazele() {
    kendiliginden calisir. Masaustunde kapali: orada paneller yanda
    duruyor ve kure kullanilabilir kalmali. */
 const ORTU_IZLENEN = ["panel", "sehirDetayPanel", "profilKart", "ayarlarPanel",
-                      "istatistikPanel", "gecmisPanel", "aramaKutu"];
+                      "istatistikPanel", "gecmisPanel", "yasalPanel", "aramaKutu"];
 
 /* =====================================================================
    KURENIN CIZIMINI DURDURMA
@@ -3440,6 +3535,7 @@ function hepsiniKapat() {
   document.getElementById("sehirDetayPanel").classList.remove("acik");
   document.getElementById("profilKart").classList.remove("acik");
   document.getElementById("ayarlarPanel").classList.remove("acik");
+  document.getElementById("yasalPanel").classList.remove("acik");
   document.getElementById("istatistikPanel").classList.remove("acik");
   document.getElementById("harita").classList.remove("itili");
   document.getElementById("gecmisPanel").classList.remove("acik");
@@ -3478,6 +3574,9 @@ document.addEventListener("keydown", function (e) {
        geri gitmeli. Eskiden hepsini kapatiyordu, hatta ayarlar
        acikPanelVarMi listesinde olmadigi icin kapanmiyor, sadece kure
        basa donuyordu. */
+    if (document.getElementById("yasalPanel").classList.contains("acik")) {
+      yasalGeriDon(); return;
+    }
     if (document.getElementById("ayarlarPanel").classList.contains("acik")) {
       profilAc(); return;
     }

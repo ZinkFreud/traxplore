@@ -40,7 +40,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260911a">
+    <link rel="stylesheet" href="style.css?v=20260911b">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -67,9 +67,9 @@
         </div>
         <!-- Magazalar gizlilik metnine kayittan ONCE ulasilmasini istiyor -->
         <div class="yasal">
-            <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik</a>
+            <button type="button" class="yasal-bag" data-yasal="gizlilik">Gizlilik</button>
             <span>·</span>
-            <a href="kosullar.html" target="_blank" rel="noopener">Koşullar</a>
+            <button type="button" class="yasal-bag" data-yasal="kosullar">Koşullar</button>
         </div>
     </div>
 </div>
@@ -380,9 +380,11 @@
         <div class="profil-bolum">
             <label>YASAL</label>
             <div class="yasal">
-                <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik Politikası</a>
+                <button type="button" class="yasal-bag" data-yasal="gizlilik"
+                        data-don="ayarlar">Gizlilik Politikası</button>
                 <span>·</span>
-                <a href="kosullar.html" target="_blank" rel="noopener">Kullanım Koşulları</a>
+                <button type="button" class="yasal-bag" data-yasal="kosullar"
+                        data-don="ayarlar">Kullanım Koşulları</button>
             </div>
         </div>
 
@@ -394,6 +396,21 @@
                 <button id="hesapSil" class="profil-ayar-btn tehlike">Hesabımı Sil</button>
             </div>
         </div>
+    </div>
+
+    <!-- Yasal metinler uygulamanin ICINDE aciliyor; tarayiciya cikmak
+         uygulamadan cikmak gibi hissettiriyor. Metin yine ayni dosyadan
+         okunuyor, iki kopya tutmuyoruz. Dosyalar magaza kaydi icin
+         herkese acik adres olarak da duruyor. -->
+    <div id="yasalPanel">
+        <button id="yasalKapat">×</button>
+        <button id="yasalGeri" class="metin-btn" type="button">‹ Geri</button>
+        <h2 class="ayar-baslik" id="yasalBaslik">Gizlilik Politikası</h2>
+        <div id="yasalDiller">
+            <button type="button" data-dil="tr" class="secili">Türkçe</button>
+            <button type="button" data-dil="en">English</button>
+        </div>
+        <div id="yasalGovde"></div>
     </div>
 
     <button id="sifirlaBtn">HARİTAYI SIFIRLA</button>
@@ -408,9 +425,9 @@
     <button id="kureSayac" type="button" aria-label="İstatistikler"></button>
 
     <div id="altBilgi">
-        <a href="gizlilik.html" target="_blank" rel="noopener">Gizlilik</a>
+        <button type="button" class="yasal-bag" data-yasal="gizlilik">Gizlilik</button>
         <span>·</span>
-        <a href="kosullar.html" target="_blank" rel="noopener">Koşullar</a>
+        <button type="button" class="yasal-bag" data-yasal="kosullar">Koşullar</button>
     </div>
 
     <!-- iPhone'da "ana ekrana ekle" adimini kimse kendiliginden bulmuyor -->
@@ -419,7 +436,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260911a"></script>
+    <script src="script.js?v=20260911b"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
