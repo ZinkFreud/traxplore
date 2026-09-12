@@ -666,46 +666,9 @@ function gokyuzuZemin(g, e, y) {
   mavi.addColorStop(1.00, "#0C2A58");
   g.fillStyle = mavi; g.fillRect(0, 0, e, y);
 
-  /* 2) Bulutlar. Her bulut ust uste binen yumusak dairelerden; alt
-        kenarina hafif gri veriliyor ki duz leke gibi durmasin.
-        Kenara yaklastikca seyreliyorlar -- orasi artik uzay. */
-  function bulut(bx, by, olcek) {
-    const yogunluk = Math.min(1, Math.max(0, 1.02 - uzaklik(bx, by) * 0.92));
-    if (yogunluk < 0.10) return;
-    const parca = 10 + Math.floor(Math.random() * 6);
-    for (let i = 0; i < parca; i++) {
-      const x = bx + (Math.random() - 0.5) * olcek * 2.8;
-      const b = by + (Math.random() - 0.5) * olcek * 0.55;
-      const r = olcek * (0.40 + Math.random() * 0.60);
-      // golge: parcanin biraz altina soluk gri
-      const golge = g.createRadialGradient(x, b + r * 0.22, 0, x, b + r * 0.22, r);
-      golge.addColorStop(0.00, "rgba(150,178,205," + (yogunluk * 0.30).toFixed(3) + ")");
-      golge.addColorStop(1.00, "rgba(150,178,205,0)");
-      g.save(); g.translate(x, b); g.scale(1, 0.58); g.translate(-x, -b);
-      g.fillStyle = golge; g.beginPath(); g.arc(x, b + r * 0.22, r, 0, Math.PI * 2); g.fill();
-      const d = g.createRadialGradient(x, b - r * 0.10, 0, x, b - r * 0.10, r);
-      d.addColorStop(0.00, "rgba(255,255,255," + (yogunluk * 0.95).toFixed(3) + ")");
-      d.addColorStop(0.40, "rgba(255,255,255," + (yogunluk * 0.55).toFixed(3) + ")");
-      d.addColorStop(1.00, "rgba(255,255,255,0)");
-      g.fillStyle = d; g.beginPath(); g.arc(x, b - r * 0.10, r, 0, Math.PI * 2); g.fill();
-      g.restore();
-    }
-  }
-  /* Rastgele serpince bulutlar ust uste yigiliyordu. Ekrani kaba bir
-     izgaraya bolup her gozde bir bulut ciziyoruz, yerini goz icinde
-     oynatarak -- hem dagiliyorlar hem duzenli gorunmuyorlar.
-     Ortadaki daire bos: kure oraya geliyor, arkasina bulut koymanin
-     anlami yok. */
-  const sutun = e >= y ? 6 : 4, satir = e >= y ? 4 : 7;
-  for (let i = 0; i < sutun; i++) {
-    for (let j = 0; j < satir; j++) {
-      if (Math.random() < 0.30) continue;          // bazi gozler bos kalsin
-      const bx = e * (i + 0.15 + Math.random() * 0.7) / sutun;
-      const by = y * (j + 0.15 + Math.random() * 0.7) / satir;
-      if (uzaklik(bx, by) < 0.20) continue;        // kurenin tam ortasi
-      bulut(bx, by, kucuk * (0.034 + Math.random() * 0.070));
-    }
-  }
+  /* Bulut YOK. Bir ara vardi, kaldirildi: kureye uzaydan bakiyoruz,
+     onunde bulut olmasi tutarsiz. Gokyuzu hissi gradyandan ve
+     kenarlardaki uzaya gecisten geliyor. */
 
   /* 3) Uzaya cikis. Siyah degil koyu lacivert: gokyuzu bitiyor,
         atmosferin disina cikiliyor. */
