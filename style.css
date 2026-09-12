@@ -110,7 +110,7 @@ body {
 #crosshairX, #crosshairY {
     position: fixed;
     background: rgba(var(--kehribar-rgb), 0.5);
-    z-index: 1500;
+    z-index: 300;
     pointer-events: none;
 }
 #crosshairX {
@@ -279,7 +279,7 @@ body {
 }
 .bar-yuzde { color: var(--kehribar-a); }
 .bar-dis {
-    background: var(--zemin);
+    background: var(--bos);
     border-radius: 8px;
     height: 16px;
     overflow: hidden;
@@ -323,8 +323,9 @@ body {
     height: 32px;
     border-radius: 50%;
     border: 2px solid #fff;
-    background: rgba(var(--golge-rgb), 0.6);
-    color: var(--yazi);
+    /* Fotografin uzerinde: perde de yazi da temadan bagimsiz. */
+    background: rgba(0, 0, 0, 0.6);
+    color: #F2F6F9;
     font-size: 20px;
     font-weight: 700;
     cursor: pointer;
@@ -385,12 +386,12 @@ body {
 #yildizlar { display: flex; gap: 6px; }
 .yildiz {
     font-size: 32px;
-    color: var(--katman-3);
+    color: var(--bos);
     cursor: pointer;
     transition: color 0.15s, transform 0.15s;
 }
 .yildiz:hover { transform: scale(1.15); }
-.yildiz.dolu { color: var(--kehribar-a); }
+.yildiz.dolu { color: var(--yildiz-dolu); }
 #sehirFotoLabel {
     display: inline-block;
     border: 2px dashed var(--kil-guclu);
@@ -493,7 +494,20 @@ body {
     background: rgba(var(--kehribar-rgb), 0.18);
     border-color: rgba(var(--kehribar-rgb), 0.55);
 }
-#sehirKapakSar:not(.kapaksiz) #gittimBtn { position: absolute; top: 10px; right: 10px; }
+#sehirKapakSar:not(.kapaksiz) #gittimBtn {
+    position: absolute; top: 10px; right: 10px;
+    /* Arkasinda kullanici fotografi var; saydam kehribar fotografin
+       rengine karisip camurlasiyordu. Burada renkler sabit: gidilmediyse
+       koyu perde + kehribar cerceve, gidildiyse dolu kehribar. */
+    background: rgba(0, 0, 0, 0.55);
+    color: #F3BE73;
+    border-color: rgba(233, 162, 59, 0.65);
+}
+#sehirKapakSar:not(.kapaksiz) #gittimBtn.gidildi {
+    background: #E9A23B;
+    color: #0C1119;
+    border-color: #E9A23B;
+}
 /* Kapak yoksa baslik altinda tam genislikte dursun */
 #sehirKapakSar.kapaksiz #gittimBtn { display: block; width: 100%; }
 
@@ -1341,6 +1355,11 @@ body {
     --vurgu:       rgba(255, 255, 255, 0.04);
     --vurgu-guclu: rgba(255, 255, 255, 0.08);
     --vurgu-rgb:   255, 255, 255;
+
+    /* Bos yildiz, dolmamis cubuk gibi "pasif" parcalar. Yuzey
+       renginden ayirt edilmeli, yoksa acik temada beyaza karisiyor. */
+    --bos:         #2C3641;
+    --yildiz-dolu: #F3BE73;
 }
 
 /* =====================================================================
@@ -1389,6 +1408,8 @@ body {
     --vurgu:       rgba(23, 32, 42, 0.05);
     --vurgu-guclu: rgba(23, 32, 42, 0.09);
     --vurgu-rgb:   23, 32, 42;
+    --bos:         #C3CDD8;
+    --yildiz-dolu: #C07E18;
 }
 
 /* --- panel yüzeyleri --------------------------------------------- */
@@ -2792,7 +2813,7 @@ body.misafirde #istatistik { display: none; }
     color: var(--yazi-soluk);
 }
 .yildiz-olcek { position: relative; display: inline-block; line-height: 1; }
-.yildiz-bos { color: rgba(var(--kil-rgb), 0.22); letter-spacing: 2px; font-size: 16px; }
+.yildiz-bos { color: var(--bos); letter-spacing: 2px; font-size: 16px; }
 .yildiz-dolu {
     position: absolute; top: 0; left: 0;
     overflow: hidden; white-space: nowrap;

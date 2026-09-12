@@ -16,7 +16,22 @@
     --zemin: #060a11; --yuzey: rgba(9,13,19,0.86);
     --kil: rgba(190,212,218,0.10); --kil-guclu: rgba(190,212,218,0.20);
     --yazi: #DEE7EB; --yazi-soluk: #808B94; --kehribar: #E9A23B;
+    --kehribar-a: #F3BE73;
     color-scheme: dark;
+}
+
+/* Bu sayfalarda tema dugmesi yok (uygulamanin disinda da aciliyorlar),
+   o yuzden ziyaretcinin cihaz ayarina uyuyorlar. Uygulama icinde
+   acildiklarinda zaten uygulamanin temasini aliyorlar: panele sadece
+   metin aktariliyor, bu stil blogu gitmiyor. */
+@media (prefers-color-scheme: light) {
+    :root {
+        --zemin: #F2F4F7; --yuzey: rgba(255,255,255,0.95);
+        --kil: rgba(23,32,42,0.12); --kil-guclu: rgba(23,32,42,0.24);
+        --yazi: #17202A; --yazi-soluk: #49545F; --kehribar: #7A4E06;
+        --kehribar-a: #5C3A04;
+        color-scheme: light;
+    }
 }
 * { box-sizing: border-box; }
 body {
@@ -31,7 +46,7 @@ body {
          font-weight: 600; text-decoration: none; }
 .diller { margin-left: auto; font-size: 13px; }
 a { color: var(--kehribar); }
-a:hover { color: #F3BE73; }
+a:hover { color: var(--kehribar-a); }
 h1 { font-size: 24px; font-weight: 600; margin: 0 0 6px; }
 .tarih { color: var(--yazi-soluk); font-size: 13px; margin: 0 0 32px; }
 h2 { font-size: 16px; font-weight: 600; margin: 34px 0 10px;
