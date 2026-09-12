@@ -670,8 +670,8 @@ function gokyuzuZemin(g, e, y) {
         kenarina hafif gri veriliyor ki duz leke gibi durmasin.
         Kenara yaklastikca seyreliyorlar -- orasi artik uzay. */
   function bulut(bx, by, olcek) {
-    const yogunluk = Math.max(0, 1 - uzaklik(bx, by) * 1.15);
-    if (yogunluk < 0.12) return;
+    const yogunluk = Math.min(1, Math.max(0, 1.02 - uzaklik(bx, by) * 0.92));
+    if (yogunluk < 0.10) return;
     const parca = 10 + Math.floor(Math.random() * 6);
     for (let i = 0; i < parca; i++) {
       const x = bx + (Math.random() - 0.5) * olcek * 2.8;
@@ -699,11 +699,11 @@ function gokyuzuZemin(g, e, y) {
   const sutun = e >= y ? 6 : 4, satir = e >= y ? 4 : 7;
   for (let i = 0; i < sutun; i++) {
     for (let j = 0; j < satir; j++) {
-      if (Math.random() < 0.34) continue;          // bazi gozler bos kalsin
+      if (Math.random() < 0.30) continue;          // bazi gozler bos kalsin
       const bx = e * (i + 0.15 + Math.random() * 0.7) / sutun;
       const by = y * (j + 0.15 + Math.random() * 0.7) / satir;
-      if (uzaklik(bx, by) < 0.26) continue;        // kurenin tam ortasi
-      bulut(bx, by, kucuk * (0.030 + Math.random() * 0.075));
+      if (uzaklik(bx, by) < 0.20) continue;        // kurenin tam ortasi
+      bulut(bx, by, kucuk * (0.034 + Math.random() * 0.070));
     }
   }
 
@@ -711,8 +711,8 @@ function gokyuzuZemin(g, e, y) {
         atmosferin disina cikiliyor. */
   const kenar = g.createRadialGradient(mx, my, buyuk * 0.26, mx, my, buyuk * 0.80);
   kenar.addColorStop(0.00, "rgba(7,16,40,0)");
-  kenar.addColorStop(0.40, "rgba(7,16,40,0.30)");
-  kenar.addColorStop(0.72, "rgba(6,13,33,0.74)");
+  kenar.addColorStop(0.40, "rgba(7,16,40,0.27)");
+  kenar.addColorStop(0.72, "rgba(6,13,33,0.71)");
   kenar.addColorStop(1.00, "rgba(4,9,24,0.95)");
   g.fillStyle = kenar; g.fillRect(0, 0, e, y);
 
