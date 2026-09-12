@@ -4573,6 +4573,7 @@ function paylasIsiklariCiz(g, kt, D) {
   const sy = (kt.height - kenar) / 2;
   const oran = D.kureEn / kenar;           // tuval pikseli -> gorsel pikseli
 
+  const acik = document.documentElement.getAttribute("data-tema") === "acik";
   const ham = getComputedStyle(document.documentElement)
                 .getPropertyValue("--isik-boy").trim();
   const isikBoy = parseFloat(ham) || 46;
@@ -4597,7 +4598,27 @@ function paylasIsiklariCiz(g, kt, D) {
 
     const mavi = el.classList.contains("misafir");
     const d = g.createRadialGradient(x, y, 0, x, y, yaricap);
-    if (mavi) {
+    /* Duraklar ekrandaki .sehir-isik gradyaniyla ayni. Acik temada
+       isik parlaklikla degil renk doygunluguyla isiyor; goruntude de
+       oyle olmali, yoksa paylasilan resim ekrandakinden bambaska
+       cikiyor. */
+    if (acik) {
+      if (mavi) {
+        d.addColorStop(0.00, "rgba(226,250,255,0.98)");
+        d.addColorStop(0.15, "rgba(26,150,178,0.92)");
+        d.addColorStop(0.34, "rgba(20,126,150,0.48)");
+        d.addColorStop(0.56, "rgba(16,100,120,0.20)");
+        d.addColorStop(0.70, "rgba(8,56,70,0.10)");
+        d.addColorStop(0.84, "rgba(8,56,70,0)");
+      } else {
+        d.addColorStop(0.00, "rgba(255,238,196,0.98)");
+        d.addColorStop(0.15, "rgba(255,150,20,0.92)");
+        d.addColorStop(0.34, "rgba(233,138,20,0.48)");
+        d.addColorStop(0.56, "rgba(206,110,10,0.20)");
+        d.addColorStop(0.70, "rgba(110,62,10,0.10)");
+        d.addColorStop(0.84, "rgba(110,62,10,0)");
+      }
+    } else if (mavi) {
       d.addColorStop(0.00, "rgba(232,251,255,0.95)");
       d.addColorStop(0.13, "rgba(111,202,218,0.42)");
       d.addColorStop(0.32, "rgba(95,182,196,0.20)");
@@ -4637,8 +4658,11 @@ function paylasGorselCiz(sekil) {
   tuval.width = E; tuval.height = Y;
   const g = tuval.getContext("2d");
 
-  // Ayni uzay zemini -- ekranda ne varsa goruntude de o
-  uzayZemin(g, E, Y);
+  /* Zemin ekranda ne ise o. Once "paylasim hep koyu kalsin" demistik
+     ama kure temaya baglaninca o karar bozuldu: koyu uzayin uzerinde
+     gunduz kuresi cikiyordu. */
+  const acikTema = document.documentElement.getAttribute("data-tema") === "acik";
+  if (acikTema) gokyuzuZemin(g, E, Y); else uzayZemin(g, E, Y);
 
   // Kure: ekrandaki tuvalden ortadan kare kirpiliyor
   const kt = paylasKureTuvali();
@@ -4652,10 +4676,21 @@ function paylasGorselCiz(sekil) {
 
   g.textAlign = "center";
 
+  /* Acik gokyuzu ne duz parlak ne duz koyu: ortasi aydinlik,
+     kenarlari lacivert. Tek bir yazi rengi ikisinde birden tutmuyor,
+     o yuzden yazilar acik kalip altlarina golge aliyor. */
+  function golge(ac) {
+    g.shadowColor = ac ? "rgba(6, 18, 40, 0.55)" : "rgba(0,0,0,0)";
+    g.shadowBlur = ac ? 14 : 0;
+    g.shadowOffsetY = ac ? 2 : 0;
+  }
+
   // Logo
+  golge(acikTema);
   g.fillStyle = "#E9A23B";
   g.font = "400 " + D.logoPunto + 'px "Black Ops One", sans-serif';
   g.fillText("TRAXPLORE", E / 2, D.logo);
+  golge(false);
 
   /* Sayilar gorselin asil derdi: insanlar bunu gostermek icin
      paylasiyor. Uygulamanin isik dilini surdurmek icin hafif kehribar
@@ -4664,22 +4699,26 @@ function paylasGorselCiz(sekil) {
   for (let i = 0; i < sayilar.length; i++) {
     const x = E * (i + 0.5) / 3;
     g.save();
-    g.shadowColor = "rgba(233,162,59,0.45)";
+    g.shadowColor = acikTema ? "rgba(6, 18, 40, 0.60)" : "rgba(233,162,59,0.45)";
     g.shadowBlur = dikey ? 30 : 24;
+    if (acikTema) g.shadowOffsetY = 3;
     g.fillStyle = "#FFFFFF";
     g.font = "700 " + D.sayiPunto + 'px "Space Grotesk", sans-serif';
     g.fillText(String(sayilar[i].sayi), x, D.sayi);
     g.restore();
 
+    golge(acikTema);
     g.fillStyle = "#E9A23B";
     g.font = "500 " + D.etiketPunto + 'px "Space Grotesk", sans-serif';
     if ("letterSpacing" in g) g.letterSpacing = "3px";
     g.fillText(sayilar[i].ad, x, D.etiket);
     if ("letterSpacing" in g) g.letterSpacing = "0px";
+    golge(false);
   }
 
   // Kullanici adi + adres
   const ad = (profilVeri && profilVeri.kullanici_adi) ? "@" + profilVeri.kullanici_adi : "";
+  golge(acikTema);
   if (D.tekSatir) {
     /* Karede alt bosluk dar; ikisi tek satirda yan yana duruyor. */
     g.font = "600 " + D.adPunto + 'px "Space Grotesk", sans-serif';
@@ -4691,26 +4730,27 @@ function paylasGorselCiz(sekil) {
     let x = (E - toplam) / 2;
     g.textAlign = "left";
     if (ad) {
-      g.fillStyle = "#E7EDF5";
+      g.fillStyle = "#FFFFFF";
       g.font = "600 " + D.adPunto + 'px "Space Grotesk", sans-serif';
       g.fillText(ad, x, D.ad);
       x += adEn + ayrac;
     }
-    g.fillStyle = "rgba(200,210,224,0.55)";
+    g.fillStyle = acikTema ? "rgba(255,255,255,0.80)" : "rgba(200,210,224,0.55)";
     g.font = "400 " + D.adresPunto + 'px "Space Grotesk", sans-serif';
     g.fillText(PAYLAS_ADRES, x, D.adres);
     g.textAlign = "center";
   } else {
     if (ad) {
-      g.fillStyle = "#E7EDF5";
+      g.fillStyle = "#FFFFFF";
       g.font = "600 " + D.adPunto + 'px "Space Grotesk", sans-serif';
       g.fillText(ad, E / 2, D.ad);
     }
-    g.fillStyle = "rgba(200,210,224,0.55)";
+    g.fillStyle = acikTema ? "rgba(255,255,255,0.80)" : "rgba(200,210,224,0.55)";
     g.font = "400 " + D.adresPunto + 'px "Space Grotesk", sans-serif';
     g.fillText(PAYLAS_ADRES, E / 2, D.adres);
   }
 
+  golge(false);
   return tuval;
 }
 
