@@ -4644,11 +4644,10 @@ async function paylasUret(sekil) {
   for (let i = 0; i < secenekler.length; i++) {
     secenekler[i].classList.toggle("secili", secenekler[i].dataset.sekil === sekil);
   }
-  const t = window.__isikSayim;
-  paylasDurumYaz(t
-    ? "ışık " + t.cizilen + "/" + t.toplam + " · gizli " + t.gizli +
-      " · saydam " + t.saydam + " · dışarda " + t.disarda + " · çap " + t.yaricap
-    : "ışık katmanı okunamadı");
+  /* Isik sayimi window.__isikSayim'de duruyor: ileride "isiklar
+     gorunmuyor" diye bir sikayet gelirse konsoldan bakip neden
+     atlandigini (gizli / saydam / disarda) tek bakista gorebiliyoruz. */
+  paylasDurumYaz("");
   if (eylem) eylem.hidden = false;
 }
 
