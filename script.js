@@ -4708,3 +4708,39 @@ bagla("paylasGonder",  "click", paylasGonder);
 bagla("paylasIndir",   "click", paylasIndir);
 bagla("paylasHikaye",  "click", function () { paylasUret("hikaye"); });
 bagla("paylasGonderi", "click", function () { paylasUret("gonderi"); });
+
+/* =====================================================================
+   TEMA
+   ---------------------------------------------------------------------
+   Koyu varsayilan; acik tema istege bagli. Tercih cihaz basina
+   tarayicida saklaniyor -- telefonda acik, bilgisayarda koyu
+   kullanabiliyorsun. Hesaba bagli degil, cunku tema ekrana ait bir
+   sey: ayni hesap gunduz disarda, gece evde acilabiliyor.
+
+   Kure ve uzay arka plani her iki temada da KOYU. Sehir isiklari
+   isima; isima ancak karanlik zeminde okunuyor.
+   ===================================================================== */
+const TEMA_ANAHTARI = "traxplore-tema";
+
+function temayiUygula(tema) {
+  const acik = (tema === "acik");
+  document.documentElement.setAttribute("data-tema", acik ? "acik" : "koyu");
+  const kutu = document.getElementById("temaAnahtar");
+  if (kutu) kutu.checked = acik;
+  /* Tarayicinin kendi arayuzu (adres cubugu, durum cubugu) da uysun. */
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.setAttribute("content", acik ? "#EEF1F5" : "#080D14");
+}
+
+function temayiOku() {
+  try { return localStorage.getItem(TEMA_ANAHTARI) === "acik" ? "acik" : "koyu"; }
+  catch (e) { return "koyu"; }
+}
+
+function temayiDegistir(acik) {
+  temayiUygula(acik ? "acik" : "koyu");
+  try { localStorage.setItem(TEMA_ANAHTARI, acik ? "acik" : "koyu"); } catch (e) {}
+}
+
+temayiUygula(temayiOku());
+bagla("temaAnahtar", "change", function (o) { temayiDegistir(o.target.checked); });
