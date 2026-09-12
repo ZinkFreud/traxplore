@@ -40,7 +40,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260911f">
+    <link rel="stylesheet" href="style.css?v=20260912a">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -435,6 +435,33 @@
          icin gizleniyor, sayilar ust seride buyuk olarak cikiyor. -->
     <button id="kureSayac" type="button" aria-label="İstatistikler"></button>
 
+    <!-- Haritayi goruntu olarak paylas. Telefonda sayacin yaninda,
+         masaustunde ustteki istatistik seridinin altinda duruyor. -->
+    <button id="paylasBtn" type="button" aria-label="Haritanı paylaş" title="Haritanı paylaş">
+        <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
+            <path d="M12 3v13" />
+            <path d="M7.5 7.5 12 3l4.5 4.5" />
+            <path d="M5 14v5.5h14V14" />
+        </svg>
+    </button>
+
+    <div id="paylasPanel" hidden>
+        <div class="paylas-ic">
+            <button id="paylasKapat" type="button" aria-label="Kapat">&times;</button>
+            <h3>Haritanı paylaş</h3>
+            <div id="paylasSecim">
+                <button id="paylasHikaye"  class="paylas-sec" data-sekil="hikaye"  type="button">Hikâye<small>9:16</small></button>
+                <button id="paylasGonderi" class="paylas-sec" data-sekil="gonderi" type="button">Gönderi<small>1:1</small></button>
+            </div>
+            <div id="paylasOnizleme"></div>
+            <div id="paylasDurum"></div>
+            <div id="paylasEylem" hidden>
+                <button id="paylasGonder" type="button">Paylaş</button>
+                <button id="paylasIndir"  type="button">İndir</button>
+            </div>
+        </div>
+    </div>
+
     <div id="altBilgi">
         <button type="button" class="yasal-bag" data-yasal="gizlilik">Gizlilik</button>
         <span>·</span>
@@ -447,7 +474,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260911f"></script>
+    <script src="script.js?v=20260912a"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */

@@ -583,7 +583,12 @@ function uzayCiz() {
   const oran = Math.min(window.devicePixelRatio || 1, 2);
   tuval.width = Math.round(e * oran); tuval.height = Math.round(y * oran);
   g.setTransform(oran, 0, 0, oran, 0, 0);
+  uzayZemin(g, e, y);
+}
 
+/* Ayni zemin hem ekranda hem paylasim goruntusunde kullaniliyor;
+   boylece paylasilan resim ekranda gordugu seyle ayni oluyor. */
+function uzayZemin(g, e, y) {
   // derin zemin
   const zemin = g.createLinearGradient(0, 0, e, y);
   zemin.addColorStop(0, "#070b12");
@@ -3609,6 +3614,8 @@ function hepsiniKapat() {
   document.getElementById("istatistikPanel").classList.remove("acik");
   document.getElementById("harita").classList.remove("itili");
   document.getElementById("gecmisPanel").classList.remove("acik");
+  const pp = document.getElementById("paylasPanel");
+  if (pp) { pp.hidden = true; }
   aktifDetay = { ulke: "", sehir: "" };
   aktifUlke = "";
   fotoKuyruk = [];
@@ -4386,3 +4393,236 @@ async function veriYukle() {
     istatistikGuncelle();
   }
 })();
+
+/* =====================================================================
+   HARITAYI PAYLAS
+   ---------------------------------------------------------------------
+   Kullanici kendi kuresini goruntu olarak uretip telefonun paylasim
+   menusune veriyor. Instagram hikayesine dogrudan gonderemiyoruz --
+   hicbir web sayfasi gonderemez -- menuden secmesi gerekiyor.
+
+   Sira onemli: goruntu, kullanici "Paylas"a basmadan ONCE hazirlaniyor.
+   iPhone paylasim menusunun dokunusla ayni is parcasinda acilmasini
+   istiyor; arada bekleyen bir islem olursa menuyu actirmiyor.
+   ===================================================================== */
+
+const PAYLAS_ADRES = "zinkfreud.github.io/traxplore";
+let paylasDosya = null;      // hazir File nesnesi
+let paylasNesneUrl = null;   // onizleme/indirme icin
+
+/* Kurenin o anki goruntusu. WebGL tuvali kare bitince siliniyor, o
+   yuzden once yeniden ciziyoruz sonra ayni anda okuyoruz. */
+function paylasKureTuvali() {
+  try {
+    if (!kure || !kure.renderer) return null;
+    const r = kure.renderer();
+    r.render(kure.scene(), kure.camera());
+    return r.domElement;
+  } catch (e) {
+    console.log("Küre okunamadı:", e.message);
+    return null;
+  }
+}
+
+/* Gezilen kita/ulke/sehir sayilari -- ekrandaki sayacla ayni kaynak. */
+function paylasSayilar() {
+  const ulkeler = [], kitalar = [];
+  for (let i = 0; i < gezilenler.length; i++) {
+    if (ulkeler.indexOf(gezilenler[i].ulke) === -1) ulkeler.push(gezilenler[i].ulke);
+    const k = ulkeKita[gezilenler[i].ulke];
+    if (k && kitalar.indexOf(k) === -1) kitalar.push(k);
+  }
+  return [
+    { sayi: kitalar.length,     ad: "KITA"  },
+    { sayi: ulkeler.length,     ad: "ÜLKE"  },
+    { sayi: gezilenler.length,  ad: "ŞEHİR" }
+  ];
+}
+
+/* Yazi tipleri yuklenmeden tuvale cizersek tarayici yedek fontu
+   kullaniyor ve goruntu bambaska cikiyor. */
+async function paylasFontlariBekle() {
+  if (!document.fonts || !document.fonts.load) return;
+  try {
+    await Promise.all([
+      document.fonts.load('400 54px "Black Ops One"'),
+      document.fonts.load('700 110px "Space Grotesk"'),
+      document.fonts.load('500 34px "Space Grotesk"')
+    ]);
+    await document.fonts.ready;
+  } catch (e) { /* yedek fontla devam */ }
+}
+
+function paylasGorselCiz(sekil) {
+  const dikey = (sekil === "hikaye");
+  const E = 1080, Y = dikey ? 1920 : 1080;
+
+  /* Yerlesim tek yerde dursun ki iki sekli ayri ayri kovalamayalim. */
+  const D = dikey
+    ? { logo: 180, logoPunto: 60, kureX: 40,  kureY: 290, kureEn: 1000,
+        sayi: 1470, sayiPunto: 132, etiket: 1536, etiketPunto: 36,
+        ad: 1700, adPunto: 40, adres: 1762, adresPunto: 30, tekSatir: false }
+    : { logo: 104, logoPunto: 46, kureX: 230, kureY: 150, kureEn: 620,
+        sayi: 890,  sayiPunto: 100, etiket: 942, etiketPunto: 28,
+        ad: 1022, adPunto: 30, adres: 1022, adresPunto: 24, tekSatir: true };
+
+  const tuval = document.createElement("canvas");
+  tuval.width = E; tuval.height = Y;
+  const g = tuval.getContext("2d");
+
+  // Ayni uzay zemini -- ekranda ne varsa goruntude de o
+  uzayZemin(g, E, Y);
+
+  // Kure: ekrandaki tuvalden ortadan kare kirpiliyor
+  const kt = paylasKureTuvali();
+  if (kt && kt.width && kt.height) {
+    const kenar = Math.min(kt.width, kt.height);
+    const sx = (kt.width  - kenar) / 2;
+    const sy = (kt.height - kenar) / 2;
+    g.drawImage(kt, sx, sy, kenar, kenar, D.kureX, D.kureY, D.kureEn, D.kureEn);
+  }
+
+  g.textAlign = "center";
+
+  // Logo
+  g.fillStyle = "#E9A23B";
+  g.font = "400 " + D.logoPunto + 'px "Black Ops One", sans-serif';
+  g.fillText("TRAXPLORE", E / 2, D.logo);
+
+  /* Sayilar gorselin asil derdi: insanlar bunu gostermek icin
+     paylasiyor. Uygulamanin isik dilini surdurmek icin hafif kehribar
+     bir hale veriliyor. */
+  const sayilar = paylasSayilar();
+  for (let i = 0; i < sayilar.length; i++) {
+    const x = E * (i + 0.5) / 3;
+    g.save();
+    g.shadowColor = "rgba(233,162,59,0.45)";
+    g.shadowBlur = dikey ? 30 : 24;
+    g.fillStyle = "#FFFFFF";
+    g.font = "700 " + D.sayiPunto + 'px "Space Grotesk", sans-serif';
+    g.fillText(String(sayilar[i].sayi), x, D.sayi);
+    g.restore();
+
+    g.fillStyle = "#E9A23B";
+    g.font = "500 " + D.etiketPunto + 'px "Space Grotesk", sans-serif';
+    if ("letterSpacing" in g) g.letterSpacing = "3px";
+    g.fillText(sayilar[i].ad, x, D.etiket);
+    if ("letterSpacing" in g) g.letterSpacing = "0px";
+  }
+
+  // Kullanici adi + adres
+  const ad = (profilVeri && profilVeri.kullanici_adi) ? "@" + profilVeri.kullanici_adi : "";
+  if (D.tekSatir) {
+    /* Karede alt bosluk dar; ikisi tek satirda yan yana duruyor. */
+    g.font = "600 " + D.adPunto + 'px "Space Grotesk", sans-serif';
+    const adEn = ad ? g.measureText(ad).width : 0;
+    g.font = "400 " + D.adresPunto + 'px "Space Grotesk", sans-serif';
+    const adresEn = g.measureText(PAYLAS_ADRES).width;
+    const ayrac = ad ? 22 : 0;
+    const toplam = adEn + ayrac + adresEn;
+    let x = (E - toplam) / 2;
+    g.textAlign = "left";
+    if (ad) {
+      g.fillStyle = "#E7EDF5";
+      g.font = "600 " + D.adPunto + 'px "Space Grotesk", sans-serif';
+      g.fillText(ad, x, D.ad);
+      x += adEn + ayrac;
+    }
+    g.fillStyle = "rgba(200,210,224,0.55)";
+    g.font = "400 " + D.adresPunto + 'px "Space Grotesk", sans-serif';
+    g.fillText(PAYLAS_ADRES, x, D.adres);
+    g.textAlign = "center";
+  } else {
+    if (ad) {
+      g.fillStyle = "#E7EDF5";
+      g.font = "600 " + D.adPunto + 'px "Space Grotesk", sans-serif';
+      g.fillText(ad, E / 2, D.ad);
+    }
+    g.fillStyle = "rgba(200,210,224,0.55)";
+    g.font = "400 " + D.adresPunto + 'px "Space Grotesk", sans-serif';
+    g.fillText(PAYLAS_ADRES, E / 2, D.adres);
+  }
+
+  return tuval;
+}
+
+function paylasDurumYaz(metin) {
+  const d = document.getElementById("paylasDurum");
+  if (d) d.textContent = metin || "";
+}
+
+async function paylasUret(sekil) {
+  const onizleme = document.getElementById("paylasOnizleme");
+  const eylem = document.getElementById("paylasEylem");
+  if (eylem) eylem.hidden = true;
+  paylasDurumYaz("Görsel hazırlanıyor…");
+
+  await paylasFontlariBekle();
+  const tuval = paylasGorselCiz(sekil);
+
+  const blob = await new Promise(function (c) { tuval.toBlob(c, "image/png"); });
+  if (!blob) { paylasDurumYaz("Görsel üretilemedi."); return; }
+
+  if (paylasNesneUrl) URL.revokeObjectURL(paylasNesneUrl);
+  paylasNesneUrl = URL.createObjectURL(blob);
+  paylasDosya = new File([blob], "traxplore.png", { type: "image/png" });
+
+  if (onizleme) {
+    onizleme.innerHTML = "";
+    const im = document.createElement("img");
+    im.src = paylasNesneUrl;
+    im.alt = "Paylaşılacak görsel";
+    onizleme.appendChild(im);
+  }
+  const secenekler = document.querySelectorAll("#paylasSecim .paylas-sec");
+  for (let i = 0; i < secenekler.length; i++) {
+    secenekler[i].classList.toggle("secili", secenekler[i].dataset.sekil === sekil);
+  }
+  paylasDurumYaz("");
+  if (eylem) eylem.hidden = false;
+}
+
+async function paylasGonder() {
+  if (!paylasDosya) return;
+  if (navigator.canShare && navigator.canShare({ files: [paylasDosya] })) {
+    try {
+      await navigator.share({ files: [paylasDosya], title: "Traxplore" });
+    } catch (e) {
+      /* Kullanici vazgectiyse sessiz gec; gercek hatada indirmeye dus. */
+      if (e && e.name !== "AbortError") paylasIndir();
+    }
+  } else {
+    paylasDurumYaz("Bu tarayıcı paylaşım menüsünü açmıyor, görsel indiriliyor.");
+    paylasIndir();
+  }
+}
+
+function paylasIndir() {
+  if (!paylasNesneUrl) return;
+  const a = document.createElement("a");
+  a.href = paylasNesneUrl;
+  a.download = "traxplore.png";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function paylasAc() {
+  const p = document.getElementById("paylasPanel");
+  if (!p) return;
+  hepsiniKapat();
+  p.hidden = false;
+  paylasUret("hikaye");
+}
+
+function paylasPaneliKapat() {
+  const p = document.getElementById("paylasPanel");
+  if (p) p.hidden = true;
+}
+
+bagla("paylasBtn",     "click", paylasAc);
+bagla("paylasKapat",   "click", paylasPaneliKapat);
+bagla("paylasGonder",  "click", paylasGonder);
+bagla("paylasIndir",   "click", paylasIndir);
+bagla("paylasHikaye",  "click", function () { paylasUret("hikaye"); });
+bagla("paylasGonderi", "click", function () { paylasUret("gonderi"); });
