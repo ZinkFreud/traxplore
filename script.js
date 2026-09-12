@@ -3285,9 +3285,13 @@ aramaInput.addEventListener("input", function () {
           sat.className = "arama-satir";
           sat.innerHTML = "<b>" + kacisla(r.ad) + "</b> <span style='opacity:.6'>" + kacisla(r.ulke) + "</span>";
           sat.addEventListener("click", function () {
+            /* Aranan SEHIRDI, o yuzden sehrin karti aciliyor. Once ulke
+               listesi aciliyordu ve aradigi sehri bir de o listede
+               bulmasi gerekiyordu. Karti kapatinca zaten ulke listesine
+               dusuyor, yani ulkeye ulasmanin yolu kapanmiyor. */
             aramaKapat();
             kureyeGit(r.enlem, r.boylam, true);
-            panelAc(r.ulke);
+            sehirDetayAc(r.ulke, r.ad);
           });
           parca.appendChild(sat);
         })(yerler[i]);
