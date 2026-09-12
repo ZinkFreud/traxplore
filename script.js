@@ -4453,6 +4453,70 @@ async function paylasFontlariBekle() {
   } catch (e) { /* yedek fontla devam */ }
 }
 
+/* Sehir isiklari kurenin UZERINDE duran DOM parcalari (htmlElementsData);
+   WebGL tuvalinde yoklar, o yuzden ekran goruntusune de dusmuyorlar.
+   Ekrandaki yerlerinden okuyup gorsele kendimiz ciziyoruz. Boylece
+   kurenin arka yuzune dusenleri de globe.gl zaten gizlemis oluyor. */
+function paylasIsiklariCiz(g, kt, D) {
+  const isiklar = document.querySelectorAll(".sehir-isik");
+  if (!isiklar.length) return 0;
+
+  const kr = kt.getBoundingClientRect();
+  if (!kr.width || !kr.height) return 0;
+  const olcekX = kt.width  / kr.width;     // ekran pikseli -> tuval pikseli
+  const olcekY = kt.height / kr.height;
+
+  const kenar = Math.min(kt.width, kt.height);
+  const sx = (kt.width  - kenar) / 2;
+  const sy = (kt.height - kenar) / 2;
+  const oran = D.kureEn / kenar;           // tuval pikseli -> gorsel pikseli
+
+  const ham = getComputedStyle(document.documentElement)
+                .getPropertyValue("--isik-boy").trim();
+  const isikBoy = parseFloat(ham) || 46;
+  const yaricap = Math.max(6, (isikBoy * olcekX * oran) / 2);
+
+  let cizilen = 0;
+  for (let i = 0; i < isiklar.length; i++) {
+    const el = isiklar[i];
+    const bicim = getComputedStyle(el);
+    // globe.gl arka yuze duseni gizliyor; gizliyse bizde de olmasin
+    if (bicim.display === "none" || bicim.visibility === "hidden") continue;
+    if (parseFloat(bicim.opacity || "1") < 0.05) continue;
+
+    const k = el.getBoundingClientRect();   // 0x0 kutu: tam isigin merkezi
+    const bx = (k.left - kr.left) * olcekX;
+    const by = (k.top  - kr.top)  * olcekY;
+
+    const x = D.kureX + (bx - sx) * oran;
+    const y = D.kureY + (by - sy) * oran;
+    if (x < D.kureX - yaricap || x > D.kureX + D.kureEn + yaricap) continue;
+    if (y < D.kureY - yaricap || y > D.kureY + D.kureEn + yaricap) continue;
+
+    const mavi = el.classList.contains("misafir");
+    const d = g.createRadialGradient(x, y, 0, x, y, yaricap);
+    if (mavi) {
+      d.addColorStop(0.00, "rgba(232,251,255,0.95)");
+      d.addColorStop(0.13, "rgba(111,202,218,0.42)");
+      d.addColorStop(0.32, "rgba(95,182,196,0.20)");
+      d.addColorStop(0.70, "rgba(95,182,196,0)");
+      d.addColorStop(1.00, "rgba(95,182,196,0)");
+    } else {
+      d.addColorStop(0.00, "rgba(255,240,214,0.95)");
+      d.addColorStop(0.13, "rgba(240,174,76,0.42)");
+      d.addColorStop(0.32, "rgba(233,162,59,0.20)");
+      d.addColorStop(0.70, "rgba(233,162,59,0)");
+      d.addColorStop(1.00, "rgba(233,162,59,0)");
+    }
+    g.fillStyle = d;
+    g.beginPath();
+    g.arc(x, y, yaricap, 0, Math.PI * 2);
+    g.fill();
+    cizilen++;
+  }
+  return cizilen;
+}
+
 function paylasGorselCiz(sekil) {
   const dikey = (sekil === "hikaye");
   const E = 1080, Y = dikey ? 1920 : 1080;
@@ -4480,6 +4544,7 @@ function paylasGorselCiz(sekil) {
     const sx = (kt.width  - kenar) / 2;
     const sy = (kt.height - kenar) / 2;
     g.drawImage(kt, sx, sy, kenar, kenar, D.kureX, D.kureY, D.kureEn, D.kureEn);
+    paylasIsiklariCiz(g, kt, D);
   }
 
   g.textAlign = "center";
