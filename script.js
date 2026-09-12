@@ -76,25 +76,40 @@ function izgaraYollari() {
    ORTUYORLAR -- ekvator ve izgara cizgilerini kurenin yuzeyine,
    dolgunun altina ciziyoruz; cizgiler boylece sadece denizde kaliyor.
    Karada gizlemek icin ayri bir kara maskesi cikarmaya gerek yok. */
-const OKYANUS       = "#060a11";                 // deniz ve bosluk
-/* Uc ton: okyanus en koyu, gezmedigin kara ortada, gezdigin en acik.
-   Onceki halde gezmedigin ulkelerin dolgusu HIC yoktu, sadece cizgisi
-   vardi. Masaustunde okunuyordu ama telefonda kara ile deniz ayni
-   karanliga dusuyor, harita bombos gorunuyordu. Sicak/soguk ayrim da
-   denendi (gezdigin yerler kehribara calan bir ton) -- kitalar kahve
-   rengi bir lekeye donuyor, begenilmedi. Ayrimi renkle degil
-   PARLAKLIKLA yapiyoruz, tema tek renk ailesinde kaliyor. */
-const RENK_GEZILDI  = "#4c575d";   // gezilen ulke  (= 190,212,218 %38)
-const RENK_BOS      = "#20262d";   // gezilmeyen kara (= %14)
-/* Hover vurgusu kara renginin acik tonu. Once kehribardi ama kehribar
-   bu haritada "senin gittigin sehir" demek; fareyi gezdirirken ayni
-   rengin cikmasi yaniltiyordu. */
-const RENK_HOVER    = "#788289";   // uzerine gelinen ulke (= %52)
-const RENK_MIS_ULKE = "#3d5864";   // baskasinin haritasi (= %38 mavi)
-/* Ulke cizgileri. Eskiden uzaktayken tamamen kapaliydilar cunku nokta
-   dokusu karayi zaten gosteriyordu. Artik kara BU cizgilerden ibaret,
-   o yuzden hic kapanmiyorlar; sadece yaklasinca netlesiyorlar. */
-const SINIR_RENK    = "190,212,218";
+/* Kure renkleri iki temada da ayni ise yariyor, degerleri farkli.
+   Gunduzde okyanus gokyuzunden BELIRGIN koyu: yoksa kure gokyuzune
+   karisip cisim olmaktan cikiyor. Kara/deniz ayrimi gene parlaklikla,
+   tek renk ailesinde. */
+const KURE_TEMA = {
+  koyu: {
+    okyanus:  "#060a11",   // deniz ve bosluk
+    bos:      "#20262d",   // gezilmeyen kara   (= 190,212,218 %14)
+    gezildi:  "#4c575d",   // gezilen kara      (= %38)
+    hover:    "#788289",   // uzerine gelinen   (= %52)
+    misafir:  "#3d5864",   // baskasinin haritasi
+    sinir:    "190,212,218",
+    izgara:   "190,212,218",
+    izgaraA:  0.09,
+    atmosfer: "#5EA9E8"
+  },
+  acik: {
+    /* Gunduz dunyasi. Okyanus gokyuzunden koyu, karalar acik.
+       Sinir cizgileri artik acik degil KOYU: acik karanin uzerinde
+       ancak boyle okunuyor. Izgara sadece denizde gorundugu icin
+       beyaz kaliyor. */
+    okyanus:  "#3E6E9E",
+    bos:      "#BDCBC5",
+    gezildi:  "#EDF3E9",
+    hover:    "#FFFFFF",
+    misafir:  "#AFC6D6",
+    sinir:    "58,82,104",
+    izgara:   "255,255,255",
+    izgaraA:  0.30,
+    atmosfer: "#FFFFFF"
+  }
+};
+let KR = KURE_TEMA.koyu;
+
 const SINIR_UZAK    = 0.26;   // acilis gorunumunde
 const SINIR_YAKIN   = 0.55;   // yaklasinca
 const SINIR_BASLA   = 2.2;    // bu yukseklikten yukarida SINIR_UZAK
@@ -104,7 +119,6 @@ const SINIR_TAM     = 0.5;    // bu yukseklikte SINIR_YAKIN
    15 derecede bir, cok silik -- amac bilgi vermek degil, bos denize
    bir olcek duygusu katmak. Ekvator digerlerinden biraz belirgin. */
 const IZGARA_ARALIK = 15;
-const IZGARA_ALFA   = 0.09;
 
 const PIN_RENK      = "#FFF1D6";                 // isigin parlak cekirdegi
 const RENK_MISAFIR  = "#DFF7FF";                 // baska bir gezginin haritasi
@@ -255,7 +269,7 @@ function kureKur() {
        Kalinligi buyutmek haleyi genisletiyor, yaklasinca yikamiyor.
        Daha genis bir hale istersen tek yapman gereken 0.18'i 0.22-0.26
        arasina cekmek. */
-    .atmosphereColor("#5EA9E8")
+    .atmosphereColor(KR.atmosfer)
     .atmosphereAltitude(0.18)
     // Yukseklik SABIT. Fareyle uzerine gelince yukseltmek cazip ama
     // pahali: globe.gl yukseklik degisince 180 ulkenin geometrisini
@@ -271,9 +285,9 @@ function kureKur() {
     // yakaliyor -- olculdu: hover ve tiklama calismaya devam ediyor,
     // altindaki nokta dokusunu de kapatmiyor.
     .polygonCapColor(function (d) {
-      if (d === hoverUlke) return RENK_HOVER;
-      if (!ulkeGezildiMi(d.properties.name)) return RENK_BOS;
-      return misafir ? RENK_MIS_ULKE : RENK_GEZILDI;
+      if (d === hoverUlke) return KR.hover;
+      if (!ulkeGezildiMi(d.properties.name)) return KR.bos;
+      return misafir ? KR.misafir : KR.gezildi;
     })
     .polygonSideColor(function () { return "rgba(0,0,0,0)"; })
     .polygonStrokeColor(function () { return sinirRengi; })
@@ -302,8 +316,8 @@ function kureKur() {
     .pathPointLng(function (p) { return p[1]; })
     .pathPointAlt(0.0006)
     .pathColor(function (d) {
-      return "rgba(190,212,218," +
-             (d.ana ? IZGARA_ALFA * 1.7 : IZGARA_ALFA) + ")";
+      return "rgba(" + KR.izgara + "," +
+             (d.ana ? KR.izgaraA * 1.7 : KR.izgaraA) + ")";
     })
     .pathStroke(null)
     .pathTransitionDuration(0)
@@ -376,7 +390,7 @@ function kureKur() {
   const m = kure.globeMaterial();
   if (m) {
     try {
-      if (m.color) m.color.set(OKYANUS);
+      if (m.color) m.color.set(KR.okyanus);
       if (m.opacity !== undefined) m.opacity = 1;
       m.shininess = 0;
       m.needsUpdate = true;
@@ -527,7 +541,7 @@ function sarmayiDuzelt(ozellikler) {
    Uzakta soluk, yakinda net. Tamamen kapanmiyorlar: kara zemini artik
    bu cizgilerden okunuyor.
    ===================================================================== */
-let sinirRengi = "rgba(" + SINIR_RENK + "," + SINIR_UZAK + ")";
+let sinirRengi = "rgba(" + KR.sinir + "," + SINIR_UZAK + ")";
 let sinirSonAlfa = -1;
 
 function sinirGuncelle(h) {
@@ -539,7 +553,7 @@ function sinirGuncelle(h) {
   a = Math.round(a * 50) / 50;          // 0.02'lik adimlar: gereksiz guncelleme olmasin
   if (a === sinirSonAlfa) return;
   sinirSonAlfa = a;
-  sinirRengi = "rgba(" + SINIR_RENK + "," + a + ")";
+  sinirRengi = "rgba(" + KR.sinir + "," + a + ")";
   kure.polygonStrokeColor(kure.polygonStrokeColor());
 }
 
@@ -583,7 +597,14 @@ function uzayCiz() {
   const oran = Math.min(window.devicePixelRatio || 1, 2);
   tuval.width = Math.round(e * oran); tuval.height = Math.round(y * oran);
   g.setTransform(oran, 0, 0, oran, 0, 0);
-  uzayZemin(g, e, y);
+  /* Koyu temada uzay, acik temada gunduz gokyuzu. Paylasim goruntusu
+     bundan bagimsiz: o her zaman uzayZemin cagiriyor, cunku Instagram'da
+     koyu ve isikli duruyor. */
+  if (document.documentElement.getAttribute("data-tema") === "acik") {
+    gokyuzuZemin(g, e, y);
+  } else {
+    uzayZemin(g, e, y);
+  }
 }
 
 /* Ayni zemin hem ekranda hem paylasim goruntusunde kullaniliyor;
@@ -624,6 +645,87 @@ function uzayZemin(g, e, y) {
       g.fillStyle = h; g.beginPath(); g.arc(x, b, r * 5, 0, Math.PI * 2); g.fill();
     }
     g.fillStyle = "rgba(" + renk + "," + parlaklik.toFixed(2) + ")";
+    g.beginPath(); g.arc(x, b, r, 0, Math.PI * 2); g.fill();
+  }
+}
+
+/* Gunduz gokyuzu zemini. Uzay zemini gibi tuvale bir kez ciziliyor.
+   Katmanlar: gokyuzu, bulutlar, uzaya gecis, yildizlar. */
+function gokyuzuZemin(g, e, y) {
+  const kucuk = Math.min(e, y), buyuk = Math.max(e, y);
+  const mx = e * 0.5, my = y * 0.5;
+  const uzaklik = (x, b) => Math.hypot((x - mx) / (e / 2), (b - my) / (y / 2));
+
+  // 1) Gokyuzu. Ortasi gunesli acik mavi, disa dogru koyulasiyor.
+  const mavi = g.createRadialGradient(mx, my, 0, mx, my, buyuk * 0.72);
+  mavi.addColorStop(0.00, "#CFE8F8");
+  mavi.addColorStop(0.26, "#A3D0F1");
+  mavi.addColorStop(0.46, "#6BAAE0");
+  mavi.addColorStop(0.62, "#3475BE");
+  mavi.addColorStop(0.82, "#194A8C");
+  mavi.addColorStop(1.00, "#0C2A58");
+  g.fillStyle = mavi; g.fillRect(0, 0, e, y);
+
+  /* 2) Bulutlar. Her bulut ust uste binen yumusak dairelerden; alt
+        kenarina hafif gri veriliyor ki duz leke gibi durmasin.
+        Kenara yaklastikca seyreliyorlar -- orasi artik uzay. */
+  function bulut(bx, by, olcek) {
+    const yogunluk = Math.max(0, 1 - uzaklik(bx, by) * 1.15);
+    if (yogunluk < 0.12) return;
+    const parca = 10 + Math.floor(Math.random() * 6);
+    for (let i = 0; i < parca; i++) {
+      const x = bx + (Math.random() - 0.5) * olcek * 2.8;
+      const b = by + (Math.random() - 0.5) * olcek * 0.55;
+      const r = olcek * (0.40 + Math.random() * 0.60);
+      // golge: parcanin biraz altina soluk gri
+      const golge = g.createRadialGradient(x, b + r * 0.22, 0, x, b + r * 0.22, r);
+      golge.addColorStop(0.00, "rgba(150,178,205," + (yogunluk * 0.30).toFixed(3) + ")");
+      golge.addColorStop(1.00, "rgba(150,178,205,0)");
+      g.save(); g.translate(x, b); g.scale(1, 0.58); g.translate(-x, -b);
+      g.fillStyle = golge; g.beginPath(); g.arc(x, b + r * 0.22, r, 0, Math.PI * 2); g.fill();
+      const d = g.createRadialGradient(x, b - r * 0.10, 0, x, b - r * 0.10, r);
+      d.addColorStop(0.00, "rgba(255,255,255," + (yogunluk * 0.95).toFixed(3) + ")");
+      d.addColorStop(0.40, "rgba(255,255,255," + (yogunluk * 0.55).toFixed(3) + ")");
+      d.addColorStop(1.00, "rgba(255,255,255,0)");
+      g.fillStyle = d; g.beginPath(); g.arc(x, b - r * 0.10, r, 0, Math.PI * 2); g.fill();
+      g.restore();
+    }
+  }
+  /* Rastgele serpince bulutlar ust uste yigiliyordu. Ekrani kaba bir
+     izgaraya bolup her gozde bir bulut ciziyoruz, yerini goz icinde
+     oynatarak -- hem dagiliyorlar hem duzenli gorunmuyorlar.
+     Ortadaki daire bos: kure oraya geliyor, arkasina bulut koymanin
+     anlami yok. */
+  const sutun = e >= y ? 6 : 4, satir = e >= y ? 4 : 7;
+  for (let i = 0; i < sutun; i++) {
+    for (let j = 0; j < satir; j++) {
+      if (Math.random() < 0.34) continue;          // bazi gozler bos kalsin
+      const bx = e * (i + 0.15 + Math.random() * 0.7) / sutun;
+      const by = y * (j + 0.15 + Math.random() * 0.7) / satir;
+      if (uzaklik(bx, by) < 0.26) continue;        // kurenin tam ortasi
+      bulut(bx, by, kucuk * (0.030 + Math.random() * 0.075));
+    }
+  }
+
+  /* 3) Uzaya cikis. Siyah degil koyu lacivert: gokyuzu bitiyor,
+        atmosferin disina cikiliyor. */
+  const kenar = g.createRadialGradient(mx, my, buyuk * 0.26, mx, my, buyuk * 0.80);
+  kenar.addColorStop(0.00, "rgba(7,16,40,0)");
+  kenar.addColorStop(0.40, "rgba(7,16,40,0.30)");
+  kenar.addColorStop(0.72, "rgba(6,13,33,0.74)");
+  kenar.addColorStop(1.00, "rgba(4,9,24,0.95)");
+  g.fillStyle = kenar; g.fillRect(0, 0, e, y);
+
+  // 4) Belli belirsiz yildizlar: sadece kararmis kenarlarda
+  const yildiz = Math.round(e * y / 2600);
+  for (let i = 0; i < yildiz; i++) {
+    const x = Math.random() * e, b = Math.random() * y;
+    const u = uzaklik(x, b);
+    if (u < 0.62) continue;
+    const guc = Math.min(1, (u - 0.62) / 0.45);
+    const parlak = Math.random();
+    const r = parlak > 0.94 ? 1.0 + Math.random() * 0.5 : 0.35 + Math.random() * 0.5;
+    g.fillStyle = "rgba(235,243,255," + (guc * (0.30 + Math.random() * 0.55)).toFixed(3) + ")";
     g.beginPath(); g.arc(x, b, r, 0, Math.PI * 2); g.fill();
   }
 }
@@ -4722,9 +4824,30 @@ bagla("paylasGonderi", "click", function () { paylasUret("gonderi"); });
    ===================================================================== */
 const TEMA_ANAHTARI = "traxplore-tema";
 
+/* Kure renkleri bir kez, kure kurulurken veriliyor. Tema degisince
+   globe.gl'e "rengi yeniden sor" dememiz gerekiyor; yoksa arka plan
+   gunduze donuyor ama kure gece kaliyor. */
+function kureTemasiUygula() {
+  if (!kure) return;
+  try {
+    const m = kure.globeMaterial();
+    if (m && m.color) { m.color.set(KR.okyanus); m.needsUpdate = true; }
+  } catch (e) { console.log("Kure rengi:", e.message); }
+  try {
+    kure.atmosphereColor(KR.atmosfer);
+    sinirRengi = "rgba(" + KR.sinir + "," + (sinirSonAlfa > 0 ? sinirSonAlfa : SINIR_UZAK) + ")";
+    kure.polygonCapColor(kure.polygonCapColor());
+    kure.polygonStrokeColor(kure.polygonStrokeColor());
+    kure.pathColor(kure.pathColor());
+  } catch (e) { console.log("Kure temasi:", e.message); }
+}
+
 function temayiUygula(tema) {
   const acik = (tema === "acik");
   document.documentElement.setAttribute("data-tema", acik ? "acik" : "koyu");
+  KR = acik ? KURE_TEMA.acik : KURE_TEMA.koyu;
+  kureTemasiUygula();
+  if (document.getElementById("uzay")) uzayCiz();
   const kutu = document.getElementById("temaAnahtar");
   if (kutu) kutu.checked = acik;
   /* Tarayicinin kendi arayuzu (adres cubugu, durum cubugu) da uysun. */
