@@ -4473,6 +4473,8 @@ async function veriYukle() {
 
 const PAYLAS_ADRES = "zinkfreud.github.io/traxplore";
 let paylasDosya = null;      // hazir File nesnesi
+let paylasTema  = "koyu";    // GORUNTUNUN temasi (uygulamanikinden bagimsiz)
+let paylasSekil = "hikaye";
 let paylasNesneUrl = null;   // onizleme/indirme icin
 
 /* Kurenin o anki goruntusu. WebGL tuvali kare bitince siliniyor, o
@@ -4536,7 +4538,7 @@ function paylasIsiklariCiz(g, kt, D) {
   const sy = (kt.height - kenar) / 2;
   const oran = D.kureEn / kenar;           // tuval pikseli -> gorsel pikseli
 
-  const acik = document.documentElement.getAttribute("data-tema") === "acik";
+  const acik = (paylasTema === "acik");
   const ham = getComputedStyle(document.documentElement)
                 .getPropertyValue("--isik-boy").trim();
   const isikBoy = parseFloat(ham) || 46;
@@ -4624,7 +4626,7 @@ function paylasGorselCiz(sekil) {
   /* Zemin ekranda ne ise o. Once "paylasim hep koyu kalsin" demistik
      ama kure temaya baglaninca o karar bozuldu: koyu uzayin uzerinde
      gunduz kuresi cikiyordu. */
-  const acikTema = document.documentElement.getAttribute("data-tema") === "acik";
+  const acikTema = (paylasTema === "acik");
   if (acikTema) gokyuzuZemin(g, E, Y); else uzayZemin(g, E, Y);
 
   // Kure: ekrandaki tuvalden ortadan kare kirpiliyor
@@ -4722,6 +4724,30 @@ function paylasDurumYaz(metin) {
   if (d) d.textContent = metin || "";
 }
 
+/* Kure renkleri ekranda uygulamanin temasinda duruyor. Goruntu icin
+   baska bir tema secildiyse kureyi gecici olarak o temaya boyuyoruz.
+   Paylasim paneli tam ekran ortu oldugu icin kullanici bunu gormuyor.
+   Birkac kare bekliyoruz: globe.gl renk degisimini hemen degil kendi
+   dongusunde uyguluyor, hemen okursak eski rengi yakalariz. */
+function kureyiGeciciBoya(tema) {
+  const uygulama = document.documentElement.getAttribute("data-tema") === "acik" ? "acik" : "koyu";
+  if (tema === uygulama || !kure) return null;
+  KR = KURE_TEMA[tema];
+  kureTemasiUygula();
+  return uygulama;
+}
+function kureyiGeriAl(eski) {
+  if (!eski) return;
+  KR = KURE_TEMA[eski];
+  kureTemasiUygula();
+}
+function kareBekle(adet) {
+  return new Promise(function (c) {
+    let n = adet;
+    (function tik() { n--; n <= 0 ? c() : requestAnimationFrame(tik); })();
+  });
+}
+
 async function paylasUret(sekil) {
   const onizleme = document.getElementById("paylasOnizleme");
   const eylem = document.getElementById("paylasEylem");
@@ -4729,7 +4755,12 @@ async function paylasUret(sekil) {
   paylasDurumYaz("Görsel hazırlanıyor…");
 
   await paylasFontlariBekle();
-  const tuval = paylasGorselCiz(sekil);
+
+  const eskiTema = kureyiGeciciBoya(paylasTema);
+  if (eskiTema) await kareBekle(6);
+  let tuval;
+  try { tuval = paylasGorselCiz(sekil); }
+  finally { kureyiGeriAl(eskiTema); }
 
   const blob = await new Promise(function (c) { tuval.toBlob(c, "image/png"); });
   if (!blob) { paylasDurumYaz("Görsel üretilemedi."); return; }
@@ -4745,9 +4776,14 @@ async function paylasUret(sekil) {
     im.alt = "Paylaşılacak görsel";
     onizleme.appendChild(im);
   }
-  const secenekler = document.querySelectorAll("#paylasSecim .paylas-sec");
-  for (let i = 0; i < secenekler.length; i++) {
-    secenekler[i].classList.toggle("secili", secenekler[i].dataset.sekil === sekil);
+  paylasSekil = sekil;
+  const sekiller = document.querySelectorAll("#paylasSecim .paylas-sec");
+  for (let i = 0; i < sekiller.length; i++) {
+    sekiller[i].classList.toggle("secili", sekiller[i].dataset.sekil === sekil);
+  }
+  const temalar = document.querySelectorAll("#paylasTemaSecim .paylas-sec");
+  for (let i = 0; i < temalar.length; i++) {
+    temalar[i].classList.toggle("secili", temalar[i].dataset.tema === paylasTema);
   }
   /* Isik sayimi window.__isikSayim'de duruyor: ileride "isiklar
      gorunmuyor" diye bir sikayet gelirse konsoldan bakip neden
@@ -4798,6 +4834,8 @@ function paylasAc() {
     } catch (e) { menuVar = false; }
     indir.hidden = menuVar;
   }
+  /* Baslangicta uygulamanin temasi; kullanici isterse degistiriyor. */
+  paylasTema = document.documentElement.getAttribute("data-tema") === "acik" ? "acik" : "koyu";
   p.hidden = false;
   paylasUret("hikaye");
 }
@@ -4813,6 +4851,8 @@ bagla("paylasGonder",  "click", paylasGonder);
 bagla("paylasIndir",   "click", paylasIndir);
 bagla("paylasHikaye",  "click", function () { paylasUret("hikaye"); });
 bagla("paylasGonderi", "click", function () { paylasUret("gonderi"); });
+bagla("paylasGece",   "click", function () { paylasTema = "koyu"; paylasUret(paylasSekil); });
+bagla("paylasGunduz", "click", function () { paylasTema = "acik"; paylasUret(paylasSekil); });
 
 /* =====================================================================
    TEMA

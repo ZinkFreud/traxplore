@@ -3040,3 +3040,11 @@ body.panelde   #paylasBtn { display: none; }
 :root[data-tema="acik"] #paylasBtn {
     box-shadow: 0 4px 14px rgba(8, 20, 40, 0.28);
 }
+
+/* Paylasim panelinde tema secimi. Bicim secimiyle ayni gorunumde ama
+   ayri satir: biri goruntunun sekli, digeri havasi. */
+#paylasTemaSecim {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}

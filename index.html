@@ -40,7 +40,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260912k">
+    <link rel="stylesheet" href="style.css?v=20260912l">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -466,6 +466,12 @@
                 <button id="paylasHikaye"  class="paylas-sec" data-sekil="hikaye"  type="button">Hikâye<small>9:16</small></button>
                 <button id="paylasGonderi" class="paylas-sec" data-sekil="gonderi" type="button">Gönderi<small>1:1</small></button>
             </div>
+            <!-- Goruntunun havasi uygulamanin temasindan bagimsiz secilebiliyor:
+                 paylasmak icin ayarlara girip tema degistirmek gerekmesin. -->
+            <div id="paylasTemaSecim">
+                <button id="paylasGece"  class="paylas-sec" data-tema="koyu" type="button">Gece<small>uzay</small></button>
+                <button id="paylasGunduz" class="paylas-sec" data-tema="acik" type="button">Gündüz<small>gökyüzü</small></button>
+            </div>
             <div id="paylasOnizleme"></div>
             <div id="paylasDurum"></div>
             <div id="paylasEylem" hidden>
@@ -487,7 +493,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260912k"></script>
+    <script src="script.js?v=20260912l"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
