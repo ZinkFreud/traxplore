@@ -526,7 +526,7 @@ body {
 
 .pin-etiket {
     background: var(--katman);
-    color: #fff;
+    color: var(--yazi);
     border: none;
     border-radius: 8px;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
@@ -862,7 +862,7 @@ body {
 .scene-tooltip { pointer-events: none; }
 .kure-etiket {
     background: var(--katman);
-    color: #fff;
+    color: var(--yazi);
     border: 1px solid var(--kehribar);
     border-radius: 8px;
     font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
