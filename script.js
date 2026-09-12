@@ -4459,10 +4459,10 @@ async function paylasFontlariBekle() {
    kurenin arka yuzune dusenleri de globe.gl zaten gizlemis oluyor. */
 function paylasIsiklariCiz(g, kt, D) {
   const isiklar = document.querySelectorAll(".sehir-isik");
-  if (!isiklar.length) return 0;
+  if (!isiklar.length) return { toplam: 0, cizilen: 0, gizli: 0, saydam: 0, disarda: 0, yaricap: 0 };
 
   const kr = kt.getBoundingClientRect();
-  if (!kr.width || !kr.height) return 0;
+  if (!kr.width || !kr.height) return { toplam: isiklar.length, cizilen: 0, gizli: 0, saydam: 0, disarda: 0, yaricap: 0 };
   const olcekX = kt.width  / kr.width;     // ekran pikseli -> tuval pikseli
   const olcekY = kt.height / kr.height;
 
@@ -4476,13 +4476,13 @@ function paylasIsiklariCiz(g, kt, D) {
   const isikBoy = parseFloat(ham) || 46;
   const yaricap = Math.max(6, (isikBoy * olcekX * oran) / 2);
 
-  let cizilen = 0;
+  const sayim = { toplam: isiklar.length, cizilen: 0, gizli: 0, saydam: 0, disarda: 0 };
   for (let i = 0; i < isiklar.length; i++) {
     const el = isiklar[i];
     const bicim = getComputedStyle(el);
     // globe.gl arka yuze duseni gizliyor; gizliyse bizde de olmasin
-    if (bicim.display === "none" || bicim.visibility === "hidden") continue;
-    if (parseFloat(bicim.opacity || "1") < 0.05) continue;
+    if (bicim.display === "none" || bicim.visibility === "hidden") { sayim.gizli++; continue; }
+    if (parseFloat(bicim.opacity || "1") < 0.05) { sayim.saydam++; continue; }
 
     const k = el.getBoundingClientRect();   // 0x0 kutu: tam isigin merkezi
     const bx = (k.left - kr.left) * olcekX;
@@ -4490,8 +4490,8 @@ function paylasIsiklariCiz(g, kt, D) {
 
     const x = D.kureX + (bx - sx) * oran;
     const y = D.kureY + (by - sy) * oran;
-    if (x < D.kureX - yaricap || x > D.kureX + D.kureEn + yaricap) continue;
-    if (y < D.kureY - yaricap || y > D.kureY + D.kureEn + yaricap) continue;
+    if (x < D.kureX - yaricap || x > D.kureX + D.kureEn + yaricap) { sayim.disarda++; continue; }
+    if (y < D.kureY - yaricap || y > D.kureY + D.kureEn + yaricap) { sayim.disarda++; continue; }
 
     const mavi = el.classList.contains("misafir");
     const d = g.createRadialGradient(x, y, 0, x, y, yaricap);
@@ -4512,9 +4512,10 @@ function paylasIsiklariCiz(g, kt, D) {
     g.beginPath();
     g.arc(x, y, yaricap, 0, Math.PI * 2);
     g.fill();
-    cizilen++;
+    sayim.cizilen++;
   }
-  return cizilen;
+  sayim.yaricap = Math.round(yaricap);
+  return sayim;
 }
 
 function paylasGorselCiz(sekil) {
@@ -4544,7 +4545,7 @@ function paylasGorselCiz(sekil) {
     const sx = (kt.width  - kenar) / 2;
     const sy = (kt.height - kenar) / 2;
     g.drawImage(kt, sx, sy, kenar, kenar, D.kureX, D.kureY, D.kureEn, D.kureEn);
-    paylasIsiklariCiz(g, kt, D);
+    window.__isikSayim = paylasIsiklariCiz(g, kt, D);
   }
 
   g.textAlign = "center";
@@ -4643,7 +4644,11 @@ async function paylasUret(sekil) {
   for (let i = 0; i < secenekler.length; i++) {
     secenekler[i].classList.toggle("secili", secenekler[i].dataset.sekil === sekil);
   }
-  paylasDurumYaz("");
+  const t = window.__isikSayim;
+  paylasDurumYaz(t
+    ? "ışık " + t.cizilen + "/" + t.toplam + " · gizli " + t.gizli +
+      " · saydam " + t.saydam + " · dışarda " + t.disarda + " · çap " + t.yaricap
+    : "ışık katmanı okunamadı");
   if (eylem) eylem.hidden = false;
 }
 
@@ -4676,6 +4681,19 @@ function paylasAc() {
   const p = document.getElementById("paylasPanel");
   if (!p) return;
   hepsiniKapat();
+  /* iOS indirme baglantisini desteklemiyor; dosyayi kaydetmek yerine
+     onizleme aciyor. Paylasim menusu varken zaten oradan "Goruntuyu
+     Kaydet" denebiliyor, o yuzden Indir'i sadece menusu olmayan
+     tarayicilarda gosteriyoruz. */
+  const indir = document.getElementById("paylasIndir");
+  if (indir) {
+    let menuVar = false;
+    try {
+      menuVar = !!(navigator.canShare &&
+                   navigator.canShare({ files: [new File([new Blob()], "a.png", { type: "image/png" })] }));
+    } catch (e) { menuVar = false; }
+    indir.hidden = menuVar;
+  }
   p.hidden = false;
   paylasUret("hikaye");
 }

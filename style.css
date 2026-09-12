@@ -2884,3 +2884,4 @@ body.panelde   #paylasBtn { display: none; }
     border: 1px solid rgba(143,160,180,0.35);
     color: var(--yazi-soluk, #8FA0B4);
 }
+#paylasEylem button[hidden] { display: none !important; }
