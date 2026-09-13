@@ -114,6 +114,7 @@ let KR = KURE_TEMA.koyu;
    baslat() IIFE'sinden cagriliyor, dolayisiyla dosyanin sonundaki bir
    "let" bu noktada henuz tanimlanmis olmazdi. */
 let icHale = null;
+let icHaleRenkSinifi = null;   // globe.gl'in Color sinifi (THREE global degil)
 const IC_HALE_GUC = 0.95;   // parlaklik
 const IC_HALE_US  = 6.5;    // kenara ne kadar sikisik (buyuk = ince bant)
 const IC_HALE_OLC = 1.006;  // kure yaricapinin kaci (poligonlar 1.003'te)
@@ -4931,10 +4932,14 @@ function icHaleKur(kalanDeneme) {
   try {
     const SM = bulunan.atm.material.constructor;
     const MESH = bulunan.atm.constructor;
+    /* Rengi klonlamiyoruz: klonlanan nesnenin .set()'i beklendigi gibi
+       calismayinca hale kaynagin renginde kaliyordu (kehribar bir halka).
+       Sinifi alip her seferinde YENI bir renk kuruyoruz. */
+    icHaleRenkSinifi = bulunan.atm.material.uniforms.color.value.constructor;
 
     const malzeme = new SM({
       uniforms: {
-        renk: { value: bulunan.atm.material.uniforms.color.value.clone() },
+        renk: { value: new icHaleRenkSinifi(KR.atmosfer) },
         guc:  { value: IC_HALE_GUC },
         us:   { value: IC_HALE_US }
       },
@@ -4953,10 +4958,15 @@ function icHaleKur(kalanDeneme) {
         "  float i = pow(1.0 - d, us) * guc;" +
         "  gl_FragColor = vec4(renk, i);" +
         "}",
-      side: 0,        // THREE.FrontSide
+      side: 0,        // THREE.FrontSide -- sadece on yarikure
       blending: 2,    // THREE.AdditiveBlending (sabit, surumler boyunca degismedi)
       transparent: true,
-      depthWrite: false
+      depthWrite: false,
+      /* Derinlik testi ACIK oldugunda kure kabugu ortuyordu: iceri
+         suzulme hic gorunmuyor, sadece siluetin disina tasan ince
+         bir halka kaliyordu. Kapatiyoruz; on yuzler zaten yalniz
+         one bakan yarikure, ustune de sadece isik EKLIYOR. */
+      depthTest: false
     });
 
     /* Kendi geometrimizi kurmuyoruz: kurenin kendi kuresini paylasip
@@ -4976,8 +4986,22 @@ function icHaleTazele() {
   try {
     icHale.visible = (KR === KURE_TEMA.koyu);
     const u = icHale.material.uniforms;
-    if (u && u.renk && u.renk.value && u.renk.value.set) u.renk.value.set(KR.atmosfer);
+    if (u && u.renk && icHaleRenkSinifi) u.renk.value = new icHaleRenkSinifi(KR.atmosfer);
   } catch (e) { console.log("Ic hale tazelenemedi:", e.message); }
+}
+
+/* Konsoldan tek kelimede durum: icHaleDurum() */
+function icHaleDurum() {
+  if (!icHale) return "ic hale YOK";
+  const u = icHale.material.uniforms, r = u.renk.value;
+  return {
+    gorunur: icHale.visible,
+    renk: (r && r.getHexString) ? "#" + r.getHexString() : r,
+    guc: u.guc.value, us: u.us.value,
+    olcek: icHale.scale.x,
+    derinlikTest: icHale.material.depthTest,
+    karisim: icHale.material.blending
+  };
 }
 
 /* Konsoldan ayar denemek icin. */
