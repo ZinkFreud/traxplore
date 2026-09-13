@@ -657,13 +657,13 @@ function gokyuzuZemin(g, e, y) {
   const uzaklik = (x, b) => Math.hypot((x - mx) / (e / 2), (b - my) / (y / 2));
 
   // 1) Gokyuzu. Ortasi gunesli acik mavi, disa dogru koyulasiyor.
-  const mavi = g.createRadialGradient(mx, my, 0, mx, my, buyuk * 0.72);
-  mavi.addColorStop(0.00, "#CFE8F8");
-  mavi.addColorStop(0.26, "#A3D0F1");
-  mavi.addColorStop(0.46, "#6BAAE0");
-  mavi.addColorStop(0.62, "#3475BE");
-  mavi.addColorStop(0.82, "#194A8C");
-  mavi.addColorStop(1.00, "#0C2A58");
+  const mavi = g.createRadialGradient(mx, my, 0, mx, my, buyuk * 0.68);
+  mavi.addColorStop(0.00, "#A9CEE8");
+  mavi.addColorStop(0.26, "#84B5DE");
+  mavi.addColorStop(0.46, "#4E8CCA");
+  mavi.addColorStop(0.62, "#225BA1");
+  mavi.addColorStop(0.82, "#0F356C");
+  mavi.addColorStop(1.00, "#071D43");
   g.fillStyle = mavi; g.fillRect(0, 0, e, y);
 
   /* Bulut YOK. Bir ara vardi, kaldirildi: kureye uzaydan bakiyoruz,
@@ -672,11 +672,11 @@ function gokyuzuZemin(g, e, y) {
 
   /* 3) Uzaya cikis. Siyah degil koyu lacivert: gokyuzu bitiyor,
         atmosferin disina cikiliyor. */
-  const kenar = g.createRadialGradient(mx, my, buyuk * 0.26, mx, my, buyuk * 0.80);
+  const kenar = g.createRadialGradient(mx, my, buyuk * 0.14, mx, my, buyuk * 0.80);
   kenar.addColorStop(0.00, "rgba(7,16,40,0)");
-  kenar.addColorStop(0.40, "rgba(7,16,40,0.27)");
-  kenar.addColorStop(0.72, "rgba(6,13,33,0.71)");
-  kenar.addColorStop(1.00, "rgba(4,9,24,0.95)");
+  kenar.addColorStop(0.40, "rgba(7,16,40,0.46)");
+  kenar.addColorStop(0.72, "rgba(6,13,33,0.87)");
+  kenar.addColorStop(1.00, "rgba(3,7,20,0.99)");
   g.fillStyle = kenar; g.fillRect(0, 0, e, y);
 
   // 4) Belli belirsiz yildizlar: sadece kararmis kenarlarda
