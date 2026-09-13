@@ -110,15 +110,6 @@ const KURE_TEMA = {
 };
 let KR = KURE_TEMA.koyu;
 
-/* Ic hale (limb) durumu. Tanimi burada: kureKur() sayfanin en altindaki
-   baslat() IIFE'sinden cagriliyor, dolayisiyla dosyanin sonundaki bir
-   "let" bu noktada henuz tanimlanmis olmazdi. */
-let icHale = null;
-let icHaleRenkSinifi = null;   // globe.gl'in Color sinifi (THREE global degil)
-const IC_HALE_GUC = 0.95;   // parlaklik
-const IC_HALE_US  = 6.5;    // kenara ne kadar sikisik (buyuk = ince bant)
-const IC_HALE_OLC = 1.006;  // kure yaricapinin kaci (poligonlar 1.003'te)
-
 const SINIR_UZAK    = 0.26;   // acilis gorunumunde
 const SINIR_YAKIN   = 0.55;   // yaklasinca
 const SINIR_BASLA   = 2.2;    // bu yukseklikten yukarida SINIR_UZAK
@@ -405,9 +396,6 @@ function kureKur() {
       m.needsUpdate = true;
     } catch (e) { console.log("Kure malzemesi ayarlanamadi:", e.message); }
   }
-
-  icHaleKur();
-  icHaleTazele();
 
   /* Butun isigi ORTAM isigina ceviriyoruz. Varsayilanda bir de yonlu
      isik var; poligon dolgusu isiktan etkilenen bir malzeme oldugu icin
@@ -4882,171 +4870,6 @@ const TEMA_ANAHTARI = "traxplore-tema";
 /* Kure renkleri bir kez, kure kurulurken veriliyor. Tema degisince
    globe.gl'e "rengi yeniden sor" dememiz gerekiyor; yoksa arka plan
    gunduze donuyor ama kure gece kaliyor. */
-/* ---------------------------------------------------------------
-   IC HALE (limb)
-   Google Earth'te atmosfer kurenin DISINA degil, kenarin ICINE
-   dogru suzuluyor. globe.gl'in kendi atmosferi sadece disa
-   calisiyor, o yuzden kurenin bir tik ustune kendi kabugumuzu
-   koyuyoruz: normal ile bakis yonu dikleştikçe -- yani kenara
-   yaklastikca -- parlayan bir fresnel.
-
-   SADECE KOYU TEMADA. Acik temada kure zaten aydinlik, icerideki
-   parlama kitalarin uzerini yikiyor.
-
-   three.js global degil (globe.gl paket icinde tasiyor), o yuzden
-   yapicilari globe.gl'in kendi atmosfer nesnesinden aliyoruz.
-   Bulamazsak hic bir sey yapmiyoruz; kure eskisi gibi calisir.
-
-   Ayar denemek icin konsoldan: icHaleAyar(0.95, 6.5)
-   --------------------------------------------------------------- */
-function icHaleNesneBul() {
-  /* Iki nesne lazim:
-     - atmosfer: sinif yapicilarina buradan ulasiyoruz
-       (three.js global degil, globe.gl paketin icinde tasiyor)
-     - kure: kendi kure geometrisini paylasiyoruz, yenisini kurmuyoruz */
-  let atm = null, kureMesh = null;
-  try {
-    const sahne = kure.scene();
-    if (!sahne || typeof sahne.traverse !== "function") return null;
-    sahne.traverse(function (n) {
-      if (!n || !n.material || !n.geometry) return;
-      if (!atm && n.material.uniforms && n.material.uniforms.color) atm = n;
-      if (!kureMesh && n.material.type === "MeshPhongMaterial") kureMesh = n;
-    });
-  } catch (e) { console.log("Ic hale: sahne okunamadi:", e.message); return null; }
-  return (atm && kureMesh) ? { atm: atm, kureMesh: kureMesh } : null;
-}
-
-/* globe.gl'in atmosfer malzemesi DUZ bir ShaderMaterial degil, ondan
-   TUREMIS kendi sinifi: yapiciya verilen uniform/shader'i yok sayip
-   kendi (hollowRadius'lu) shader'ini kuruyor. O sinifla malzeme
-   kurmaya calisinca ekrana atmosferin ikinci bir kopyasi cikiyordu --
-   kehribar bir halka. Bu yuzden sinifi KABUL ETMEDEN once deniyoruz:
-   verdigimiz uniform'u koruyan ilk ust sinif dogru olandir. */
-function icHaleShaderSinifiBul(baslangic) {
-  let C = baslangic;
-  for (let i = 0; i < 6 && typeof C === "function"; i++) {
-    try {
-      const deneme = new C({
-        uniforms: { __dene: { value: 1 } },
-        vertexShader: "void main(){gl_Position=vec4(0.0);}",
-        fragmentShader: "void main(){gl_FragColor=vec4(0.0);}"
-      });
-      if (deneme && deneme.uniforms && deneme.uniforms.__dene &&
-          deneme.uniforms.__dene.value === 1) return C;
-    } catch (e) { /* bu sinif olmadi, ustune bak */ }
-    C = Object.getPrototypeOf(C);
-  }
-  return null;
-}
-
-/* globe.gl (Kapsule) ozellikleri hemen degil, sonraki cizim adiminda
-   isliyor; kureKur() bittiginde atmosfer mesh'i sahnede HENUZ YOK.
-   Bir kez deneyip pes etmek yerine birkac kare bekliyoruz. */
-function icHaleKur(kalanDeneme) {
-  if (!kure || icHale) return;
-  const n = (kalanDeneme === undefined) ? 60 : kalanDeneme;
-  const bulunan = icHaleNesneBul();
-  if (!bulunan) {
-    if (n > 0) { requestAnimationFrame(function () { icHaleKur(n - 1); }); }
-    else { console.log("Ic hale: atmosfer bulunamadi, atlandi"); }
-    return;
-  }
-  try {
-    const SM = icHaleShaderSinifiBul(bulunan.atm.material.constructor);
-    if (!SM) { console.log("Ic hale: ShaderMaterial sinifi bulunamadi"); return; }
-    const MESH = bulunan.kureMesh.constructor;
-    icHaleRenkSinifi = bulunan.atm.material.uniforms.color.value.constructor;
-
-    const malzeme = new SM({
-      uniforms: {
-        renk: { value: new icHaleRenkSinifi(KR.atmosfer) },
-        guc:  { value: IC_HALE_GUC },
-        us:   { value: IC_HALE_US }
-      },
-      vertexShader:
-        "varying vec3 vN; varying vec3 vP;" +
-        "void main(){" +
-        "  vN = normalize(normalMatrix * normal);" +
-        "  vP = (modelViewMatrix * vec4(position,1.0)).xyz;" +
-        "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);" +
-        "}",
-      fragmentShader:
-        "uniform vec3 renk; uniform float guc; uniform float us;" +
-        "varying vec3 vN; varying vec3 vP;" +
-        "void main(){" +
-        "  float d = abs(dot(normalize(vN), normalize(-vP)));" +
-        "  float i = pow(1.0 - d, us) * guc;" +
-        "  gl_FragColor = vec4(renk, i);" +
-        "}",
-      side: 0,        // THREE.FrontSide -- sadece on yarikure
-      blending: 2,    // THREE.AdditiveBlending
-      transparent: true,
-      depthWrite: false,
-      /* Derinlik testi ACIK oldugunda kure kabugu haleyi ortuyor. */
-      depthTest: false
-    });
-
-    /* Kurmadan once DOGRULA: uniform'lar ve shader gercekten bizimki mi?
-       Degilse sahneye hic ekleme -- yanlis bir sey cizmektense hic
-       cizmemek iyidir. */
-    if (!malzeme.uniforms || !malzeme.uniforms.renk ||
-        !malzeme.fragmentShader || malzeme.fragmentShader.indexOf("uniform vec3 renk") < 0) {
-      console.log("Ic hale: malzeme bizimkini almadi, vazgecildi");
-      return;
-    }
-
-    /* Kendi geometrimizi kurmuyoruz: kurenin kendi kuresini paylasip
-       mesh'i buyutuyoruz. Boylece yaricap her zaman tutuyor. */
-    const mesh = new MESH(bulunan.kureMesh.geometry, malzeme);
-    if (!mesh || mesh.material !== malzeme) {
-      console.log("Ic hale: mesh malzemeyi almadi, vazgecildi");
-      return;
-    }
-    mesh.scale.setScalar(IC_HALE_OLC);
-    mesh.renderOrder = 12;
-    mesh.visible = false;
-    icHale = mesh;
-    kure.scene().add(icHale);
-    icHaleTazele();
-  } catch (e) { console.log("Ic hale kurulamadi:", e.message); icHale = null; }
-}
-
-/* Temaya gore ac/kapa ve rengi atmosferle ayni tut. */
-function icHaleTazele() {
-  if (!icHale) return;
-  try {
-    icHale.visible = (KR === KURE_TEMA.koyu);
-    const u = icHale.material.uniforms;
-    if (u && u.renk && icHaleRenkSinifi) u.renk.value = new icHaleRenkSinifi(KR.atmosfer);
-  } catch (e) { console.log("Ic hale tazelenemedi:", e.message); }
-}
-
-/* Konsoldan tek kelimede durum: icHaleDurum() */
-function icHaleDurum() {
-  if (!icHale) return "ic hale YOK";
-  const u = icHale.material.uniforms || {};
-  if (!u.renk) return "ic hale VAR ama uniform'lar bizim degil";
-  const r = u.renk.value;
-  return {
-    gorunur: icHale.visible,
-    renk: (r && r.getHexString) ? "#" + r.getHexString() : r,
-    guc: u.guc.value, us: u.us.value,
-    olcek: icHale.scale.x,
-    derinlikTest: icHale.material.depthTest,
-    karisim: icHale.material.blending
-  };
-}
-
-/* Konsoldan ayar denemek icin. */
-function icHaleAyar(guc, us) {
-  if (!icHale) return "ic hale yok";
-  const u = icHale.material.uniforms;
-  if (guc !== undefined) u.guc.value = guc;
-  if (us !== undefined) u.us.value = us;
-  return { guc: u.guc.value, us: u.us.value };
-}
-
 function kureTemasiUygula() {
   if (!kure) return;
   try {
@@ -5060,7 +4883,6 @@ function kureTemasiUygula() {
     kure.polygonStrokeColor(kure.polygonStrokeColor());
     kure.pathColor(kure.pathColor());
   } catch (e) { console.log("Kure temasi:", e.message); }
-  icHaleTazele();
 }
 
 function temayiUygula(tema) {
