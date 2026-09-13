@@ -4901,7 +4901,7 @@ const TEMA_ANAHTARI = "traxplore-tema";
    --------------------------------------------------------------- */
 function icHaleNesneBul() {
   /* Iki nesne lazim:
-     - atmosfer: ShaderMaterial ve Mesh yapicilarini ondan aliyoruz
+     - atmosfer: sinif yapicilarina buradan ulasiyoruz
        (three.js global degil, globe.gl paketin icinde tasiyor)
      - kure: kendi kure geometrisini paylasiyoruz, yenisini kurmuyoruz */
   let atm = null, kureMesh = null;
@@ -4917,6 +4917,29 @@ function icHaleNesneBul() {
   return (atm && kureMesh) ? { atm: atm, kureMesh: kureMesh } : null;
 }
 
+/* globe.gl'in atmosfer malzemesi DUZ bir ShaderMaterial degil, ondan
+   TUREMIS kendi sinifi: yapiciya verilen uniform/shader'i yok sayip
+   kendi (hollowRadius'lu) shader'ini kuruyor. O sinifla malzeme
+   kurmaya calisinca ekrana atmosferin ikinci bir kopyasi cikiyordu --
+   kehribar bir halka. Bu yuzden sinifi KABUL ETMEDEN once deniyoruz:
+   verdigimiz uniform'u koruyan ilk ust sinif dogru olandir. */
+function icHaleShaderSinifiBul(baslangic) {
+  let C = baslangic;
+  for (let i = 0; i < 6 && typeof C === "function"; i++) {
+    try {
+      const deneme = new C({
+        uniforms: { __dene: { value: 1 } },
+        vertexShader: "void main(){gl_Position=vec4(0.0);}",
+        fragmentShader: "void main(){gl_FragColor=vec4(0.0);}"
+      });
+      if (deneme && deneme.uniforms && deneme.uniforms.__dene &&
+          deneme.uniforms.__dene.value === 1) return C;
+    } catch (e) { /* bu sinif olmadi, ustune bak */ }
+    C = Object.getPrototypeOf(C);
+  }
+  return null;
+}
+
 /* globe.gl (Kapsule) ozellikleri hemen degil, sonraki cizim adiminda
    isliyor; kureKur() bittiginde atmosfer mesh'i sahnede HENUZ YOK.
    Bir kez deneyip pes etmek yerine birkac kare bekliyoruz. */
@@ -4930,11 +4953,9 @@ function icHaleKur(kalanDeneme) {
     return;
   }
   try {
-    const SM = bulunan.atm.material.constructor;
-    const MESH = bulunan.atm.constructor;
-    /* Rengi klonlamiyoruz: klonlanan nesnenin .set()'i beklendigi gibi
-       calismayinca hale kaynagin renginde kaliyordu (kehribar bir halka).
-       Sinifi alip her seferinde YENI bir renk kuruyoruz. */
+    const SM = icHaleShaderSinifiBul(bulunan.atm.material.constructor);
+    if (!SM) { console.log("Ic hale: ShaderMaterial sinifi bulunamadi"); return; }
+    const MESH = bulunan.kureMesh.constructor;
     icHaleRenkSinifi = bulunan.atm.material.uniforms.color.value.constructor;
 
     const malzeme = new SM({
@@ -4959,22 +4980,33 @@ function icHaleKur(kalanDeneme) {
         "  gl_FragColor = vec4(renk, i);" +
         "}",
       side: 0,        // THREE.FrontSide -- sadece on yarikure
-      blending: 2,    // THREE.AdditiveBlending (sabit, surumler boyunca degismedi)
+      blending: 2,    // THREE.AdditiveBlending
       transparent: true,
       depthWrite: false,
-      /* Derinlik testi ACIK oldugunda kure kabugu ortuyordu: iceri
-         suzulme hic gorunmuyor, sadece siluetin disina tasan ince
-         bir halka kaliyordu. Kapatiyoruz; on yuzler zaten yalniz
-         one bakan yarikure, ustune de sadece isik EKLIYOR. */
+      /* Derinlik testi ACIK oldugunda kure kabugu haleyi ortuyor. */
       depthTest: false
     });
 
+    /* Kurmadan once DOGRULA: uniform'lar ve shader gercekten bizimki mi?
+       Degilse sahneye hic ekleme -- yanlis bir sey cizmektense hic
+       cizmemek iyidir. */
+    if (!malzeme.uniforms || !malzeme.uniforms.renk ||
+        !malzeme.fragmentShader || malzeme.fragmentShader.indexOf("uniform vec3 renk") < 0) {
+      console.log("Ic hale: malzeme bizimkini almadi, vazgecildi");
+      return;
+    }
+
     /* Kendi geometrimizi kurmuyoruz: kurenin kendi kuresini paylasip
        mesh'i buyutuyoruz. Boylece yaricap her zaman tutuyor. */
-    icHale = new MESH(bulunan.kureMesh.geometry, malzeme);
-    icHale.scale.setScalar(IC_HALE_OLC);
-    icHale.renderOrder = 12;
-    icHale.visible = false;
+    const mesh = new MESH(bulunan.kureMesh.geometry, malzeme);
+    if (!mesh || mesh.material !== malzeme) {
+      console.log("Ic hale: mesh malzemeyi almadi, vazgecildi");
+      return;
+    }
+    mesh.scale.setScalar(IC_HALE_OLC);
+    mesh.renderOrder = 12;
+    mesh.visible = false;
+    icHale = mesh;
     kure.scene().add(icHale);
     icHaleTazele();
   } catch (e) { console.log("Ic hale kurulamadi:", e.message); icHale = null; }
@@ -4993,7 +5025,9 @@ function icHaleTazele() {
 /* Konsoldan tek kelimede durum: icHaleDurum() */
 function icHaleDurum() {
   if (!icHale) return "ic hale YOK";
-  const u = icHale.material.uniforms, r = u.renk.value;
+  const u = icHale.material.uniforms || {};
+  if (!u.renk) return "ic hale VAR ama uniform'lar bizim degil";
+  const r = u.renk.value;
   return {
     gorunur: icHale.visible,
     renk: (r && r.getHexString) ? "#" + r.getHexString() : r,
