@@ -110,6 +110,14 @@ const KURE_TEMA = {
 };
 let KR = KURE_TEMA.koyu;
 
+/* Ic hale (limb) durumu. Tanimi burada: kureKur() sayfanin en altindaki
+   baslat() IIFE'sinden cagriliyor, dolayisiyla dosyanin sonundaki bir
+   "let" bu noktada henuz tanimlanmis olmazdi. */
+let icHale = null;
+const IC_HALE_GUC = 0.95;   // parlaklik
+const IC_HALE_US  = 6.5;    // kenara ne kadar sikisik (buyuk = ince bant)
+const IC_HALE_OLC = 1.006;  // kure yaricapinin kaci (poligonlar 1.003'te)
+
 const SINIR_UZAK    = 0.26;   // acilis gorunumunde
 const SINIR_YAKIN   = 0.55;   // yaklasinca
 const SINIR_BASLA   = 2.2;    // bu yukseklikten yukarida SINIR_UZAK
@@ -396,6 +404,9 @@ function kureKur() {
       m.needsUpdate = true;
     } catch (e) { console.log("Kure malzemesi ayarlanamadi:", e.message); }
   }
+
+  icHaleKur();
+  icHaleTazele();
 
   /* Butun isigi ORTAM isigina ceviriyoruz. Varsayilanda bir de yonlu
      isik var; poligon dolgusu isiktan etkilenen bir malzeme oldugu icin
@@ -4870,6 +4881,101 @@ const TEMA_ANAHTARI = "traxplore-tema";
 /* Kure renkleri bir kez, kure kurulurken veriliyor. Tema degisince
    globe.gl'e "rengi yeniden sor" dememiz gerekiyor; yoksa arka plan
    gunduze donuyor ama kure gece kaliyor. */
+/* ---------------------------------------------------------------
+   IC HALE (limb)
+   Google Earth'te atmosfer kurenin DISINA degil, kenarin ICINE
+   dogru suzuluyor. globe.gl'in kendi atmosferi sadece disa
+   calisiyor, o yuzden kurenin bir tik ustune kendi kabugumuzu
+   koyuyoruz: normal ile bakis yonu dikleştikçe -- yani kenara
+   yaklastikca -- parlayan bir fresnel.
+
+   SADECE KOYU TEMADA. Acik temada kure zaten aydinlik, icerideki
+   parlama kitalarin uzerini yikiyor.
+
+   three.js global degil (globe.gl paket icinde tasiyor), o yuzden
+   yapicilari globe.gl'in kendi atmosfer nesnesinden aliyoruz.
+   Bulamazsak hic bir sey yapmiyoruz; kure eskisi gibi calisir.
+
+   Ayar denemek icin konsoldan: icHaleAyar(0.95, 6.5)
+   --------------------------------------------------------------- */
+function icHaleAtmosferBul() {
+  let atm = null;
+  try {
+    const sahne = kure.scene();
+    if (!sahne || typeof sahne.traverse !== "function") return null;
+    sahne.traverse(function (n) {
+      if (atm) return;
+      if (n && n.material && n.material.uniforms && n.material.uniforms.color &&
+          typeof n.material.constructor === "function") atm = n;
+    });
+  } catch (e) { console.log("Ic hale: sahne okunamadi:", e.message); }
+  return atm;
+}
+
+function icHaleKur() {
+  if (!kure || icHale) return;
+  const atm = icHaleAtmosferBul();
+  if (!atm) { console.log("Ic hale: atmosfer bulunamadi, atlandi"); return; }
+  try {
+    const SM = atm.material.constructor;
+    const GEO = atm.geometry.constructor;
+    const MESH = atm.constructor;
+    let yaricap = 100;
+    try { if (typeof kure.getGlobeRadius === "function") yaricap = kure.getGlobeRadius(); } catch (e) {}
+
+    const malzeme = new SM({
+      uniforms: {
+        renk: { value: atm.material.uniforms.color.value.clone() },
+        guc:  { value: IC_HALE_GUC },
+        us:   { value: IC_HALE_US }
+      },
+      vertexShader:
+        "varying vec3 vN; varying vec3 vP;" +
+        "void main(){" +
+        "  vN = normalize(normalMatrix * normal);" +
+        "  vP = (modelViewMatrix * vec4(position,1.0)).xyz;" +
+        "  gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);" +
+        "}",
+      fragmentShader:
+        "uniform vec3 renk; uniform float guc; uniform float us;" +
+        "varying vec3 vN; varying vec3 vP;" +
+        "void main(){" +
+        "  float d = abs(dot(normalize(vN), normalize(-vP)));" +
+        "  float i = pow(1.0 - d, us) * guc;" +
+        "  gl_FragColor = vec4(renk, i);" +
+        "}",
+      side: 0,                          // FrontSide
+      blending: atm.material.blending,  // Additive
+      transparent: true,
+      depthWrite: false
+    });
+
+    icHale = new MESH(new GEO(yaricap * IC_HALE_OLC, 96, 96), malzeme);
+    icHale.renderOrder = 12;
+    icHale.visible = false;
+    kure.scene().add(icHale);
+  } catch (e) { console.log("Ic hale kurulamadi:", e.message); icHale = null; }
+}
+
+/* Temaya gore ac/kapa ve rengi atmosferle ayni tut. */
+function icHaleTazele() {
+  if (!icHale) return;
+  try {
+    icHale.visible = (KR === KURE_TEMA.koyu);
+    const u = icHale.material.uniforms;
+    if (u && u.renk && u.renk.value && u.renk.value.set) u.renk.value.set(KR.atmosfer);
+  } catch (e) { console.log("Ic hale tazelenemedi:", e.message); }
+}
+
+/* Konsoldan ayar denemek icin. */
+function icHaleAyar(guc, us) {
+  if (!icHale) return "ic hale yok";
+  const u = icHale.material.uniforms;
+  if (guc !== undefined) u.guc.value = guc;
+  if (us !== undefined) u.us.value = us;
+  return { guc: u.guc.value, us: u.us.value };
+}
+
 function kureTemasiUygula() {
   if (!kure) return;
   try {
@@ -4883,6 +4989,7 @@ function kureTemasiUygula() {
     kure.polygonStrokeColor(kure.polygonStrokeColor());
     kure.pathColor(kure.pathColor());
   } catch (e) { console.log("Kure temasi:", e.message); }
+  icHaleTazele();
 }
 
 function temayiUygula(tema) {
