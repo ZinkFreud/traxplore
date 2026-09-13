@@ -4898,34 +4898,43 @@ const TEMA_ANAHTARI = "traxplore-tema";
 
    Ayar denemek icin konsoldan: icHaleAyar(0.95, 6.5)
    --------------------------------------------------------------- */
-function icHaleAtmosferBul() {
-  let atm = null;
+function icHaleNesneBul() {
+  /* Iki nesne lazim:
+     - atmosfer: ShaderMaterial ve Mesh yapicilarini ondan aliyoruz
+       (three.js global degil, globe.gl paketin icinde tasiyor)
+     - kure: kendi kure geometrisini paylasiyoruz, yenisini kurmuyoruz */
+  let atm = null, kureMesh = null;
   try {
     const sahne = kure.scene();
     if (!sahne || typeof sahne.traverse !== "function") return null;
     sahne.traverse(function (n) {
-      if (atm) return;
-      if (n && n.material && n.material.uniforms && n.material.uniforms.color &&
-          typeof n.material.constructor === "function") atm = n;
+      if (!n || !n.material || !n.geometry) return;
+      if (!atm && n.material.uniforms && n.material.uniforms.color) atm = n;
+      if (!kureMesh && n.material.type === "MeshPhongMaterial") kureMesh = n;
     });
-  } catch (e) { console.log("Ic hale: sahne okunamadi:", e.message); }
-  return atm;
+  } catch (e) { console.log("Ic hale: sahne okunamadi:", e.message); return null; }
+  return (atm && kureMesh) ? { atm: atm, kureMesh: kureMesh } : null;
 }
 
-function icHaleKur() {
+/* globe.gl (Kapsule) ozellikleri hemen degil, sonraki cizim adiminda
+   isliyor; kureKur() bittiginde atmosfer mesh'i sahnede HENUZ YOK.
+   Bir kez deneyip pes etmek yerine birkac kare bekliyoruz. */
+function icHaleKur(kalanDeneme) {
   if (!kure || icHale) return;
-  const atm = icHaleAtmosferBul();
-  if (!atm) { console.log("Ic hale: atmosfer bulunamadi, atlandi"); return; }
+  const n = (kalanDeneme === undefined) ? 60 : kalanDeneme;
+  const bulunan = icHaleNesneBul();
+  if (!bulunan) {
+    if (n > 0) { requestAnimationFrame(function () { icHaleKur(n - 1); }); }
+    else { console.log("Ic hale: atmosfer bulunamadi, atlandi"); }
+    return;
+  }
   try {
-    const SM = atm.material.constructor;
-    const GEO = atm.geometry.constructor;
-    const MESH = atm.constructor;
-    let yaricap = 100;
-    try { if (typeof kure.getGlobeRadius === "function") yaricap = kure.getGlobeRadius(); } catch (e) {}
+    const SM = bulunan.atm.material.constructor;
+    const MESH = bulunan.atm.constructor;
 
     const malzeme = new SM({
       uniforms: {
-        renk: { value: atm.material.uniforms.color.value.clone() },
+        renk: { value: bulunan.atm.material.uniforms.color.value.clone() },
         guc:  { value: IC_HALE_GUC },
         us:   { value: IC_HALE_US }
       },
@@ -4944,16 +4953,20 @@ function icHaleKur() {
         "  float i = pow(1.0 - d, us) * guc;" +
         "  gl_FragColor = vec4(renk, i);" +
         "}",
-      side: 0,                          // FrontSide
-      blending: atm.material.blending,  // Additive
+      side: 0,        // THREE.FrontSide
+      blending: 2,    // THREE.AdditiveBlending (sabit, surumler boyunca degismedi)
       transparent: true,
       depthWrite: false
     });
 
-    icHale = new MESH(new GEO(yaricap * IC_HALE_OLC, 96, 96), malzeme);
+    /* Kendi geometrimizi kurmuyoruz: kurenin kendi kuresini paylasip
+       mesh'i buyutuyoruz. Boylece yaricap her zaman tutuyor. */
+    icHale = new MESH(bulunan.kureMesh.geometry, malzeme);
+    icHale.scale.setScalar(IC_HALE_OLC);
     icHale.renderOrder = 12;
     icHale.visible = false;
     kure.scene().add(icHale);
+    icHaleTazele();
   } catch (e) { console.log("Ic hale kurulamadi:", e.message); icHale = null; }
 }
 
