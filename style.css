@@ -2296,6 +2296,34 @@ body {
     cursor: pointer; padding: 2px; line-height: 0;
 }
 #ayarlarAc:hover { color: var(--kehribar-yazi); }
+
+/* Carkla capraz AYNI hizada olsun. Ikisi farkli sey: biri 19px'lik bir
+   svg, oteki 24-30px'lik bir yazi karakteri. Ayri ayri "top" vermek
+   tutturmuyordu -- ozellikle telefonda capraz buyuyup asagi kayiyordu.
+   Ikisini de ayni olcude bir kutuya alip icerigi ortaliyoruz; boylece
+   yazi boyu degisse de hizalari bozulmuyor.
+   Iki kimlikli secici: asagidaki medya sorgusundaki tek kimlikli
+   kurallari yenmesi icin. */
+#profilKart > #profilKapat,
+#profilKart > #ayarlarAc {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    line-height: 1;
+    top: 16px;
+}
+#profilKart > #profilKapat { right: 16px; font-size: 26px; }
+#profilKart > #ayarlarAc  { right: 56px; }
+
+@media (max-width: 720px), (max-height: 520px) {
+    #profilKart > #profilKapat,
+    #profilKart > #ayarlarAc { top: 12px; }
+    #profilKart > #profilKapat { right: 10px; font-size: 28px; }
+    #profilKart > #ayarlarAc  { right: 52px; }
+}
 #ayarlarGeri {
     display: inline-block; margin-bottom: 4px; padding: 0;
     font-size: 13px;
