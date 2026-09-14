@@ -129,6 +129,13 @@ const RENK_MISAFIR  = "#DFF7FF";                 // baska bir gezginin haritasi
 const MOBIL = window.matchMedia(
   "(max-width: 720px), (max-height: 520px), (pointer: coarse)").matches;
 
+/* Mobil oldugumuzu CSS'e de bildiriyoruz. Ihtiyac: globe.gl'in kendi
+   fare ipucu (.scene-tooltip) dokunmatik cihazda da aciliyor; bizim
+   parmagi takip eden kendi etiketimiz de acilinca ekranda AYNI ANDA IKI
+   ulke adi goruunuyordu. Kosulu CSS'te tekrar yazmak yerine ayni
+   bayragi paylasiyoruz ki ikisi asla ayrisamasin. */
+if (MOBIL) document.documentElement.classList.add("mobil");
+
 /* ---------------------------------------------------------------------
    DURUM
    Tek dogru kaynak burasi. localStorage sadece sunucuya ulasilamadiginda

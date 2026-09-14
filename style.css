@@ -860,6 +860,10 @@ body {
    KÜRE (globe.gl) — Leaflet'ten kalan etiket stilleri yerine
    ===================================================================== */
 .scene-tooltip { pointer-events: none; }
+/* Dokunmatikte globe.gl'in kendi ipucu kapali: parmagi takip eden
+   #kureEtiket zaten ayni ismi yaziyor, ikisi birden acilinca ekranda
+   iki tane ulke adi cikiyordu. */
+html.mobil .scene-tooltip { display: none !important; }
 .kure-etiket {
     background: var(--katman);
     color: var(--yazi);
