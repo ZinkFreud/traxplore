@@ -1900,6 +1900,15 @@ body {
         padding: 15px 4px;
         cursor: pointer;
     }
+    /* iPhone'da serit zaten ana ekran cubugu icin bir guvenli alan
+       ayiriyor (padding-bottom: env(...)). Dugmenin KENDI alt boslugu
+       da 15px olunca alt alta iki bosluk gorunuyordu. Guvenli alan
+       varsa dugmenin kendi boslugunu kisiyoruz: yazilar asagi iner,
+       ama dokunma alani cubugun ustune tasmaz.
+       max() ile: guvenli alan yoksa (Android, masaustu) 15px kalir. */
+    #mobilAlt button {
+        padding-bottom: max(7px, calc(15px - env(safe-area-inset-bottom) * 0.55));
+    }
     #mobilAlt button:last-child { border-right: none; }
     #mobilAlt button.secili { color: var(--kehribar-yazi); }
     /* Bekleyen arkadaslik istegi varsa Profil'in yaninda kucuk bir nokta */
