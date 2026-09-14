@@ -4474,7 +4474,7 @@ async function veriYukle() {
    istiyor; arada bekleyen bir islem olursa menuyu actirmiyor.
    ===================================================================== */
 
-const PAYLAS_ADRES = "zinkfreud.github.io/traxplore";
+const PAYLAS_ADRES = "traxplore.app";
 let paylasDosya = null;      // hazir File nesnesi
 let paylasTema  = "koyu";    // GORUNTUNUN temasi (uygulamanikinden bagimsiz)
 let paylasSekil = "hikaye";
