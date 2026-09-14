@@ -3069,7 +3069,7 @@ const YASAL_DOSYA = {
 };
 const YASAL_BASLIK = {
   gizlilik: { tr: "Gizlilik Politikası", en: "Privacy Policy" },
-  kosullar: { tr: "Kullanım Koşulları",  en: "Terms of Use"   }
+  kosullar: { tr: "Şartlar ve Koşullar", en: "Terms and Conditions" }
 };
 let yasalTur = "gizlilik", yasalDil = "tr", yasalDonus = "";
 const yasalBellek = {};

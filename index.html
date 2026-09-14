@@ -40,7 +40,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260914g">
+    <link rel="stylesheet" href="style.css?v=20260914h">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -97,11 +97,24 @@
             <input type="password" id="yeniSifre" placeholder="Yeni şifre (en az 6 karakter)" />
             <button id="yeniSifreKaydet" class="giris-btn">Şifreyi Değiştir</button>
         </div>
+        <!-- Kayit kipinde cikan onay cumlesi. Ayri bir kutucuk degil:
+             dugmeye basmak onay sayiliyor, magazalarin ve KVKK'nin
+             istedigi sey metnin kayittan ONCE erisilebilir olmasi ve
+             neyi kabul ettiginin yazmasi. -->
+        <p id="kayitOnay" class="kayit-onay">
+            <b>Kayıt Ol</b>'a tıklayarak
+            <span class="birlikte"><button type="button" class="yasal-bag"
+                data-yasal="kosullar">Şartlar ve Koşullar</button>'ı</span> ve
+            <span class="birlikte"><button type="button" class="yasal-bag"
+                data-yasal="gizlilik">Gizlilik Politikası</button>'nı</span>
+            kabul etmiş olursun.
+        </p>
+
         <!-- Magazalar gizlilik metnine kayittan ONCE ulasilmasini istiyor -->
         <div class="yasal">
-            <button type="button" class="yasal-bag" data-yasal="gizlilik">Gizlilik</button>
+            <button type="button" class="yasal-bag" data-yasal="gizlilik">Gizlilik Politikası</button>
             <span>·</span>
-            <button type="button" class="yasal-bag" data-yasal="kosullar">Koşullar</button>
+            <button type="button" class="yasal-bag" data-yasal="kosullar">Şartlar ve Koşullar</button>
         </div>
     </div>
 </div>
@@ -440,7 +453,7 @@
                         data-don="ayarlar">Gizlilik Politikası</button>
                 <span>·</span>
                 <button type="button" class="yasal-bag" data-yasal="kosullar"
-                        data-don="ayarlar">Kullanım Koşulları</button>
+                        data-don="ayarlar">Şartlar ve Koşullar</button>
             </div>
         </div>
 
@@ -514,9 +527,9 @@
     </div>
 
     <div id="altBilgi">
-        <button type="button" class="yasal-bag" data-yasal="gizlilik">Gizlilik</button>
+        <button type="button" class="yasal-bag" data-yasal="gizlilik">Gizlilik Politikası</button>
         <span>·</span>
-        <button type="button" class="yasal-bag" data-yasal="kosullar">Koşullar</button>
+        <button type="button" class="yasal-bag" data-yasal="kosullar">Şartlar ve Koşullar</button>
     </div>
 
     <!-- iPhone'da "ana ekrana ekle" adimini kimse kendiliginden bulmuyor -->
@@ -525,7 +538,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260914g"></script>
+    <script src="script.js?v=20260914h"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
