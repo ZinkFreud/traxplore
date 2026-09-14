@@ -4098,13 +4098,39 @@ function hataYaz(mesaj) {
 }
 
 /* --- Sifremi unuttum ---------------------------------------------------
-   Iki adimli: once e-postaya baglanti gonderiliyor, sonra o baglantiyla
-   donen kullaniciya yeni sifre sorulyor. Ikinci adim ayni ekranda
-   aciliyor, ayri sayfa yok. */
-document.getElementById("sifreUnuttum").addEventListener("click", async function () {
+   UC adim var, ucu de ayni kutuda:
+     1) "Sifremi unuttum" -> kutu SIFIRLAMA kipine geciyor: ekranda
+        yalniz e-posta ve "Baglanti Gonder" kaliyor.
+     2) Baglanti e-postaya gidiyor.
+     3) Baglantiyla donen kullaniciya yeni sifre soruluyor (kurtarma
+        kipi, asagida).
+   Once 1. adim YOKTU: dugmeye basinca ekran hic degismiyordu, sifre
+   kutusu ve "Giris Yap" onunde duruyordu; kullanici ne yapacagini
+   anlamiyordu. */
+function sifirlamaKipi(acik) {
+  const kutu = document.querySelector(".giris-kutu");
+  kutu.classList.toggle("sifirlama", acik);
+  if (acik) {
+    kutu.classList.remove("kayit");
+    girisMesaj.textContent = "E-posta adresini yaz, şifre belirleme bağlantısını oraya gönderelim.";
+    document.getElementById("girisSifre").value = "";
+    document.getElementById("girisEmail").focus();
+  } else {
+    girisMesaj.textContent = "";
+  }
+}
+
+document.getElementById("sifreUnuttum").addEventListener("click", function () {
+  sifirlamaKipi(true);
+});
+document.getElementById("sifirlamaVazgec").addEventListener("click", function () {
+  sifirlamaKipi(false);
+});
+
+document.getElementById("sifirlamaGonder").addEventListener("click", async function () {
   const e = document.getElementById("girisEmail").value.trim();
   if (!e) {
-    girisMesaj.textContent = "Önce e-posta adresini yaz, bağlantıyı oraya göndereyim.";
+    girisMesaj.textContent = "E-posta adresini yazman gerekiyor.";
     document.getElementById("girisEmail").focus();
     return;
   }
@@ -4125,6 +4151,7 @@ document.getElementById("sifreUnuttum").addEventListener("click", async function
    Kayitta ad sordugumuz icin yeni kullanicilar buraya hic dusmuyor;
    bu kapi eski adsiz hesaplar ve yarim kalmis kayitlar icin. */
 function adSecimEkraniniAc(hazir) {
+  document.querySelector(".giris-kutu").classList.remove("sifirlama");
   document.querySelector(".giris-kutu").classList.add("adsecim");
   document.getElementById("adSecimGiris").value = hazir || "";
   girisEkran.style.display = "flex";
@@ -4176,6 +4203,7 @@ async function kullaniciAdiKapisi() {
 }
 
 function kurtarmaEkraniniAc() {
+  document.querySelector(".giris-kutu").classList.remove("sifirlama");
   document.querySelector(".giris-kutu").classList.add("kurtarma");
   document.getElementById("yeniSifreAlani").classList.add("acik");
   girisEkran.style.display = "flex";
@@ -4210,6 +4238,7 @@ if (typeof db.auth.onAuthStateChange === "function") {
 /* Giris / kayit kipi. Ayni kutu iki isi goruyor; kayit kipinde
    kullanici adi alani aciliyor. */
 function kayitKipi(acik) {
+  document.querySelector(".giris-kutu").classList.remove("sifirlama");
   document.querySelector(".giris-kutu").classList.toggle("kayit", acik);
   document.getElementById("modDegistir").textContent = acik
     ? "Zaten hesabın var mı? Giriş yap"

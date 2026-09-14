@@ -40,7 +40,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260914c">
+    <link rel="stylesheet" href="style.css?v=20260914d">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -56,6 +56,14 @@
         <button id="kayitBtn" class="kayit-btn">Kayıt Ol</button>
         <button id="modDegistir" class="metin-btn">Hesabın yok mu? Kayıt ol</button>
         <button id="sifreUnuttum" class="metin-btn">Şifremi unuttum</button>
+        <!-- Sifre sifirlama ADIMI. Eskiden ayri bir adim yoktu: "Sifremi
+             unuttum"a basinca ekran ayni kaliyor, sifre kutusu ve
+             "Giris Yap" dugmesi onunde duruyordu. Simdi kutu bu kipe
+             geciyor, ekranda sadece e-posta ve "Baglanti Gonder" kaliyor. -->
+        <div id="sifirlamaAlani">
+            <button id="sifirlamaGonder" class="giris-btn">Bağlantı Gönder</button>
+            <button id="sifirlamaVazgec" class="metin-btn">Girişe dön</button>
+        </div>
         <div id="adSecimAlani">
             <input type="text" id="adSecimGiris" placeholder="kullanıcı adı" maxlength="20"
                    autocomplete="off" autocapitalize="none" spellcheck="false" />
@@ -493,7 +501,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260914c"></script>
+    <script src="script.js?v=20260914d"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */

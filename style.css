@@ -1863,6 +1863,20 @@ body {
 .giris-kutu.kurtarma #modDegistir,
 .giris-kutu.kurtarma #adSecimAlani { display: none; }
 
+/* --- sifre sifirlama adimi ---
+   Ekranda SADECE e-posta kutusu ve "Baglanti Gonder" kalir. Sifre
+   kutusunun ve "Giris Yap"in gorunur kalmasi kafa karistiriyordu. */
+#sifirlamaAlani { display: none; flex-direction: column; gap: 12px; }
+.giris-kutu.sifirlama #sifirlamaAlani { display: flex; }
+.giris-kutu.sifirlama #girisSifre,
+.giris-kutu.sifirlama #girisKullanici,
+.giris-kutu.sifirlama #girisBtn,
+.giris-kutu.sifirlama #kayitBtn,
+.giris-kutu.sifirlama #modDegistir,
+.giris-kutu.sifirlama #sifreUnuttum,
+.giris-kutu.sifirlama #adSecimAlani,
+.giris-kutu.sifirlama #yeniSifreAlani { display: none; }
+
 /* =====================================================================
    AVATAR
    Fotoğraf koymayanda silüet görünsün, boş daire kalmasın. Silüet ayrı
