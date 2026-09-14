@@ -12,18 +12,19 @@
    yayinda degistirmek gerekiyor, yoksa telefon eski dosyalari tutar.
    ===================================================================== */
 
-const SURUM  = "traxplore-20260914e";
+const SURUM  = "traxplore-20260914f";
 const KABUK  = [
   "./",
   "./index.html",
-  "./style.css?v=20260914e",
-  "./script.js?v=20260914e",
+  "./style.css?v=20260914f",
+  "./script.js?v=20260914f",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
   "./apple-touch-icon.png",
   "./onizleme.png?v=1",
   "./giris.webp?v=1",
+  "./giris-dikey.webp?v=1",
   /* Yasal metinler uygulama icinde panelde aciliyor; internetsizken de
      acilabilsinler diye kabuga katildilar. */
   "./gizlilik.html",
