@@ -2599,9 +2599,12 @@ async function kendiFotolarim() {
   const { data: oturum } = await db.auth.getSession();
   if (!oturum.session) return [];
   const { data, error } = await db.from("sehir_fotolari")
-    .select("id,ulke,sehir,yol,gorunurluk,created_at")
+    /* Sutun adi "eklendi" -- "created_at" DEGIL. Bir kere created_at
+       yazildi, PostgREST hata dondu, asagidaki catch bos liste verdi ve
+       profil "hic fotograf eklemedin" dedi. Sessizce yanlis cevap. */
+    .select("id,ulke,sehir,yol,gorunurluk,eklendi")
     .eq("user_id", oturum.session.user.id)
-    .order("created_at", { ascending: false });
+    .order("eklendi", { ascending: false });
   if (error) { console.log("fotograflar alinamadi:", error.message); return []; }
   return data || [];
 }
