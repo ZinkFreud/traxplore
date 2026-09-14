@@ -1636,8 +1636,15 @@ body {
     color: var(--kehribar-yazi);
 }
 .giris-btn:hover { background: rgba(var(--kehribar-rgb), 0.24); }
-.kayit-btn { background: var(--vurgu); color: var(--yazi); }
-.kayit-btn:hover { background: var(--vurgu-guclu); }
+/* Kayit Ol, Giris Yap ile AYNI gorunuyor. Ikisi ayni anda ekranda
+   olmuyor (biri giris kipinde, oteki kayit kipinde), dolayisiyla
+   "hangisi asil dugme" karisikligi da cikmiyor. */
+.kayit-btn {
+    background: rgba(var(--kehribar-rgb), 0.12);
+    border-color: rgba(var(--kehribar-rgb), 0.50);
+    color: var(--kehribar-yazi);
+}
+.kayit-btn:hover { background: rgba(var(--kehribar-rgb), 0.24); }
 .giris-mesaj { color: var(--yazi-soluk); }
 
 /* --- giriş ekranı: sol vitrin ---------------------------------------
