@@ -40,13 +40,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260914d">
+    <link rel="stylesheet" href="style.css?v=20260914e">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
 <div id="girisEkran" class="giris-ekran">
+    <!-- SOL VITRIN. Gorselin icinde SADECE kure var; logo, baslik ve
+         magaza dugmeleri burada HTML olarak duruyor -- boylece yazi
+         secilebiliyor, ekran boyutuna gore yerlesiyor ve dugmelere
+         ileride gercek baglanti konabiliyor.
+         Dar ekranda tamamen gizleniyor (asagida, medya sorgusunda). -->
+    <aside class="giris-vitrin">
+        <h2 class="vitrin-logo">TRAXPLORE</h2>
+        <div class="vitrin-alt">
+            <p class="vitrin-baslik">Gittiğin her şehir<br>haritanda bir ışık.</p>
+            <p class="vitrin-yazi">Kıtaları, ülkeleri ve şehirleri işaretle;
+                nereleri gezdiğini dünya üzerinde tek bakışta gör.</p>
+            <!-- YER TUTUCU. Uygulamalar yayina girince buradaki iki kutu
+                 Apple ve Google'in KENDI resmi rozetleriyle degistirilecek
+                 (marka kurallari var), baglantilar da o zaman doldurulacak. -->
+            <div class="vitrin-magaza">
+                <span class="magaza-btn"><i></i><b>İndir</b><em>App Store</em></span>
+                <span class="magaza-btn"><i></i><b>İndir</b><em>Google Play</em></span>
+            </div>
+        </div>
+    </aside>
+
     <div class="giris-kutu">
         <h1 class="giris-logo">TRAXPLORE</h1>
+        <!-- Genis ekranda logo solda duruyor, kutuda ise ne yapildigini
+             soyleyen bir baslik kaliyor. Dar ekranda gizli. -->
+        <p id="kutuBaslik" class="kutu-baslik">Giriş yap</p>
         <p id="girisMesaj" class="giris-mesaj"></p>
         <input type="email" id="girisEmail" placeholder="E-posta" />
         <input type="password" id="girisSifre" placeholder="Şifre" />
@@ -501,7 +525,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260914d"></script>
+    <script src="script.js?v=20260914e"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */

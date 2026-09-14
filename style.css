@@ -1640,6 +1640,135 @@ body {
 .kayit-btn:hover { background: var(--vurgu-guclu); }
 .giris-mesaj { color: var(--yazi-soluk); }
 
+/* --- giriş ekranı: sol vitrin ---------------------------------------
+   Genis ekranda ekran ikiye bolunuyor: solda tanitim gorseli, sagda
+   giris kutusu. Gorselin icinde yalniz kure var; yazi ve dugmeler
+   burada, HTML olarak. 900 pikselin altinda vitrin tamamen kalkiyor
+   ve kutu bugunku gibi ortaliyor. */
+.giris-vitrin { display: none; }
+
+/* 900'de vitrin cok daraliyordu (472px), kure kirpilip sikisiyordu.
+   Esik 1024. Altinda bugunku ortalanmis kutu. */
+@media (min-width: 1024px) {
+    .giris-ekran {
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.95fr);
+        align-items: stretch;
+        justify-content: initial;
+    }
+    .giris-vitrin {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 56px 64px 44px;
+        overflow: hidden;
+        background: #060A11 url("giris.webp?v=1") center / cover no-repeat;
+    }
+    /* Yazinin okunmasi icin alt karartma. Gorsele gomulmedi: gorsel
+       kirpilirken karartma da kayardi. */
+    .giris-vitrin::after {
+        content: "";
+        position: absolute; inset: 0;
+        background: linear-gradient(to bottom,
+                    rgba(3,6,12,0) 42%, rgba(3,6,12,0.62) 66%,
+                    rgba(3,6,12,0.93) 88%, rgba(3,6,12,0.97) 100%);
+        pointer-events: none;
+    }
+    .giris-vitrin > * { position: relative; z-index: 1; }
+
+    .vitrin-logo {
+        font-family: "Black Ops One", "Space Grotesk", sans-serif;
+        color: var(--kehribar);
+        font-size: 30px;
+        letter-spacing: 6px;
+        margin: 0;
+        font-weight: 400;
+    }
+    .vitrin-alt { display: flex; flex-direction: column; gap: 18px; }
+    .vitrin-baslik {
+        margin: 0;
+        font-size: 34px;
+        line-height: 1.18;
+        font-weight: 700;
+        color: #F3F8FD;
+        letter-spacing: -0.4px;
+        text-wrap: balance;
+    }
+    .vitrin-yazi {
+        margin: 0;
+        max-width: 42ch;
+        font-size: 16px;
+        line-height: 1.55;
+        color: #A4B1BD;
+    }
+    .vitrin-magaza {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 14px;
+    }
+    .magaza-btn {
+        display: grid;
+        grid-template-columns: 26px auto;
+        grid-template-rows: auto auto;
+        column-gap: 12px;
+        align-items: center;
+        padding: 9px 18px;
+        border: 1px solid #3E4C5C;
+        border-radius: 10px;
+        background: rgba(11,17,26,0.86);
+        min-width: 176px;
+    }
+    .magaza-btn i {
+        grid-row: 1 / 3;
+        width: 26px; height: 26px;
+        border: 1px solid #5E6C7C;
+        border-radius: 6px;
+    }
+    .magaza-btn b {
+        font-size: 11px; font-weight: 400; color: #90A0AC; line-height: 1.3;
+    }
+    .magaza-btn em {
+        font-size: 15px; font-style: normal; font-weight: 500;
+        color: #EBF1F7; line-height: 1.2;
+    }
+
+    /* Vitrinde zaten TRAXPLORE yaziyor; kutudakini kaldiriyoruz,
+       yoksa ekranda iki tane logo oluyor. */
+    .giris-kutu .giris-logo { display: none; }
+    /* Iki sinifli secici: dosyanin ILERISINDE duran tek sinifli
+       ".kutu-baslik { display:none }" kuralini yensin diye. */
+    .giris-kutu .kutu-baslik {
+        display: block;
+        margin: 0 0 18px 0;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--yazi);
+        letter-spacing: -0.3px;
+    }
+
+    /* Sag taraf kart degil, panel: cerceve ve golge kalkiyor,
+       iki yari tek bir ekran gibi duruyor. */
+    .giris-kutu {
+        background: none;
+        border: none;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        margin: auto;
+        width: 330px;
+    }
+}
+
+/* Cok genis ekranda vitrin buyuyup giris kutusunu ezmesin. */
+@media (min-width: 1600px) {
+    .giris-ekran { grid-template-columns: minmax(0, 1fr) 620px; }
+}
+
+.kutu-baslik { display: none; }
+
 /* --- şifremi unuttum ------------------------------------------------ */
 .metin-btn {
     background: none;

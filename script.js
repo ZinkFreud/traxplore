@@ -4107,15 +4107,23 @@ function hataYaz(mesaj) {
    Once 1. adim YOKTU: dugmeye basinca ekran hic degismiyordu, sifre
    kutusu ve "Giris Yap" onunde duruyordu; kullanici ne yapacagini
    anlamiyordu. */
+/* Genis ekranda kutunun ustundeki baslik: hangi istesek onu yazar. */
+function kutuBasligi(metin) {
+  const b = document.getElementById("kutuBaslik");
+  if (b) b.textContent = metin;
+}
+
 function sifirlamaKipi(acik) {
   const kutu = document.querySelector(".giris-kutu");
   kutu.classList.toggle("sifirlama", acik);
   if (acik) {
     kutu.classList.remove("kayit");
+    kutuBasligi("Şifreni sıfırla");
     girisMesaj.textContent = "E-posta adresini yaz, şifre belirleme bağlantısını oraya gönderelim.";
     document.getElementById("girisSifre").value = "";
     document.getElementById("girisEmail").focus();
   } else {
+    kutuBasligi("Giriş yap");
     girisMesaj.textContent = "";
   }
 }
@@ -4207,6 +4215,7 @@ function kurtarmaEkraniniAc() {
   document.querySelector(".giris-kutu").classList.add("kurtarma");
   document.getElementById("yeniSifreAlani").classList.add("acik");
   girisEkran.style.display = "flex";
+  kutuBasligi("Yeni şifre");
   girisMesaj.textContent = "Yeni şifreni belirle.";
   document.getElementById("yeniSifre").focus();
 }
@@ -4240,6 +4249,7 @@ if (typeof db.auth.onAuthStateChange === "function") {
 function kayitKipi(acik) {
   document.querySelector(".giris-kutu").classList.remove("sifirlama");
   document.querySelector(".giris-kutu").classList.toggle("kayit", acik);
+  kutuBasligi(acik ? "Hesap oluştur" : "Giriş yap");
   document.getElementById("modDegistir").textContent = acik
     ? "Zaten hesabın var mı? Giriş yap"
     : "Hesabın yok mu? Kayıt ol";
