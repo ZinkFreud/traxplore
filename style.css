@@ -3264,17 +3264,45 @@ body.panelde   #paylasBtn { display: none; }
    yerde birden tutmuyor. Cozum: acik kalsinlar ama altlarina yumusak
    bir golge; hem parlak mavide hem koyu lacivertte okunuyorlar. */
 :root[data-tema="acik"] #altBilgi {
-    color: rgba(255, 255, 255, 0.62);
+    color: rgba(255, 255, 255, 0.78);
     text-shadow: 0 1px 3px rgba(8, 20, 40, 0.55);
 }
 :root[data-tema="acik"] #altBilgi a:hover,
 :root[data-tema="acik"] #altBilgi .yasal-bag:hover { color: #FFFFFF; }
 
 :root[data-tema="acik"] #kureSayac {
-    color: rgba(255, 255, 255, 0.78);
+    color: rgba(255, 255, 255, 0.90);
     text-shadow: 0 1px 3px rgba(8, 20, 40, 0.55);
 }
 :root[data-tema="acik"] #kureSayac b { color: #FFFFFF; }
+
+/* Golge tek basina yetmiyordu: kullanici gezdigi bir ulkeye yaklasinca
+   ekranin alti KURENIN BEYAZ KARASI oluyor ve beyaz yazi kayboluyor.
+   Gokyuzune gore ayarlanmis bir renk, kürenin uzerinde tutmuyor.
+   Cozum: yazinin arkasina, en alta yumusak bir karartma. Haritanin
+   kendisini bozmuyor (sadece alt serit), her zeminde okunuyor.
+   Karartma #altBilgi'ye bagli cunku o hem telefonda hem masaustunde
+   var; sayac onun biraz ustunde duruyor, ikisini birden kapsiyor. */
+:root[data-tema="acik"] body::after {
+    content: "";
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: calc(215px + env(safe-area-inset-bottom));
+    /* Olculdu: beyaz karanin uzerinde beyaz yazinin okunabilmesi icin
+       sayacin bulundugu yukseklikte en az ~0.55 karartma gerekiyor
+       (bunun altinda kontrast 4'un altina dusuyor). */
+    background: linear-gradient(to top,
+                rgba(6, 16, 34, 0.80) 0%,
+                rgba(6, 16, 34, 0.62) 40%,
+                rgba(6, 16, 34, 0.30) 75%,
+                rgba(6, 16, 34, 0.00) 100%);
+    pointer-events: none;
+    /* Iki bindirme yazisi da z-index 900'de; karartma onlarin ALTINDA,
+       haritanin USTUNDE kalsin. Onceden #altBilgi'nin icindeydi ve
+       #altBilgi DOM'da sayactan sonra geldigi icin karartma sayacin
+       ustune biniyordu -- yaziyi okunakli yapmak yerine soluklastiriyordu. */
+    z-index: 880;
+}
 
 /* Ayni sebeple paylas dugmesi de gokyuzunun uzerinde duruyor; kendi
    zemini var ama kenari gokyuzunde kaybolmasin. */
