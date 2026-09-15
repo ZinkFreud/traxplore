@@ -51,6 +51,15 @@ button.tehlike:hover:not(:disabled) { background: #8e2a2a; }
 button.onay { border-color: rgba(233,162,59,0.45); color: var(--kehribar); }
 input[type=text] { cursor: text; }
 
+/* iOS Safari, yazi boyutu 16px'in altinda olan bir alana dokununca
+   sayfayi kendiliginden buyutuyor; giris kutusu ekrana sigmiyordu.
+   Ana sitede ayni kural style.css'te var, yonetim sayfasi kendi
+   stiliyle geldigi icin buraya da gerekti. Masaustunu etkilemiyor. */
+@media (max-width: 720px), (max-height: 520px), (pointer: coarse) {
+    input:not([type=checkbox]):not([type=radio]):not([type=file]),
+    textarea, select { font-size: 16px; }
+}
+
 /* Acilir listenin KENDISI. Tarayici acilan kutucugun zeminini
    select'in kendi zemininden turetiyor; bizimki rgba(255,255,255,0.04)
    yani neredeyse saydamdi ve tarayici onu BEYAZ uzerine yorumluyordu.
