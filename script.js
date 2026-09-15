@@ -299,6 +299,13 @@ function kureKur() {
     .polygonSideColor(function () { return "rgba(0,0,0,0)"; })
     .polygonStrokeColor(function () { return sinirRengi; })
     .polygonLabel(function (d) {
+      /* Telefonda BOS donuyoruz. Sebep: globe.gl'in kendi fare ipucu
+         dokunmatikte de aciliyor, bizim parmagi takip eden etiketimiz
+         de aciliyor -> ekranda ayni anda IKI ulke adi. Ipucunu CSS ile
+         gizlemeyi denedim, kutuphanenin ipucu kabinin sinif adi
+         tahmin ettigimden farkliymis. Metni hic vermeyince ipucu
+         zaten hic olusmuyor -- sinif adindan bagimsiz, kesin cozum. */
+      if (MOBIL) return "";
       const ad = d.properties.name;
       const say = misafir
         ? misafir.sehirler.filter(function (g) { return g.ulke === ad; }).length
@@ -339,7 +346,10 @@ function kureKur() {
     // Yaricap pinBoyutu() tarafindan yakinliga gore ayarlaniyor.
     .pointAltitude(0.0141)
     .pointResolution(MOBIL ? 8 : 14)
-    .pointLabel(function (d) { return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>"; })
+    .pointLabel(function (d) {
+      if (MOBIL) return "";          // yukaridaki ayni sebep
+      return "<div class='kure-etiket'>" + kacisla(d.sehir) + "</div>";
+    })
     .onPointHover(function (d) { hoverSehir = d || null; etiketiTazele(); })
     .onPointClick(function (d) { sehirDetayAc(d.ulke, d.sehir); });
 
