@@ -159,11 +159,23 @@ body {
     background: var(--katman-2);
     border-radius: 8px;
     font-weight: 600;
-    display: flex;
-    justify-content: space-between;
+    /* Uclu izgara: ok | ad | sayi. Esnek kutuda ad "anonim" bir parca
+       oluyordu; iki satira inince ok ve sayi hizasi kayiyordu. */
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    gap: 8px;
     align-items: center;
     user-select: none;
 }
+.gecmis-ad {
+    text-align: center;
+    line-height: 1.25;
+    /* Iki satira inmesi gerekiyorsa satirlar dengeli bolunsun:
+       "Bosnia and / Herzegovina", "Bosnia and Herze- / govina" degil. */
+    text-wrap: balance;
+    overflow-wrap: break-word;
+}
+.gecmis-say { opacity: 0.6; font-variant-numeric: tabular-nums; }
 .gecmis-ulke-ad:hover { background: var(--katman-2); }
 .gecmis-sehirler {
     display: none;

@@ -1248,8 +1248,12 @@ function gecmisGuncelle() {
     kutu.className = "gecmis-ulke";
     const bas = document.createElement("div");
     bas.className = "gecmis-ulke-ad";
-    bas.innerHTML = "<span class='gecmis-ok'>›</span> " + kacisla(u) +
-                    " <span style='opacity:.6'>(" + sehirler.length + ")</span>";
+    /* Uc ayri parca: ok, ad, sayi. Once ad ciplak bir metindi ve
+       "Bosnia and Herzegovina" gibi uzun adlar iki satira inince ok ile
+       sayinin hizasi bozuluyordu. Simdi uclu bir izgara, ad ortada. */
+    bas.innerHTML = "<span class='gecmis-ok'>›</span>" +
+                    "<span class='gecmis-ad'>" + kacisla(u) + "</span>" +
+                    "<span class='gecmis-say'>(" + sehirler.length + ")</span>";
     bas.addEventListener("click", function () { kutu.classList.toggle("acik"); });
     kutu.appendChild(bas);
     const alt = document.createElement("div");
