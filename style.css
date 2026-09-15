@@ -1780,11 +1780,14 @@ html.mobil .scene-tooltip { display: none !important; }
    bu orana gore kuruldu. */
 @media (max-width: 1023px) {
     .giris-ekran {
+        /* Karartma cok agirdi (0.38-0.86): harita cansiz gorunuyordu.
+           Giris kutusu artik cam gibi ve kendi kontrastini tasiyor,
+           dolayisiyla bu katmanin isi sadece kenarlari toparlamak. */
         background:
-            linear-gradient(180deg, rgba(3,6,12,0.38) 0%,
-                                    rgba(3,6,12,0.60) 46%,
-                                    rgba(3,6,12,0.86) 100%),
-            #060A11 url("giris-dikey.webp?v=1") center / cover no-repeat;
+            linear-gradient(180deg, rgba(3,6,12,0.10) 0%,
+                                    rgba(3,6,12,0.18) 45%,
+                                    rgba(3,6,12,0.46) 100%),
+            #060A11 url("giris-dikey.webp?v=2") center / cover no-repeat;
     }
     /* Kutu telefonda ekranin neredeyse tamamini kapliyor; opak olunca
        arkadaki kureden eser kalmiyordu. Saydamlastirip bulaniklastirdik:
