@@ -4124,6 +4124,34 @@ function hataYaz(mesaj) {
    Once 1. adim YOKTU: dugmeye basinca ekran hic degismiyordu, sifre
    kutusu ve "Giris Yap" onunde duruyordu; kullanici ne yapacagini
    anlamiyordu. */
+/* --- Enter tusu ------------------------------------------------------
+   Kutuda bes ayri kip var ve her kipin asil dugmesi baska. Klavyede
+   Enter'a basinca o anki kipin dugmesine basilmis sayiliyor. Form
+   etiketi kullanmiyoruz: tek bir <form> bes kipi birden temsil
+   edemiyor, ayri ayri form acmak da ekrani bolerdi. */
+function girisAnaDugme() {
+  const k = document.querySelector(".giris-kutu");
+  if (!k) return null;
+  if (k.classList.contains("adsecim"))   return document.getElementById("adSecimKaydet");
+  if (k.classList.contains("kurtarma"))  return document.getElementById("yeniSifreKaydet");
+  if (k.classList.contains("sifirlama")) return document.getElementById("sifirlamaGonder");
+  if (k.classList.contains("kayit"))     return document.getElementById("kayitBtn");
+  return document.getElementById("girisBtn");
+}
+
+(function enteriBagla() {
+  const kutu = document.querySelector(".giris-kutu");
+  if (!kutu) return;
+  kutu.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" || e.shiftKey || e.isComposing) return;
+    if (!e.target || e.target.tagName !== "INPUT") return;   // dugmedeyse tarayici zaten halleder
+    const d = girisAnaDugme();
+    if (!d || d.disabled) return;
+    e.preventDefault();
+    d.click();
+  });
+})();
+
 /* Genis ekranda kutunun ustundeki baslik: hangi istesek onu yazar. */
 function kutuBasligi(metin) {
   const b = document.getElementById("kutuBaslik");
