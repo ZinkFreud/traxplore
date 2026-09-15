@@ -51,6 +51,19 @@ button.tehlike:hover:not(:disabled) { background: #8e2a2a; }
 button.onay { border-color: rgba(233,162,59,0.45); color: var(--kehribar); }
 input[type=text] { cursor: text; }
 
+/* Acilir listenin KENDISI. Tarayici acilan kutucugun zeminini
+   select'in kendi zemininden turetiyor; bizimki rgba(255,255,255,0.04)
+   yani neredeyse saydamdi ve tarayici onu BEYAZ uzerine yorumluyordu.
+   Sonuc: acik zemin uzerinde acik yazi -- secenekler okunmuyordu.
+   Acik renk veriyoruz ve seceneklerin rengini de acikca yaziyoruz
+   (option, select'in renklerini miras almiyor). */
+select { background-color: #10151c; }
+select option {
+    background-color: #10151c;
+    color: var(--yazi);
+}
+select option:checked { color: var(--kehribar); }
+
 .kart {
     border: 1px solid var(--kil); border-radius: 8px;
     background: var(--yuzey); padding: 16px 18px; margin-bottom: 14px;
