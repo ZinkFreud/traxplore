@@ -5040,8 +5040,26 @@ function paylasVideoCek(sekil, ilerleme) {
       if (kontrol) { kontrol.autoRotate = true; kontrol.autoRotateSpeed = HIZ; }
     } catch (e) {}
 
+    /* Kare yakalamayi ELLE yonetiyoruz.
+       captureStream(30) tuvali tarayicinin kendi takvimiyle ornekliyor;
+       olculdu: iPhone'da 36 kare cizilirken dosyaya sadece 19,8 kare
+       giriyordu. Dusen kare yok, kayit bastan seyrek aliniyordu ve
+       hareket bu yuzden kirik goruluyordu.
+       captureStream(0) + requestFrame ile her CIZIM bir KARE oluyor.
+       requestFrame olmayan tarayicida eski yola dusuyoruz. */
+    let elleKare = null;
     try {
-      akis = tuval.captureStream(30);
+      try {
+        const denemeAkis = tuval.captureStream(0);
+        const iz = denemeAkis.getVideoTracks()[0];
+        if (iz && typeof iz.requestFrame === "function") {
+          akis = denemeAkis;
+          elleKare = function () { iz.requestFrame(); };
+        } else {
+          denemeAkis.getTracks().forEach(function (t) { t.stop(); });
+        }
+      } catch (e) { elleKare = null; }
+      if (!akis) akis = tuval.captureStream(30);
       kayit = new MediaRecorder(akis, { mimeType: tur, videoBitsPerSecond: 4500000 });
     } catch (e) { eskiHaleGetir(); return patla(e); }
 
@@ -5057,7 +5075,8 @@ function paylasVideoCek(sekil, ilerleme) {
       bitir({ blob: blob, tur: tur,
               uzanti: tur.indexOf("mp4") >= 0 ? "mp4" : "webm",
               kare: kareSayisi, sure: sure,
-              fps: sure > 0 ? Math.round(kareSayisi / sure) : 0 });
+              fps: sure > 0 ? Math.round(kareSayisi / sure) : 0,
+              kip: elleKare ? "elle" : "otomatik" });
     };
 
     kareBekle(4).then(function () {
@@ -5065,6 +5084,7 @@ function paylasVideoCek(sekil, ilerleme) {
          karesi bos tuval oluyor. */
       paylasGorselCiz(sekil, tuval, zemin, VIDEO_OLCEK, yaziKatmani);
       kayit.start();
+      if (elleKare) elleKare();
       const basla = performance.now();
       let oncekiLng = bakisAcisi();
       let toplamAci = 0;
@@ -5085,6 +5105,7 @@ function paylasVideoCek(sekil, ilerleme) {
         oncekiLng = simdi;
 
         paylasGorselCiz(sekil, tuval, zemin, VIDEO_OLCEK, yaziKatmani);
+        if (elleKare) elleKare();
         kareSayisi++;
         if (ilerleme) ilerleme(Math.min(1, toplamAci / 360));
 
@@ -5152,7 +5173,8 @@ async function paylasVideoUret(sekil) {
   /* Kare/saniyeyi yaziyoruz: "hafif takiliyor" yerine olculebilir bir
      sayi konusalim diye. 25'in altina duserse gozle fark ediliyor. */
   paylasDurumYaz("Video hazır — " + (sonuc.blob.size / 1048576).toFixed(1) + " MB, " +
-                 sonuc.sure.toFixed(1) + " sn, " + sonuc.fps + " kare/sn.");
+                 sonuc.sure.toFixed(1) + " sn, " + sonuc.fps + " kare/sn (" +
+                 sonuc.kip + " yakalama).");
 
   /* Telefon bu dosyayi paylasabiliyor mu? Fotografta menu aciliyor diye
      videoda da acilacagini varsaymiyoruz: mp4 ayri bir tur ve bazi
