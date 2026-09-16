@@ -4574,11 +4574,14 @@ let paylasNesneUrl = null;   // onizleme/indirme icin
 
 /* Kurenin o anki goruntusu. WebGL tuvali kare bitince siliniyor, o
    yuzden once yeniden ciziyoruz sonra ayni anda okuyoruz. */
-function paylasKureTuvali() {
+/* tekrarCiz=false: videoda globe.gl zaten bu karede kendi cizimini
+   yapti; bir kez daha render etmek her karede bedava olmayan bir is.
+   Fotografta ise cizim durmus olabilir, orada tazelemek gerekiyor. */
+function paylasKureTuvali(tekrarCiz) {
   try {
     if (!kure || !kure.renderer) return null;
     const r = kure.renderer();
-    r.render(kure.scene(), kure.camera());
+    if (tekrarCiz !== false) r.render(kure.scene(), kure.camera());
     return r.domElement;
   } catch (e) {
     console.log("Küre okunamadı:", e.message);
@@ -4642,10 +4645,20 @@ function paylasIsiklariCiz(g, kt, D) {
   const sayim = { toplam: isiklar.length, cizilen: 0, gizli: 0, saydam: 0, disarda: 0 };
   for (let i = 0; i < isiklar.length; i++) {
     const el = isiklar[i];
-    const bicim = getComputedStyle(el);
-    // globe.gl arka yuze duseni gizliyor; gizliyse bizde de olmasin
-    if (bicim.display === "none" || bicim.visibility === "hidden") { sayim.gizli++; continue; }
-    if (parseFloat(bicim.opacity || "1") < 0.05) { sayim.saydam++; continue; }
+    /* getComputedStyle her cagrida bicim hesabini zorluyor; 59 isik x
+       her kare = videoda en pahali is buydu. globe.gl bu degerleri
+       zaten satir ici yaziyor, once oraya bakiyoruz. Bos gelirse
+       eski yola dusuyoruz -- dogruluk degismiyor, sadece hizlaniyor. */
+    const si = el.style;
+    let gorunmez = (si.display === "none" || si.visibility === "hidden");
+    let saydamlik = si.opacity === "" ? null : parseFloat(si.opacity);
+    if (!gorunmez && saydamlik === null) {
+      const bicim = getComputedStyle(el);
+      gorunmez = (bicim.display === "none" || bicim.visibility === "hidden");
+      saydamlik = parseFloat(bicim.opacity || "1");
+    }
+    if (gorunmez) { sayim.gizli++; continue; }
+    if (saydamlik !== null && saydamlik < 0.05) { sayim.saydam++; continue; }
 
     const k = el.getBoundingClientRect();   // 0x0 kutu: tam isigin merkezi
     const bx = (k.left - kr.left) * olcekX;
@@ -4707,47 +4720,27 @@ function paylasIsiklariCiz(g, kt, D) {
                 Sart: uzay zemini yildizlari Math.random ile dagitiyor,
                 her karede yeniden cizilse video boyunca yildizlar yer
                 degistirir ve goruntu titrer. */
-function paylasGorselCiz(sekil, hedef, hazirZemin, olcek) {
+/* Yerlesim tek yerde dursun ki iki sekli ayri ayri kovalamayalim.
+   Hem gorselin kendisi hem yazi katmani buradan okuyor. */
+function paylasYerlesim(sekil) {
   const dikey = (sekil === "hikaye");
-  const E = 1080, Y = dikey ? 1920 : 1080;
-  const K = olcek || 1;
-
-  /* Yerlesim tek yerde dursun ki iki sekli ayri ayri kovalamayalim. */
-  const D = dikey
+  return dikey
     ? { logo: 180, logoPunto: 60, kureX: 40,  kureY: 290, kureEn: 1000,
         sayi: 1470, sayiPunto: 132, etiket: 1536, etiketPunto: 36,
         ad: 1700, adPunto: 40, adres: 1762, adresPunto: 30, tekSatir: false }
     : { logo: 104, logoPunto: 46, kureX: 230, kureY: 150, kureEn: 620,
         sayi: 890,  sayiPunto: 100, etiket: 942, etiketPunto: 28,
         ad: 1022, adPunto: 30, adres: 1022, adresPunto: 24, tekSatir: true };
+}
 
-  const tuval = hedef || document.createElement("canvas");
-  if (tuval.width !== Math.round(E * K))  tuval.width = Math.round(E * K);
-  if (tuval.height !== Math.round(Y * K)) tuval.height = Math.round(Y * K);
-  const g = tuval.getContext("2d");
-  /* Yerlesim hep 1080 genisliginde hesaplaniyor; kucuk tuvale cizerken
-     tek yapmamiz gereken olcegi kurmak. Videoda 720'ye dusuruyoruz:
-     ayni goruntu, yarisindan az piksel isi, telefonda takilma azaliyor. */
-  g.setTransform(K, 0, 0, K, 0, 0);
-
-  /* Zemin ekranda ne ise o. Once "paylasim hep koyu kalsin" demistik
-     ama kure temaya baglaninca o karar bozuldu: koyu uzayin uzerinde
-     gunduz kuresi cikiyordu. */
-  const acikTema = (paylasTema === "acik");
-  if (hazirZemin) g.drawImage(hazirZemin, 0, 0);
-  else if (acikTema) gokyuzuZemin(g, E, Y);
-  else uzayZemin(g, E, Y);
-
-  // Kure: ekrandaki tuvalden ortadan kare kirpiliyor
-  const kt = paylasKureTuvali();
-  if (kt && kt.width && kt.height) {
-    const kenar = Math.min(kt.width, kt.height);
-    const sx = (kt.width  - kenar) / 2;
-    const sy = (kt.height - kenar) / 2;
-    g.drawImage(kt, sx, sy, kenar, kenar, D.kureX, D.kureY, D.kureEn, D.kureEn);
-    window.__isikSayim = paylasIsiklariCiz(g, kt, D);
-  }
-
+/* Yazi katmani: logo, sayilar, etiketler, kullanici adi, adres.
+   Ayri islev olmasinin sebebi video: bu katman kayit boyunca hic
+   degismiyor ama golgeli buyuk puntolar her karede yeniden cizilince
+   pahaliya geliyordu. Videoda bir kez saydam bir tuvale cizilip her
+   karede hazir basiliyor. */
+function paylasYazilariCiz(g, sekil, D, acikTema) {
+  const dikey = (sekil === "hikaye");
+  const E = 1080;
   g.textAlign = "center";
 
   /* Acik gokyuzu ne duz parlak ne duz koyu: ortasi aydinlik,
@@ -4825,6 +4818,45 @@ function paylasGorselCiz(sekil, hedef, hazirZemin, olcek) {
   }
 
   golge(false);
+}
+
+function paylasGorselCiz(sekil, hedef, hazirZemin, olcek, hazirYazi) {
+  const dikey = (sekil === "hikaye");
+  const E = 1080, Y = dikey ? 1920 : 1080;
+  const K = olcek || 1;
+
+  const D = paylasYerlesim(sekil);
+
+  const tuval = hedef || document.createElement("canvas");
+  if (tuval.width !== Math.round(E * K))  tuval.width = Math.round(E * K);
+  if (tuval.height !== Math.round(Y * K)) tuval.height = Math.round(Y * K);
+  const g = tuval.getContext("2d");
+  /* Yerlesim hep 1080 genisliginde hesaplaniyor; kucuk tuvale cizerken
+     tek yapmamiz gereken olcegi kurmak. Videoda 720'ye dusuruyoruz:
+     ayni goruntu, yarisindan az piksel isi, telefonda takilma azaliyor. */
+  g.setTransform(K, 0, 0, K, 0, 0);
+
+  /* Zemin ekranda ne ise o. Once "paylasim hep koyu kalsin" demistik
+     ama kure temaya baglaninca o karar bozuldu: koyu uzayin uzerinde
+     gunduz kuresi cikiyordu. */
+  const acikTema = (paylasTema === "acik");
+  if (hazirZemin) g.drawImage(hazirZemin, 0, 0);
+  else if (acikTema) gokyuzuZemin(g, E, Y);
+  else uzayZemin(g, E, Y);
+
+  // Kure: ekrandaki tuvalden ortadan kare kirpiliyor
+  const kt = paylasKureTuvali(!hazirYazi);
+  if (kt && kt.width && kt.height) {
+    const kenar = Math.min(kt.width, kt.height);
+    const sx = (kt.width  - kenar) / 2;
+    const sy = (kt.height - kenar) / 2;
+    g.drawImage(kt, sx, sy, kenar, kenar, D.kureX, D.kureY, D.kureEn, D.kureEn);
+    window.__isikSayim = paylasIsiklariCiz(g, kt, D);
+  }
+
+  if (hazirYazi) g.drawImage(hazirYazi, 0, 0);
+  else paylasYazilariCiz(g, sekil, D, acikTema);
+
   return tuval;
 }
 
@@ -4916,6 +4948,21 @@ function videoDesteklenirMi() {
 }
 
 /* Arka plani bir kez cizip saklayan tuval. */
+/* Yazi katmanini saydam bir tuvale bir kez ciziyoruz. Video boyunca
+   degismeyen tek sey bu; her karede golgeli 130 puntoluk rakamlari
+   yeniden cizmek bosuna is. */
+function paylasYaziTuvali(sekil) {
+  const dikey = (sekil === "hikaye");
+  const E = 1080, Y = dikey ? 1920 : 1080;
+  const t = document.createElement("canvas");
+  t.width = E; t.height = Y;
+  const g = t.getContext("2d");
+  const D = paylasYerlesim(sekil);
+  g.textAlign = "center";
+  paylasYazilariCiz(g, sekil, D, paylasTema === "acik");
+  return t;
+}
+
 function paylasZeminTuvali(sekil) {
   const dikey = (sekil === "hikaye");
   const E = 1080, Y = dikey ? 1920 : 1080;
@@ -4950,6 +4997,7 @@ function paylasVideoCek(sekil, ilerleme) {
   tuval.width  = Math.round(1080 * VIDEO_OLCEK);
   tuval.height = Math.round((dikey ? 1920 : 1080) * VIDEO_OLCEK);
   const zemin = paylasZeminTuvali(sekil);
+  const yaziKatmani = paylasYaziTuvali(sekil);
 
   let kontrol = null, eskiOtomatik = null, eskiHiz = null;
   try {
@@ -5029,7 +5077,7 @@ function paylasVideoCek(sekil, ilerleme) {
         }
         oncekiLng = simdi;
 
-        paylasGorselCiz(sekil, tuval, zemin, VIDEO_OLCEK);
+        paylasGorselCiz(sekil, tuval, zemin, VIDEO_OLCEK, yaziKatmani);
         kareSayisi++;
         if (ilerleme) ilerleme(Math.min(1, toplamAci / 360));
 

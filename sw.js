@@ -12,12 +12,12 @@
    yayinda degistirmek gerekiyor, yoksa telefon eski dosyalari tutar.
    ===================================================================== */
 
-const SURUM  = "traxplore-20260916e";
+const SURUM  = "traxplore-20260916f";
 const KABUK  = [
   "./",
   "./index.html",
-  "./style.css?v=20260916e",
-  "./script.js?v=20260916e",
+  "./style.css?v=20260916f",
+  "./script.js?v=20260916f",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
