@@ -4919,7 +4919,11 @@ function paylasSecimleriIsaretle(sekil) {
 
 let paylasTur = "foto";      /* "foto" | "video" */
 
-const VIDEO_SANIYE   = 4;
+/* Tam turun hedef suresi. 4 saniyede donus hizli geliyordu; 6'da
+   goz kureyi takip edebiliyor. Dosya buyuyor (~2,4 MB) ama video
+   telefonda uretilip dogrudan paylasildigi icin bizim trafigimize
+   dokunmuyor -- tek bedeli bir saniye fazla bekleme. */
+const VIDEO_SANIYE   = 6;
 const VIDEO_TUR_SIRA = [
   'video/mp4;codecs="avc1.42E01E"',
   "video/mp4",
@@ -4985,7 +4989,7 @@ function paylasZeminTuvali(sekil) {
    tamamlanmiyor ve video basa donerken atlama goruluyor. Aciyi
    sayarsak dusen kare olsa da tur tam kapaniyor. */
 const VIDEO_OLCEK  = 720 / 1080;   /* 1080 yerine 720 genislik */
-const VIDEO_ENCOK  = 8;            /* saniye: cok yavas cihazda emniyet */
+const VIDEO_ENCOK  = 12;           /* saniye: cok yavas cihazda emniyet */
 
 function paylasVideoCek(sekil, ilerleme) {
   const tur = videoTuruSec();
