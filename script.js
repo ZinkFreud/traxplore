@@ -5152,8 +5152,36 @@ async function paylasVideoUret(sekil) {
   /* Kare/saniyeyi yaziyoruz: "hafif takiliyor" yerine olculebilir bir
      sayi konusalim diye. 25'in altina duserse gozle fark ediliyor. */
   paylasDurumYaz("Video hazır — " + (sonuc.blob.size / 1048576).toFixed(1) + " MB, " +
-                 sonuc.sure.toFixed(1) + " sn, " + sonuc.fps + " kare/sn. " +
-                 "Paylaşmayı bir sonraki adımda bağlayacağız.");
+                 sonuc.sure.toFixed(1) + " sn, " + sonuc.fps + " kare/sn.");
+
+  /* Telefon bu dosyayi paylasabiliyor mu? Fotografta menu aciliyor diye
+     videoda da acilacagini varsaymiyoruz: mp4 ayri bir tur ve bazi
+     tarayicilar video dosyasini paylasim menusune vermiyor. */
+  const menuVar = paylasEylemleriniAyarla();
+
+  if (!menuVar) {
+    paylasDurumYaz("Video hazır — " + (sonuc.blob.size / 1048576).toFixed(1) + " MB. " +
+                   "Bu tarayıcı videoyu paylaşım menüsüne vermiyor, indirerek kullanabilirsin.");
+  }
+}
+
+/* Paylas / Indir dugmelerini uretilen dosyaya gore ayarliyor.
+   Tek yerde durmasi onemli: fotograftan videoya gecince eski durum
+   kalirsa, video menuye verilemeyen bir cihazda "Paylas" dugmesi
+   gorunur kaliyor ve basinca hicbir sey olmuyor. */
+function paylasEylemleriniAyarla() {
+  const eylem  = document.getElementById("paylasEylem");
+  const gonder = document.getElementById("paylasGonder");
+  const indir  = document.getElementById("paylasIndir");
+  let menuVar = false;
+  try {
+    menuVar = !!(paylasDosya && navigator.canShare &&
+                 navigator.canShare({ files: [paylasDosya] }));
+  } catch (e) { menuVar = false; }
+  if (gonder) gonder.hidden = !menuVar;
+  if (indir)  indir.hidden  = menuVar;
+  if (eylem)  eylem.hidden  = !paylasDosya;
+  return menuVar;
 }
 
 async function paylasUret(sekil) {
@@ -5184,6 +5212,7 @@ async function paylasUret(sekil) {
     im.alt = "Paylaşılacak görsel";
     onizleme.appendChild(im);
   }
+  paylasEylemleriniAyarla();
   paylasSekil = sekil;
   paylasSecimleriIsaretle(sekil);
   /* Isik sayimi window.__isikSayim'de duruyor: ileride "isiklar
@@ -5203,7 +5232,8 @@ async function paylasGonder() {
       if (e && e.name !== "AbortError") paylasIndir();
     }
   } else {
-    paylasDurumYaz("Bu tarayıcı paylaşım menüsünü açmıyor, görsel indiriliyor.");
+    paylasDurumYaz("Bu tarayıcı paylaşım menüsünü açmıyor, " +
+                   (paylasTur === "video" ? "video" : "görsel") + " indiriliyor.");
     paylasIndir();
   }
 }
@@ -5212,7 +5242,9 @@ function paylasIndir() {
   if (!paylasNesneUrl) return;
   const a = document.createElement("a");
   a.href = paylasNesneUrl;
-  a.download = "traxplore.png";
+  /* Dosya adi uretilen seye uymali: video .png diye inerse telefon
+     onu resim sanip acmiyor. */
+  a.download = paylasDosya && paylasDosya.name ? paylasDosya.name : "traxplore.png";
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -5222,19 +5254,13 @@ function paylasAc() {
   const p = document.getElementById("paylasPanel");
   if (!p) return;
   hepsiniKapat();
-  /* iOS indirme baglantisini desteklemiyor; dosyayi kaydetmek yerine
-     onizleme aciyor. Paylasim menusu varken zaten oradan "Goruntuyu
-     Kaydet" denebiliyor, o yuzden Indir'i sadece menusu olmayan
-     tarayicilarda gosteriyoruz. */
-  const indir = document.getElementById("paylasIndir");
-  if (indir) {
-    let menuVar = false;
-    try {
-      menuVar = !!(navigator.canShare &&
-                   navigator.canShare({ files: [new File([new Blob()], "a.png", { type: "image/png" })] }));
-    } catch (e) { menuVar = false; }
-    indir.hidden = menuVar;
-  }
+  /* Dugmelerin hangisi gorunecegine uretilen dosyaya bakarak karar
+     veriliyor (paylasEylemleriniAyarla); burada sadece kapali
+     basliyoruz, dosya hazir olunca aciliyor. iOS indirme baglantisini
+     desteklemiyor ama paylasim menusunden "Kaydet" denebiliyor, o
+     yuzden menu varsa Indir gizleniyor. */
+  const eylemSatiri = document.getElementById("paylasEylem");
+  if (eylemSatiri) eylemSatiri.hidden = true;
   /* Baslangicta uygulamanin temasi; kullanici isterse degistiriyor. */
   paylasTema = document.documentElement.getAttribute("data-tema") === "acik" ? "acik" : "koyu";
 
