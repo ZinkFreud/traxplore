@@ -40,11 +40,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260916a">
+    <link rel="stylesheet" href="style.css?v=20260916b">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
-<div id="girisEkran" class="giris-ekran">
+<!-- "gizli" ile basliyor: eskiden giris ekrani acilista bir buçuk saniye
+     gorunup sonra kayboluyordu. Sebebi, oturumun VAR olup olmadigini
+     ancak Supabase'e sorduktan sonra ogrenmemizdi; o sorulana kadar
+     ekran ciziliyordu. Asagidaki kucuk betik, sayfa daha boyanmadan
+     kararini veriyor. -->
+<div id="girisEkran" class="giris-ekran gizli">
     <!-- SOL VITRIN. Gorselin icinde SADECE kure var; logo, baslik ve
          magaza dugmeleri burada HTML olarak duruyor -- boylece yazi
          secilebiliyor, ekran boyutuna gore yerlesiyor ve dugmelere
@@ -547,7 +552,24 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260916a"></script>
+    <!-- Ilk boyamadan once karar: daha once giris yapilmis mi?
+         "oturumSahibi" anahtarini uygulamanin kendisi yaziyor. Doluysa
+         giris ekrani hic gosterilmiyor, kure yuklenene kadar bos zemin
+         duruyor. Bossa giris ekrani ANINDA aciliyor -- cikis yapmis
+         kullanici da beklemiyor. Kesin karari yine script.js veriyor;
+         burasi sadece yanlis ekrani bir an gostermemek icin. -->
+    <script>
+      (function () {
+        var sahip = "";
+        try { sahip = JSON.parse(localStorage.getItem("oturumSahibi")) || ""; }
+        catch (e) { sahip = ""; }
+        if (!sahip) {
+          var e = document.getElementById("girisEkran");
+          if (e) e.classList.remove("gizli");
+        }
+      })();
+    </script>
+    <script src="script.js?v=20260916b"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */

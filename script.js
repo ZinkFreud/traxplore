@@ -4211,7 +4211,7 @@ function adSecimEkraniniAc(hazir) {
   document.querySelector(".giris-kutu").classList.remove("sifirlama");
   document.querySelector(".giris-kutu").classList.add("adsecim");
   document.getElementById("adSecimGiris").value = hazir || "";
-  girisEkran.style.display = "flex";
+  girisEkran.classList.remove("gizli"); girisEkran.style.display = "flex";
   girisMesaj.textContent = "Devam etmek için bir kullanıcı adı seç. " +
     "Küçük harf, rakam ve alt çizgi; 3-20 karakter. Sonradan değiştirilemiyor.";
   document.getElementById("adSecimGiris").focus();
@@ -4263,7 +4263,7 @@ function kurtarmaEkraniniAc() {
   document.querySelector(".giris-kutu").classList.remove("sifirlama");
   document.querySelector(".giris-kutu").classList.add("kurtarma");
   document.getElementById("yeniSifreAlani").classList.add("acik");
-  girisEkran.style.display = "flex";
+  girisEkran.classList.remove("gizli"); girisEkran.style.display = "flex";
   kutuBasligi("Yeni şifre");
   girisMesaj.textContent = "Yeni şifreni belirle.";
   document.getElementById("yeniSifre").focus();
@@ -4543,7 +4543,7 @@ async function veriYukle() {
     await veriYukle();
     await kullaniciAdiKapisi();
   } else {
-    girisEkran.style.display = "flex";
+    girisEkran.classList.remove("gizli"); girisEkran.style.display = "flex";
     await ulkeleriYukle();
     kitaChartCiz();
     istatistikGuncelle();

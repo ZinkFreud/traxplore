@@ -702,6 +702,11 @@ body {
 #profilDegistir:hover { background: var(--katman-3); }
 
 /* Giriş / Kayıt ekranı */
+/* Acilista giris ekraninin bir an gorunup kaybolmasini engelliyor.
+   Bu sinif HTML'de duruyor; oturum yoksa sayfa boyanmadan once
+   kaldiriliyor, oturum varsa script.js zaten hic gostermiyor. */
+.giris-ekran.gizli { display: none !important; }
+
 .giris-ekran {
     position: fixed;
     top: 0; left: 0;
