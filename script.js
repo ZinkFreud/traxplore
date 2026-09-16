@@ -250,6 +250,7 @@ let hoverSehir = null;          // dokunma anında parmağın altındaki pin
 let sonAcilanUlke = "";         // aynı ülkeyi iki kez açmayalım
 let sonAcilanAn   = 0;
 let kureDurdu     = false;      // çizim duraklatıldı mı
+let videoKaydediliyor = false; // paylaşım videosu kaydediliyor mu
 let kureUykuda    = false;      // 30 sn dokunulmadı
 let kameraBitis   = 0;          // kamera animasyonu bitiş anı
 let pinListesi = [];             // kurede gorunen pinler
@@ -3484,7 +3485,10 @@ function kureAnimasyonTazele() {
     return el && el.classList.contains("acik");
   });
   const kameraOynuyor = Date.now() < kameraBitis;
-  const dursun = !kameraOynuyor && (kureUykuda || panelAcik);
+  /* Video kaydi surerken cizim ASLA durmamali: durunca globe.gl kendi
+     dongusunu isletmiyor, sehir isiklarinin (HTML katmani) konumu
+     guncellenmiyor ve isiklar kurenin altindan kayiyor. */
+  const dursun = !kameraOynuyor && !videoKaydediliyor && (kureUykuda || panelAcik);
   if (dursun === kureDurdu) return;
   kureDurdu = dursun;
   try {
@@ -4917,70 +4921,104 @@ function paylasZeminTuvali(sekil) {
   return t;
 }
 
+/* Kaydin mantigi: kureyi BIZ dondurmuyoruz, globe.gl kendi dondurusunu
+   yapiyor, biz sadece her karede ekrandakini paylasim tuvaline
+   kopyaliyoruz.
+   Ilk deneme tersini yapiyordu -- her karede pointOfView ile kamerayi
+   elle ceviriyordu -- ve iki sey birden bozuluyordu:
+     1. Sehir isiklari kurenin uzerinde duran HTML parcalari; konumlarini
+        globe.gl kendi dongusunde guncelliyor. Panel acikken cizim
+        durduruldugu icin o dongu islemiyordu: kure donuyor, isiklar
+        yerinde kaliyordu.
+     2. globe.gl'in kendi yumusatmasi ve otomatik donusu bizim kamera
+        yazmalarimizla cekisiyor, kure bir saga bir sola gidiyordu.
+   Simdi tek surucu var: globe.gl. */
 function paylasVideoCek(sekil, ilerleme) {
   const tur = videoTuruSec();
   if (!tur) return Promise.reject(new Error("Bu cihaz video üretemiyor."));
+  if (!kure) return Promise.reject(new Error("Küre hazır değil."));
 
   const dikey = (sekil === "hikaye");
   const tuval = document.createElement("canvas");
   tuval.width = 1080; tuval.height = dikey ? 1920 : 1080;
-
   const zemin = paylasZeminTuvali(sekil);
 
-  /* Baslangic bakisini saklayip sonunda geri koyuyoruz: kullanici
-     paylasim panelini kapatinca kuresini birakti gibi bulmali. */
-  let ilkBakis = null;
-  try { ilkBakis = kure ? kure.pointOfView() : null; } catch (e) { ilkBakis = null; }
-  const lat = ilkBakis ? ilkBakis.lat : 20;
-  const yuk = ilkBakis ? ilkBakis.altitude : 2.5;
-  const lng0 = ilkBakis ? ilkBakis.lng : 0;
+  /* Kontrolun eski halini saklayip sonunda geri koyuyoruz: kullanici
+     paylasimi kapatinca kuresini biraktigi gibi bulmali. */
+  let kontrol = null, eskiOtomatik = null, eskiHiz = null;
+  try {
+    kontrol = kure.controls();
+    eskiOtomatik = kontrol.autoRotate;
+    eskiHiz = kontrol.autoRotateSpeed;
+  } catch (e) { kontrol = null; }
+
+  /* OrbitControls'ta 2.0 = 30 saniyede bir tur. Tam tur VIDEO_SANIYE
+     surmesi icin: hiz = 60 / saniye. */
+  const HIZ = 60 / VIDEO_SANIYE;
+
+  function eskiHaleGetir() {
+    videoKaydediliyor = false;
+    if (kontrol && eskiOtomatik !== null) {
+      try {
+        kontrol.autoRotate = eskiOtomatik;
+        kontrol.autoRotateSpeed = eskiHiz;
+      } catch (e) {}
+    }
+    try { kureAnimasyonTazele(); } catch (e) {}
+  }
 
   return new Promise(function (bitir, patla) {
     let kayit, akis;
     const parcalar = [];
+
+    /* Cizim durmus olabilir (panel acik). Once uyandiriyoruz. */
+    videoKaydediliyor = true;
+    try {
+      kureUykuda = false;
+      if (kureDurdu) { kure.resumeAnimation(); kureDurdu = false; }
+      if (kontrol) { kontrol.autoRotate = true; kontrol.autoRotateSpeed = HIZ; }
+    } catch (e) {}
+
     try {
       akis = tuval.captureStream(30);
       kayit = new MediaRecorder(akis, { mimeType: tur, videoBitsPerSecond: 6000000 });
-    } catch (e) { return patla(e); }
+    } catch (e) { eskiHaleGetir(); return patla(e); }
 
     kayit.ondataavailable = function (e) { if (e.data && e.data.size) parcalar.push(e.data); };
-    kayit.onerror = function (e) { patla(new Error("Kayıt hatası")); };
+    kayit.onerror = function () { eskiHaleGetir(); patla(new Error("Kayıt hatası")); };
 
     let calisiyor = true;
     kayit.onstop = function () {
       calisiyor = false;
-      /* Kureyi kullanicinin biraktigi yere geri getir. */
-      try { if (kure && ilkBakis) kure.pointOfView({ lat: lat, lng: lng0, altitude: yuk }, 0); }
-      catch (e) {}
+      eskiHaleGetir();
       const blob = new Blob(parcalar, { type: tur });
       if (!blob.size) return patla(new Error("Video boş çıktı."));
       bitir({ blob: blob, tur: tur,
               uzanti: tur.indexOf("mp4") >= 0 ? "mp4" : "webm" });
     };
 
-    kayit.start();
-    const basla = performance.now();
+    /* Kure donmeye baslasin diye birkac kare bekliyoruz; ilk kareler
+       hareketsiz olmasin. */
+    kareBekle(4).then(function () {
+      kayit.start();
+      const basla = performance.now();
 
-    (function kare() {
-      if (!calisiyor) return;
-      const gecen = (performance.now() - basla) / 1000;
-      const oran = Math.min(1, gecen / VIDEO_SANIYE);
+      (function kare() {
+        if (!calisiyor) return;
+        const gecen = (performance.now() - basla) / 1000;
 
-      /* Tam bir tur: 0'dan 360'a. Basi ve sonu ayni kareye denk
-         geldigi icin video dondugunde zipliyor gibi durmuyor. */
-      try {
-        if (kure) kure.pointOfView({ lat: lat, lng: lng0 + oran * 360, altitude: yuk }, 0);
-      } catch (e) {}
+        /* Bu geri cagirma globe.gl'in kendi kareinden SONRA calisiyor
+           (o once kaydoldu), yani kure ve isiklar ayni ana ait. */
+        paylasGorselCiz(sekil, tuval, zemin);
+        if (ilerleme) ilerleme(Math.min(1, gecen / VIDEO_SANIYE));
 
-      paylasGorselCiz(sekil, tuval, zemin);
-      if (ilerleme) ilerleme(oran);
-
-      if (gecen >= VIDEO_SANIYE) {
-        try { kayit.stop(); } catch (e) { calisiyor = false; patla(e); }
-        return;
-      }
-      requestAnimationFrame(kare);
-    })();
+        if (gecen >= VIDEO_SANIYE) {
+          try { kayit.stop(); } catch (e) { calisiyor = false; eskiHaleGetir(); patla(e); }
+          return;
+        }
+        requestAnimationFrame(kare);
+      })();
+    });
   });
 }
 
