@@ -5061,6 +5061,9 @@ function paylasVideoCek(sekil, ilerleme) {
     };
 
     kareBekle(4).then(function () {
+      /* Ilk kareyi kayit baslamadan ONCE ciziyoruz: yoksa akisin ilk
+         karesi bos tuval oluyor. */
+      paylasGorselCiz(sekil, tuval, zemin, VIDEO_OLCEK, yaziKatmani);
       kayit.start();
       const basla = performance.now();
       let oncekiLng = bakisAcisi();
@@ -5089,6 +5092,15 @@ function paylasVideoCek(sekil, ilerleme) {
         const surePatladi = gecen >= VIDEO_ENCOK;
         if (turTamam || surePatladi) {
           sure = gecen;
+          try {
+            /* Once GORUNTU AKISINI kapatiyoruz, sonra kaydi. Sirasi
+               onemli: akis acikken stop() cagirinca kodlayici isi
+               kapatana kadar son kareyi tekrar tekrar yaziyor ve
+               videonun sonunda yarim saniyelik bir donma kaliyor --
+               dongude tam da dikis yerine denk geliyor. Olculdu:
+               0,35 saniye, hep ayni noktada. */
+            akis.getVideoTracks().forEach(function (iz) { iz.stop(); });
+          } catch (e) {}
           try { kayit.stop(); } catch (e) { calisiyor = false; eskiHaleGetir(); patla(e); }
           return;
         }
