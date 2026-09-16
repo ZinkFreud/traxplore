@@ -4707,9 +4707,10 @@ function paylasIsiklariCiz(g, kt, D) {
                 Sart: uzay zemini yildizlari Math.random ile dagitiyor,
                 her karede yeniden cizilse video boyunca yildizlar yer
                 degistirir ve goruntu titrer. */
-function paylasGorselCiz(sekil, hedef, hazirZemin) {
+function paylasGorselCiz(sekil, hedef, hazirZemin, olcek) {
   const dikey = (sekil === "hikaye");
   const E = 1080, Y = dikey ? 1920 : 1080;
+  const K = olcek || 1;
 
   /* Yerlesim tek yerde dursun ki iki sekli ayri ayri kovalamayalim. */
   const D = dikey
@@ -4721,9 +4722,13 @@ function paylasGorselCiz(sekil, hedef, hazirZemin) {
         ad: 1022, adPunto: 30, adres: 1022, adresPunto: 24, tekSatir: true };
 
   const tuval = hedef || document.createElement("canvas");
-  if (tuval.width !== E)  tuval.width = E;
-  if (tuval.height !== Y) tuval.height = Y;
+  if (tuval.width !== Math.round(E * K))  tuval.width = Math.round(E * K);
+  if (tuval.height !== Math.round(Y * K)) tuval.height = Math.round(Y * K);
   const g = tuval.getContext("2d");
+  /* Yerlesim hep 1080 genisliginde hesaplaniyor; kucuk tuvale cizerken
+     tek yapmamiz gereken olcegi kurmak. Videoda 720'ye dusuruyoruz:
+     ayni goruntu, yarisindan az piksel isi, telefonda takilma azaliyor. */
+  g.setTransform(K, 0, 0, K, 0, 0);
 
   /* Zemin ekranda ne ise o. Once "paylasim hep koyu kalsin" demistik
      ama kure temaya baglaninca o karar bozuldu: koyu uzayin uzerinde
@@ -4923,16 +4928,18 @@ function paylasZeminTuvali(sekil) {
 
 /* Kaydin mantigi: kureyi BIZ dondurmuyoruz, globe.gl kendi dondurusunu
    yapiyor, biz sadece her karede ekrandakini paylasim tuvaline
-   kopyaliyoruz.
-   Ilk deneme tersini yapiyordu -- her karede pointOfView ile kamerayi
-   elle ceviriyordu -- ve iki sey birden bozuluyordu:
-     1. Sehir isiklari kurenin uzerinde duran HTML parcalari; konumlarini
-        globe.gl kendi dongusunde guncelliyor. Panel acikken cizim
-        durduruldugu icin o dongu islemiyordu: kure donuyor, isiklar
-        yerinde kaliyordu.
-     2. globe.gl'in kendi yumusatmasi ve otomatik donusu bizim kamera
-        yazmalarimizla cekisiyor, kure bir saga bir sola gidiyordu.
-   Simdi tek surucu var: globe.gl. */
+   kopyaliyoruz. Ilk deneme tersini yapiyordu ve iki sey birden
+   bozuluyordu: sehir isiklari (HTML katmani) kureden ayriliyordu, ve
+   globe.gl'in kendi yumusatmasiyla cekisip kure ileri geri gidiyordu.
+
+   Kayit TAM BIR TUR tamamlaninca bitiyor, sabit sure dolunca degil.
+   Sebep: otomatik donus her CIZILEN KARE'de sabit bir aci ilerliyor,
+   sureye gore degil. Telefon kare dusurunce sabit surede tur
+   tamamlanmiyor ve video basa donerken atlama goruluyor. Aciyi
+   sayarsak dusen kare olsa da tur tam kapaniyor. */
+const VIDEO_OLCEK  = 720 / 1080;   /* 1080 yerine 720 genislik */
+const VIDEO_ENCOK  = 8;            /* saniye: cok yavas cihazda emniyet */
+
 function paylasVideoCek(sekil, ilerleme) {
   const tur = videoTuruSec();
   if (!tur) return Promise.reject(new Error("Bu cihaz video üretemiyor."));
@@ -4940,11 +4947,10 @@ function paylasVideoCek(sekil, ilerleme) {
 
   const dikey = (sekil === "hikaye");
   const tuval = document.createElement("canvas");
-  tuval.width = 1080; tuval.height = dikey ? 1920 : 1080;
+  tuval.width  = Math.round(1080 * VIDEO_OLCEK);
+  tuval.height = Math.round((dikey ? 1920 : 1080) * VIDEO_OLCEK);
   const zemin = paylasZeminTuvali(sekil);
 
-  /* Kontrolun eski halini saklayip sonunda geri koyuyoruz: kullanici
-     paylasimi kapatinca kuresini biraktigi gibi bulmali. */
   let kontrol = null, eskiOtomatik = null, eskiHiz = null;
   try {
     kontrol = kure.controls();
@@ -4952,8 +4958,8 @@ function paylasVideoCek(sekil, ilerleme) {
     eskiHiz = kontrol.autoRotateSpeed;
   } catch (e) { kontrol = null; }
 
-  /* OrbitControls'ta 2.0 = 30 saniyede bir tur. Tam tur VIDEO_SANIYE
-     surmesi icin: hiz = 60 / saniye. */
+  /* OrbitControls: 2.0 = 30 saniyede bir tur (60 kare/sn varsayimiyla).
+     Hedef 4 saniye -> hiz 15. Kare dusserse tur uzar, kisalmaz. */
   const HIZ = 60 / VIDEO_SANIYE;
 
   function eskiHaleGetir() {
@@ -4967,11 +4973,14 @@ function paylasVideoCek(sekil, ilerleme) {
     try { kureAnimasyonTazele(); } catch (e) {}
   }
 
+  function bakisAcisi() {
+    try { const p = kure.pointOfView(); return p ? p.lng : null; } catch (e) { return null; }
+  }
+
   return new Promise(function (bitir, patla) {
     let kayit, akis;
     const parcalar = [];
 
-    /* Cizim durmus olabilir (panel acik). Once uyandiriyoruz. */
     videoKaydediliyor = true;
     try {
       kureUykuda = false;
@@ -4981,38 +4990,53 @@ function paylasVideoCek(sekil, ilerleme) {
 
     try {
       akis = tuval.captureStream(30);
-      kayit = new MediaRecorder(akis, { mimeType: tur, videoBitsPerSecond: 6000000 });
+      kayit = new MediaRecorder(akis, { mimeType: tur, videoBitsPerSecond: 4500000 });
     } catch (e) { eskiHaleGetir(); return patla(e); }
 
     kayit.ondataavailable = function (e) { if (e.data && e.data.size) parcalar.push(e.data); };
     kayit.onerror = function () { eskiHaleGetir(); patla(new Error("Kayıt hatası")); };
 
-    let calisiyor = true;
+    let calisiyor = true, kareSayisi = 0, sure = 0;
     kayit.onstop = function () {
       calisiyor = false;
       eskiHaleGetir();
       const blob = new Blob(parcalar, { type: tur });
       if (!blob.size) return patla(new Error("Video boş çıktı."));
       bitir({ blob: blob, tur: tur,
-              uzanti: tur.indexOf("mp4") >= 0 ? "mp4" : "webm" });
+              uzanti: tur.indexOf("mp4") >= 0 ? "mp4" : "webm",
+              kare: kareSayisi, sure: sure,
+              fps: sure > 0 ? Math.round(kareSayisi / sure) : 0 });
     };
 
-    /* Kure donmeye baslasin diye birkac kare bekliyoruz; ilk kareler
-       hareketsiz olmasin. */
     kareBekle(4).then(function () {
       kayit.start();
       const basla = performance.now();
+      let oncekiLng = bakisAcisi();
+      let toplamAci = 0;
 
       (function kare() {
         if (!calisiyor) return;
         const gecen = (performance.now() - basla) / 1000;
 
-        /* Bu geri cagirma globe.gl'in kendi kareinden SONRA calisiyor
-           (o once kaydoldu), yani kure ve isiklar ayni ana ait. */
-        paylasGorselCiz(sekil, tuval, zemin);
-        if (ilerleme) ilerleme(Math.min(1, gecen / VIDEO_SANIYE));
+        /* Donulen aciyi topluyoruz. -180/+180 sinirinda deger atliyor,
+           atlamayi duzeltmeden toplarsak tur hic kapanmaz. */
+        const simdi = bakisAcisi();
+        if (simdi !== null && oncekiLng !== null) {
+          let d = simdi - oncekiLng;
+          while (d >  180) d -= 360;
+          while (d < -180) d += 360;
+          toplamAci += Math.abs(d);
+        }
+        oncekiLng = simdi;
 
-        if (gecen >= VIDEO_SANIYE) {
+        paylasGorselCiz(sekil, tuval, zemin, VIDEO_OLCEK);
+        kareSayisi++;
+        if (ilerleme) ilerleme(Math.min(1, toplamAci / 360));
+
+        const turTamam = toplamAci >= 360;
+        const surePatladi = gecen >= VIDEO_ENCOK;
+        if (turTamam || surePatladi) {
+          sure = gecen;
           try { kayit.stop(); } catch (e) { calisiyor = false; eskiHaleGetir(); patla(e); }
           return;
         }
@@ -5061,7 +5085,10 @@ async function paylasVideoUret(sekil) {
 
   paylasSekil = sekil;
   paylasSecimleriIsaretle(sekil);
-  paylasDurumYaz("Video hazır — " + (sonuc.blob.size / 1048576).toFixed(1) + " MB. " +
+  /* Kare/saniyeyi yaziyoruz: "hafif takiliyor" yerine olculebilir bir
+     sayi konusalim diye. 25'in altina duserse gozle fark ediliyor. */
+  paylasDurumYaz("Video hazır — " + (sonuc.blob.size / 1048576).toFixed(1) + " MB, " +
+                 sonuc.sure.toFixed(1) + " sn, " + sonuc.fps + " kare/sn. " +
                  "Paylaşmayı bir sonraki adımda bağlayacağız.");
 }
 
