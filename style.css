@@ -1670,6 +1670,10 @@ html.mobil .scene-tooltip { display: none !important; }
    ve kutu bugunku gibi ortaliyor. */
 .giris-vitrin { display: none; }
 
+/* Mobil tanitim kutunun icinde, logonun altinda. Masaustunde
+   vitrin ayni metni tasidigi icin burada gizli. */
+.mobil-tanitim { display: none; }
+
 /* 900'de vitrin cok daraliyordu (472px), kure kirpilip sikisiyordu.
    Esik 1024. Altinda bugunku ortalanmis kutu. */
 @media (min-width: 1024px) {
@@ -1810,6 +1814,44 @@ html.mobil .scene-tooltip { display: none !important; }
         -webkit-backdrop-filter: blur(18px) saturate(1.1);
         border-color: rgba(255, 255, 255, 0.10);
         box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Ne oldugunu soyleyen iki satir. Logo ile alanlarin arasinda. */
+    .mobil-tanitim {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin: -2px 0 6px;
+        text-align: center;
+    }
+    .mobil-tanitim-baslik {
+        margin: 0;
+        font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+        font-size: 21px;
+        font-weight: 600;
+        line-height: 1.24;
+        letter-spacing: -0.3px;
+        color: var(--yazi);
+        text-wrap: balance;
+    }
+    .mobil-tanitim-yazi {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--yazi-soluk);
+    }
+    /* Sifre sifirlama, yeni sifre ve ad secme kiplerinde kullanici
+       zaten giris yapmis ya da belirli bir isin ortasinda; tanitim
+       cumlesi orada kafa karistirici oluyor. */
+    .giris-kutu.sifirlama .mobil-tanitim,
+    .giris-kutu.kurtarma  .mobil-tanitim,
+    .giris-kutu.adsecim   .mobil-tanitim { display: none; }
+
+    /* Kisa telefonlarda kutu ekrandan tasabilir; ekran kaydirilabilsin. */
+    .giris-ekran {
+        overflow-y: auto;
+        align-items: safe center;
+        padding-block: 24px;
     }
 }
 

@@ -40,7 +40,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260915e">
+    <link rel="stylesheet" href="style.css?v=20260916a">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -68,6 +68,15 @@
 
     <div class="giris-kutu">
         <h1 class="giris-logo">TRAXPLORE</h1>
+        <!-- Telefonda soldaki vitrin paneli tamamen gizleniyor; oradan
+             gelen ziyaretci uygulamanin ne oldugunu soyleyen tek bir
+             cumle gormeden e-posta girmesi isteniyordu. Bu iki satir
+             SADECE 1024 pikselin altinda goruluyor, masaustunde vitrin
+             zaten ayni metni tasiyor. -->
+        <div class="mobil-tanitim">
+            <p class="mobil-tanitim-baslik">Gittiğin her şehir<br>haritanda bir ışık.</p>
+            <p class="mobil-tanitim-yazi">Kıtaları, ülkeleri ve şehirleri işaretle; nereleri gezdiğini dünya üzerinde tek bakışta gör.</p>
+        </div>
         <!-- Genis ekranda logo solda duruyor, kutuda ise ne yapildigini
              soyleyen bir baslik kaliyor. Dar ekranda gizli. -->
         <p id="kutuBaslik" class="kutu-baslik">Giriş yap</p>
@@ -538,7 +547,7 @@
         <button id="ipucuKapat">&times;</button>
     </div>
 
-    <script src="script.js?v=20260915e"></script>
+    <script src="script.js?v=20260916a"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */
