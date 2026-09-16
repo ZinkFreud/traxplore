@@ -4697,7 +4697,13 @@ function paylasIsiklariCiz(g, kt, D) {
   return sayim;
 }
 
-function paylasGorselCiz(sekil) {
+/* hedef      : verilirse yeni tuval acmak yerine buna cizer (video, her
+                karede ayni tuvale ciziyor).
+   hazirZemin : verilirse arka plani yeniden URETMEZ, bu goruntuyu basar.
+                Sart: uzay zemini yildizlari Math.random ile dagitiyor,
+                her karede yeniden cizilse video boyunca yildizlar yer
+                degistirir ve goruntu titrer. */
+function paylasGorselCiz(sekil, hedef, hazirZemin) {
   const dikey = (sekil === "hikaye");
   const E = 1080, Y = dikey ? 1920 : 1080;
 
@@ -4710,15 +4716,18 @@ function paylasGorselCiz(sekil) {
         sayi: 890,  sayiPunto: 100, etiket: 942, etiketPunto: 28,
         ad: 1022, adPunto: 30, adres: 1022, adresPunto: 24, tekSatir: true };
 
-  const tuval = document.createElement("canvas");
-  tuval.width = E; tuval.height = Y;
+  const tuval = hedef || document.createElement("canvas");
+  if (tuval.width !== E)  tuval.width = E;
+  if (tuval.height !== Y) tuval.height = Y;
   const g = tuval.getContext("2d");
 
   /* Zemin ekranda ne ise o. Once "paylasim hep koyu kalsin" demistik
      ama kure temaya baglaninca o karar bozuldu: koyu uzayin uzerinde
      gunduz kuresi cikiyordu. */
   const acikTema = (paylasTema === "acik");
-  if (acikTema) gokyuzuZemin(g, E, Y); else uzayZemin(g, E, Y);
+  if (hazirZemin) g.drawImage(hazirZemin, 0, 0);
+  else if (acikTema) gokyuzuZemin(g, E, Y);
+  else uzayZemin(g, E, Y);
 
   // Kure: ekrandaki tuvalden ortadan kare kirpiliyor
   const kt = paylasKureTuvali();
@@ -4839,6 +4848,185 @@ function kareBekle(adet) {
   });
 }
 
+/* =====================================================================
+   PAYLASIM VIDEOSU  (asama 1: uretim ve onizleme)
+   ---------------------------------------------------------------------
+   Fotograf yerine 4 saniyelik donen kure videosu. Mekanizma: paylasim
+   tuvaline her karede yeniden ciziyoruz, canvas.captureStream ile o
+   tuvalden bir goruntu akisi aliyoruz, MediaRecorder da onu dosyaya
+   yaziyor.
+
+   Bicim SART: Instagram webm kabul etmiyor, mp4 istiyor. iPhone mp4
+   uretiyor; Android'de cihaza gore degisiyor. Uretemeyen cihazda video
+   secenegi hic gorunmuyor, fotograf paylasimi kaliyor.
+   ===================================================================== */
+/* Secili dugmeleri isaretle. Hem fotograf hem video yolu kullaniyor. */
+function paylasSecimleriIsaretle(sekil) {
+  const sekiller = document.querySelectorAll("#paylasSecim .paylas-sec");
+  for (let i = 0; i < sekiller.length; i++) {
+    sekiller[i].classList.toggle("secili", sekiller[i].dataset.sekil === sekil);
+  }
+  const temalar = document.querySelectorAll("#paylasTemaSecim .paylas-sec");
+  for (let i = 0; i < temalar.length; i++) {
+    temalar[i].classList.toggle("secili", temalar[i].dataset.tema === paylasTema);
+  }
+  const turler = document.querySelectorAll("#paylasTurSecim .paylas-sec");
+  for (let i = 0; i < turler.length; i++) {
+    turler[i].classList.toggle("secili", turler[i].dataset.tur === paylasTur);
+  }
+}
+
+let paylasTur = "foto";      /* "foto" | "video" */
+
+const VIDEO_SANIYE   = 4;
+const VIDEO_TUR_SIRA = [
+  'video/mp4;codecs="avc1.42E01E"',
+  "video/mp4",
+  "video/webm;codecs=vp9",
+  "video/webm"
+];
+
+function videoTuruSec() {
+  if (typeof MediaRecorder === "undefined") return null;
+  for (let i = 0; i < VIDEO_TUR_SIRA.length; i++) {
+    try {
+      if (MediaRecorder.isTypeSupported(VIDEO_TUR_SIRA[i])) return VIDEO_TUR_SIRA[i];
+    } catch (e) {}
+  }
+  return null;
+}
+
+/* Instagram'a gidecekse mp4 sart. Cihaz sadece webm uretebiliyorsa
+   video secenegini hic acmiyoruz -- calismayan bir dugme gostermek,
+   dugmeyi hic gostermemekten kotu. */
+function videoDesteklenirMi() {
+  const t = videoTuruSec();
+  return !!(t && t.indexOf("mp4") >= 0 &&
+            typeof HTMLCanvasElement !== "undefined" &&
+            HTMLCanvasElement.prototype.captureStream);
+}
+
+/* Arka plani bir kez cizip saklayan tuval. */
+function paylasZeminTuvali(sekil) {
+  const dikey = (sekil === "hikaye");
+  const E = 1080, Y = dikey ? 1920 : 1080;
+  const t = document.createElement("canvas");
+  t.width = E; t.height = Y;
+  const g = t.getContext("2d");
+  if (paylasTema === "acik") gokyuzuZemin(g, E, Y); else uzayZemin(g, E, Y);
+  return t;
+}
+
+function paylasVideoCek(sekil, ilerleme) {
+  const tur = videoTuruSec();
+  if (!tur) return Promise.reject(new Error("Bu cihaz video üretemiyor."));
+
+  const dikey = (sekil === "hikaye");
+  const tuval = document.createElement("canvas");
+  tuval.width = 1080; tuval.height = dikey ? 1920 : 1080;
+
+  const zemin = paylasZeminTuvali(sekil);
+
+  /* Baslangic bakisini saklayip sonunda geri koyuyoruz: kullanici
+     paylasim panelini kapatinca kuresini birakti gibi bulmali. */
+  let ilkBakis = null;
+  try { ilkBakis = kure ? kure.pointOfView() : null; } catch (e) { ilkBakis = null; }
+  const lat = ilkBakis ? ilkBakis.lat : 20;
+  const yuk = ilkBakis ? ilkBakis.altitude : 2.5;
+  const lng0 = ilkBakis ? ilkBakis.lng : 0;
+
+  return new Promise(function (bitir, patla) {
+    let kayit, akis;
+    const parcalar = [];
+    try {
+      akis = tuval.captureStream(30);
+      kayit = new MediaRecorder(akis, { mimeType: tur, videoBitsPerSecond: 6000000 });
+    } catch (e) { return patla(e); }
+
+    kayit.ondataavailable = function (e) { if (e.data && e.data.size) parcalar.push(e.data); };
+    kayit.onerror = function (e) { patla(new Error("Kayıt hatası")); };
+
+    let calisiyor = true;
+    kayit.onstop = function () {
+      calisiyor = false;
+      /* Kureyi kullanicinin biraktigi yere geri getir. */
+      try { if (kure && ilkBakis) kure.pointOfView({ lat: lat, lng: lng0, altitude: yuk }, 0); }
+      catch (e) {}
+      const blob = new Blob(parcalar, { type: tur });
+      if (!blob.size) return patla(new Error("Video boş çıktı."));
+      bitir({ blob: blob, tur: tur,
+              uzanti: tur.indexOf("mp4") >= 0 ? "mp4" : "webm" });
+    };
+
+    kayit.start();
+    const basla = performance.now();
+
+    (function kare() {
+      if (!calisiyor) return;
+      const gecen = (performance.now() - basla) / 1000;
+      const oran = Math.min(1, gecen / VIDEO_SANIYE);
+
+      /* Tam bir tur: 0'dan 360'a. Basi ve sonu ayni kareye denk
+         geldigi icin video dondugunde zipliyor gibi durmuyor. */
+      try {
+        if (kure) kure.pointOfView({ lat: lat, lng: lng0 + oran * 360, altitude: yuk }, 0);
+      } catch (e) {}
+
+      paylasGorselCiz(sekil, tuval, zemin);
+      if (ilerleme) ilerleme(oran);
+
+      if (gecen >= VIDEO_SANIYE) {
+        try { kayit.stop(); } catch (e) { calisiyor = false; patla(e); }
+        return;
+      }
+      requestAnimationFrame(kare);
+    })();
+  });
+}
+
+async function paylasVideoUret(sekil) {
+  const onizleme = document.getElementById("paylasOnizleme");
+  const eylem = document.getElementById("paylasEylem");
+  if (eylem) eylem.hidden = true;
+  paylasDurumYaz("Video hazırlanıyor…");
+
+  await paylasFontlariBekle();
+  const eskiTema = kureyiGeciciBoya(paylasTema);
+  if (eskiTema) await kareBekle(6);
+
+  let sonuc;
+  try {
+    sonuc = await paylasVideoCek(sekil, function (oran) {
+      paylasDurumYaz("Kaydediliyor… %" + Math.round(oran * 100));
+    });
+  } catch (e) {
+    kureyiGeriAl(eskiTema);
+    paylasDurumYaz("Video üretilemedi: " + (e && e.message ? e.message : "bilinmeyen"));
+    return;
+  }
+  kureyiGeriAl(eskiTema);
+
+  if (paylasNesneUrl) URL.revokeObjectURL(paylasNesneUrl);
+  paylasNesneUrl = URL.createObjectURL(sonuc.blob);
+  paylasDosya = new File([sonuc.blob], "traxplore." + sonuc.uzanti, { type: sonuc.tur });
+
+  if (onizleme) {
+    onizleme.innerHTML = "";
+    const v = document.createElement("video");
+    v.src = paylasNesneUrl;
+    v.autoplay = true; v.loop = true; v.muted = true;
+    v.playsInline = true; v.setAttribute("playsinline", "");
+    v.controls = false;
+    onizleme.appendChild(v);
+    v.play().catch(function () {});
+  }
+
+  paylasSekil = sekil;
+  paylasSecimleriIsaretle(sekil);
+  paylasDurumYaz("Video hazır — " + (sonuc.blob.size / 1048576).toFixed(1) + " MB. " +
+                 "Paylaşmayı bir sonraki adımda bağlayacağız.");
+}
+
 async function paylasUret(sekil) {
   const onizleme = document.getElementById("paylasOnizleme");
   const eylem = document.getElementById("paylasEylem");
@@ -4868,14 +5056,7 @@ async function paylasUret(sekil) {
     onizleme.appendChild(im);
   }
   paylasSekil = sekil;
-  const sekiller = document.querySelectorAll("#paylasSecim .paylas-sec");
-  for (let i = 0; i < sekiller.length; i++) {
-    sekiller[i].classList.toggle("secili", sekiller[i].dataset.sekil === sekil);
-  }
-  const temalar = document.querySelectorAll("#paylasTemaSecim .paylas-sec");
-  for (let i = 0; i < temalar.length; i++) {
-    temalar[i].classList.toggle("secili", temalar[i].dataset.tema === paylasTema);
-  }
+  paylasSecimleriIsaretle(sekil);
   /* Isik sayimi window.__isikSayim'de duruyor: ileride "isiklar
      gorunmuyor" diye bir sikayet gelirse konsoldan bakip neden
      atlandigini (gizli / saydam / disarda) tek bakista gorebiliyoruz. */
@@ -4927,8 +5108,18 @@ function paylasAc() {
   }
   /* Baslangicta uygulamanin temasi; kullanici isterse degistiriyor. */
   paylasTema = document.documentElement.getAttribute("data-tema") === "acik" ? "acik" : "koyu";
+
+  /* Video secenegi sadece mp4 uretebilen cihazlarda. Uretemeyende
+     dugmeyi gostermek, basinca "olmuyor" demekten kotu. */
+  const turSecim = document.getElementById("paylasTurSecim");
+  if (turSecim) {
+    const olur = videoDesteklenirMi();
+    turSecim.hidden = !olur;
+    if (!olur) paylasTur = "foto";
+  }
+
   p.hidden = false;
-  paylasUret("hikaye");
+  paylasYenile("hikaye");
 }
 
 function paylasPaneliKapat() {
@@ -4940,10 +5131,18 @@ bagla("paylasBtn",     "click", paylasAc);
 bagla("paylasKapat",   "click", paylasPaneliKapat);
 bagla("paylasGonder",  "click", paylasGonder);
 bagla("paylasIndir",   "click", paylasIndir);
-bagla("paylasHikaye",  "click", function () { paylasUret("hikaye"); });
-bagla("paylasGonderi", "click", function () { paylasUret("gonderi"); });
-bagla("paylasGece",   "click", function () { paylasTema = "koyu"; paylasUret(paylasSekil); });
-bagla("paylasGunduz", "click", function () { paylasTema = "acik"; paylasUret(paylasSekil); });
+/* Tek kapi: secilen ture gore fotograf ya da video uretiliyor. */
+function paylasYenile(sekil) {
+  if (paylasTur === "video") return paylasVideoUret(sekil);
+  return paylasUret(sekil);
+}
+
+bagla("paylasHikaye",  "click", function () { paylasYenile("hikaye"); });
+bagla("paylasGonderi", "click", function () { paylasYenile("gonderi"); });
+bagla("paylasGece",   "click", function () { paylasTema = "koyu"; paylasYenile(paylasSekil); });
+bagla("paylasGunduz", "click", function () { paylasTema = "acik"; paylasYenile(paylasSekil); });
+bagla("paylasTurFoto",  "click", function () { paylasTur = "foto";  paylasYenile(paylasSekil); });
+bagla("paylasTurVideo", "click", function () { paylasTur = "video"; paylasYenile(paylasSekil); });
 
 /* =====================================================================
    TEMA
