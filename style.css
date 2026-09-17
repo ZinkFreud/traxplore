@@ -3219,22 +3219,29 @@ body.panelde   #bildirimBtn { display: none !important; }
    düğmesinin karşı kenarında. Küre ve sağ panel değişmiyor.
    Okunmamış sayısı 0 iken rozet hiç yazılmıyor. */
 #bildirimBtn {
+    /* Profil kartının İÇİNDE, en sağda duruyor. Ayrı bir kutu olarak
+       solda dururken ortada kalmış görünüyordu. HTML'de iç içe düğme
+       olamayacağı için kartın üstüne bindiriyoruz; kartın kendi zemini
+       göründüğü sürece tek parça gibi duruyor. */
     position: fixed;
-    top: 82px;
-    right: 272px;
-    z-index: 901;
-    width: 44px;
-    height: 44px;
+    top: 101px;          /* profil kartıyla dikey ortalı (82 + (68-30)/2) */
+    right: 22px;
+    z-index: 902;        /* kartın üstünde kalsın ki tıklama zile gitsin */
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    background: var(--katman);
+    border-radius: 9px;
+    background: none;
     border: none;
     color: var(--yazi-soluk);
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
 }
+/* Kullanıcı adı zilin altına kaymasın diye sağda yer ayrılıyor:
+   16px kartın kendi payı + zilin kapladığı 16px. */
+#profilBtn { padding-right: 32px; }
 #bildirimBtn[hidden] { display: none !important; }
 #bildirimBtn:hover { background: var(--katman-3); color: var(--yazi); }
 #bildirimBtn svg {
@@ -3247,7 +3254,7 @@ body.panelde   #bildirimBtn { display: none !important; }
 #bildirimBtn.dolu { color: var(--kehribar-yazi); }
 #bildirimSayi {
     position: absolute;
-    top: 5px; right: 5px;
+    top: -3px; right: -3px;
     min-width: 16px; height: 16px;
     padding: 0 4px;
     border-radius: 999px;
@@ -3355,10 +3362,12 @@ body.panelde   #bildirimBtn { display: none !important; }
         width: 38px;
         height: 38px;
         border-radius: 50%;
+        background: var(--katman);
         border: 1px solid rgba(var(--kehribar-rgb), 0.45);
         color: var(--kehribar-yazi);
         box-shadow: 0 6px 20px var(--golge);
     }
+    #bildirimSayi { top: 0; right: 0; }
 }
 
 #paylasPanel {
