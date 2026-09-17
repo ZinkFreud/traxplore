@@ -40,7 +40,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="style.css?v=20260917a">
+    <link rel="stylesheet" href="style.css?v=20260917b">
 </head>
 <body>
     <!-- Giriş / Kayıt ekranı -->
@@ -517,6 +517,25 @@
         </svg>
     </button>
 
+    <!-- Bildirimler. Zil masaustunde profil dugmesinin solunda,
+         telefonda paylas dugmesinin karsi kenarinda duruyor. Kure ve
+         sag panel degismiyor. -->
+    <button id="bildirimBtn" type="button" aria-label="Bildirimler" title="Bildirimler" hidden>
+        <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
+            <path d="M18 9a6 6 0 1 0-12 0c0 4.5-1.8 6-1.8 6h15.6S18 13.5 18 9z" />
+            <path d="M10.2 18.5a2.1 2.1 0 0 0 3.6 0" />
+        </svg>
+        <span id="bildirimSayi" hidden></span>
+    </button>
+
+    <div id="bildirimPanel" hidden>
+        <div class="bildirim-ic">
+            <button id="bildirimKapat" type="button" aria-label="Kapat">&times;</button>
+            <h3>Bildirimler</h3>
+            <div id="bildirimListe"></div>
+        </div>
+    </div>
+
     <div id="paylasPanel" hidden>
         <div class="paylas-ic">
             <button id="paylasKapat" type="button" aria-label="Kapat">&times;</button>
@@ -575,7 +594,7 @@
         }
       })();
     </script>
-    <script src="script.js?v=20260917a"></script>
+    <script src="script.js?v=20260917b"></script>
     <script>
     /* Servis iscisi: uygulamanin kabugunu telefonda tutuyor, acilis
        hizlaniyor. Sadece https'te calisiyor, yerel testte kaydolmuyor. */

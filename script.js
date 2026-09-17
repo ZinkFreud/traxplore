@@ -251,6 +251,11 @@ let sonAcilanUlke = "";         // aynı ülkeyi iki kez açmayalım
 let sonAcilanAn   = 0;
 let kureDurdu     = false;      // çizim duraklatıldı mı
 let videoKaydediliyor = false; // paylaşım videosu kaydediliyor mu
+/* Bildirim rozetinin en son ne zaman tazelendiği. Yukarıda duruyor:
+   veriYukle bu dosyanın aşağısındaki bildirim bölümünden önce
+   çalışabiliyor, aşağıda bıraksak TDZ hatası verir (video bayrağında
+   bir kez başımıza geldi). */
+let bildirimTazeAn = 0;
 let kureUykuda    = false;      // 30 sn dokunulmadı
 let kameraBitis   = 0;          // kamera animasyonu bitiş anı
 let pinListesi = [];             // kurede gorunen pinler
@@ -3807,6 +3812,8 @@ function hepsiniKapat() {
   document.getElementById("gecmisPanel").classList.remove("acik");
   const pp = document.getElementById("paylasPanel");
   if (pp) { pp.hidden = true; }
+  const bp = document.getElementById("bildirimPanel");
+  if (bp) { bp.hidden = true; }
   aktifDetay = { ulke: "", sehir: "" };
   aktifUlke = "";
   fotoKuyruk = [];
@@ -4626,6 +4633,9 @@ async function veriYukle() {
      tazeleniyordu; acilista dugmede "PROFIL" yaziyor, profile bir kez
      girip cikinca "@ad" oluyordu. Veri geldigi anda bir kez cizelim. */
   profilButonFotoGuncelle();
+  const zil = document.getElementById("bildirimBtn");
+  if (zil) zil.hidden = false;
+  bildirimSayisiTazele();
 }
 
 (async function baslat() {
@@ -4650,6 +4660,190 @@ async function veriYukle() {
     kitaChartCiz();
     istatistikGuncelle();
   }
+})();
+
+/* =====================================================================
+   BILDIRIMLER  (asama 1: uygulama ici)
+   ---------------------------------------------------------------------
+   Zil + liste. Telefon bildirimi (push) BURADA YOK; o ayri bir is.
+
+   Kurallarin hicbiri burada degil: bildirimleri veritabani tetikleyicisi
+   doguruyor, bu dosya sadece geleni ciziyor. Telefona guvenilmiyor.
+
+   Begeni bildiriminde KIM begendigi yazmiyor -- yazacak veri de yok,
+   fonksiyon o alani hic dondurmuyor (34_bildirimler.sql). Beğeniyi
+   bilerek isimsiz yapmistik; bildirimde ismi gostermek o karari
+   delmek olurdu.
+   ===================================================================== */
+
+function bildirimZaman(t) {
+  if (!t) return "";
+  const fark = (Date.now() - new Date(t).getTime()) / 1000;
+  if (fark < 60)     return "az önce";
+  if (fark < 3600)   return Math.floor(fark / 60) + " dk";
+  if (fark < 86400)  return Math.floor(fark / 3600) + " sa";
+  if (fark < 604800) return Math.floor(fark / 86400) + " gün";
+  return new Date(t).toLocaleDateString("tr-TR", { day: "numeric", month: "long" });
+}
+
+async function bildirimSayisiTazele() {
+  const dugme = document.getElementById("bildirimBtn");
+  const rozet = document.getElementById("bildirimSayi");
+  if (!dugme || !rozet) return;
+  const { data, error } = await db.rpc("okunmamis_bildirim");
+  if (error) { console.log("bildirim sayisi alinamadi:", error.message); return; }
+  const n = data || 0;
+  /* 0 iken rozet hic yazilmiyor: bos bir sayac bilgi degil. */
+  rozet.hidden = !n;
+  rozet.textContent = n > 99 ? "99+" : String(n);
+  dugme.classList.toggle("dolu", !!n);
+  bildirimTazeAn = Date.now();
+}
+
+function bildirimSimgesi(tur) {
+  const ns = "http://www.w3.org/2000/svg";
+  const s = document.createElementNS(ns, "svg");
+  s.setAttribute("viewBox", "0 0 24 24");
+  s.setAttribute("width", "17"); s.setAttribute("height", "17");
+  s.setAttribute("aria-hidden", "true");
+  const p = document.createElementNS(ns, "path");
+  if (tur === "yorum_begeni") {
+    p.setAttribute("d", "M7 10.5 11 3a2.4 2.4 0 0 1 2.4 2.4V9.5h4.3a1.9 1.9 0 0 1 1.85 2.33"
+                      + "l-1.2 5.6A2.2 2.2 0 0 1 16.2 19H7z");
+    s.appendChild(p);
+    const k = document.createElementNS(ns, "path");
+    k.setAttribute("d", "M7 10.5V19H5.2A1.2 1.2 0 0 1 4 17.8v-6.1a1.2 1.2 0 0 1 1.2-1.2z");
+    s.appendChild(k);
+  } else {
+    p.setAttribute("d", "M16 19v-1.6a3.4 3.4 0 0 0-3.4-3.4H6.4A3.4 3.4 0 0 0 3 17.4V19");
+    s.appendChild(p);
+    const c = document.createElementNS(ns, "circle");
+    c.setAttribute("cx", "9.5"); c.setAttribute("cy", "7.5"); c.setAttribute("r", "3.5");
+    s.appendChild(c);
+    if (tur === "arkadas_kabul") {
+      const t = document.createElementNS(ns, "path");
+      t.setAttribute("d", "M16.5 11.5 18.5 13.5 22 10");
+      s.appendChild(t);
+    } else {
+      const a = document.createElementNS(ns, "path");
+      a.setAttribute("d", "M19 8v6M16 11h6");
+      s.appendChild(a);
+    }
+  }
+  return s;
+}
+
+function bildirimKarti(b) {
+  const kart = document.createElement("button");
+  kart.type = "button";
+  kart.className = "bildirim-kart" + (b.okundu ? "" : " yeni");
+
+  if (b.tur === "yorum_begeni") {
+    const s = document.createElement("span");
+    s.className = "bildirim-simge";
+    s.appendChild(bildirimSimgesi(b.tur));
+    kart.appendChild(s);
+  } else {
+    kart.appendChild(avatarYap(b.foto, "kucuk"));
+  }
+
+  const govde = document.createElement("div");
+  govde.className = "bildirim-govde";
+  const metin = document.createElement("div");
+  metin.className = "bildirim-metin";
+
+  const ad = b.kullanici_adi || b.isim || "bir gezgin";
+  if (b.tur === "arkadas_istek") {
+    metin.innerHTML = "";
+    const g = document.createElement("b"); g.textContent = ad;
+    metin.appendChild(g);
+    metin.appendChild(document.createTextNode(" sana arkadaşlık isteği gönderdi."));
+  } else if (b.tur === "arkadas_kabul") {
+    const g = document.createElement("b"); g.textContent = ad;
+    metin.appendChild(g);
+    metin.appendChild(document.createTextNode(" arkadaşlık isteğini kabul etti."));
+  } else {
+    const g = document.createElement("b"); g.textContent = b.sehir || "Bir şehir";
+    metin.appendChild(g);
+    metin.appendChild(document.createTextNode(
+      " yorumun " + (b.sayi || 1) + " beğeni aldı."));
+  }
+  govde.appendChild(metin);
+
+  const zaman = document.createElement("div");
+  zaman.className = "bildirim-zaman";
+  zaman.textContent = bildirimZaman(b.guncellendi);
+  govde.appendChild(zaman);
+  kart.appendChild(govde);
+
+  kart.addEventListener("click", function () {
+    bildirimPaneliKapat();
+    if (b.tur === "yorum_begeni") {
+      if (b.ulke && b.sehir) { hepsiniKapat(); sehirDetayAc(b.ulke, b.sehir); }
+    } else if (b.kullanici_adi) {
+      hepsiniKapat(); gezginiAc(b.kullanici_adi);
+    }
+  });
+  return kart;
+}
+
+function bildirimPaneliKapat() {
+  const p = document.getElementById("bildirimPanel");
+  if (p) p.hidden = true;
+}
+
+async function bildirimPaneliAc() {
+  const panel = document.getElementById("bildirimPanel");
+  const liste = document.getElementById("bildirimListe");
+  if (!panel || !liste) return;
+  panel.hidden = false;
+  liste.innerHTML = "<div class='bildirim-bos'>Yükleniyor…</div>";
+
+  const { data, error } = await db.rpc("bildirimlerim", { p_limit: 30 });
+  if (error) {
+    liste.innerHTML = "<div class='bildirim-bos'>Bildirimler alınamadı.</div>";
+    console.log("bildirimler alinamadi:", error.message);
+    return;
+  }
+  const satirlar = data || [];
+  liste.innerHTML = "";
+  if (!satirlar.length) {
+    const bos = document.createElement("div");
+    bos.className = "bildirim-bos";
+    bos.textContent = "Henüz bildirimin yok.";
+    liste.appendChild(bos);
+  } else {
+    for (let i = 0; i < satirlar.length; i++) liste.appendChild(bildirimKarti(satirlar[i]));
+  }
+
+  /* Panel acildi, hepsi okundu sayiliyor. Rozeti sunucunun cevabini
+     beklemeden dusuruyoruz; zaten okudu. */
+  const rozet = document.getElementById("bildirimSayi");
+  const dugme = document.getElementById("bildirimBtn");
+  if (rozet) rozet.hidden = true;
+  if (dugme) dugme.classList.remove("dolu");
+  const { error: hata2 } = await db.rpc("bildirimleri_okudum");
+  if (hata2) { console.log("okundu isaretlenemedi:", hata2.message); bildirimSayisiTazele(); }
+}
+
+(function bildirimBagla() {
+  const dugme = document.getElementById("bildirimBtn");
+  const kapat = document.getElementById("bildirimKapat");
+  const panel = document.getElementById("bildirimPanel");
+  if (dugme) dugme.addEventListener("click", bildirimPaneliAc);
+  if (kapat) kapat.addEventListener("click", bildirimPaneliKapat);
+  if (panel) panel.addEventListener("click", function (e) {
+    if (e.target === panel) bildirimPaneliKapat();
+  });
+  /* Sekmeye geri donunce tazele. Zamanlayiciyla surekli sormuyoruz:
+     ucretsiz katmanda her istek sayiliyor ve bos yere sorulan sorgu
+     kullaniciya hicbir sey katmiyor. En fazla dakikada bir. */
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState !== "visible") return;
+    if (Date.now() - bildirimTazeAn < 60000) return;
+    const d = document.getElementById("bildirimBtn");
+    if (d && !d.hidden) bildirimSayisiTazele();
+  });
 })();
 
 /* =====================================================================

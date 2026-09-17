@@ -86,6 +86,20 @@
       benim:true,  sahip:'cihan', kullanici_adi:'cihanec', sahip_foto:null,
       begeni:0, begendim:false }
   ];
+  /* Bildirimler. Sahte sunucu da gercek kurallari uyguluyor:
+     begeni bildiriminde kaynak kisi HIC donmuyor (kullanici_adi/isim/
+     foto null), cunku gercek fonksiyon da dondurmuyor. */
+  window.__bildirimler = [
+    { id:1, tur:'arkadas_istek', sayi:1, okundu:false,
+      guncellendi:new Date(Date.now() - 5*60000).toISOString(),
+      kullanici_adi:'mert', isim:'Mert', foto:null, ulke:null, sehir:null },
+    { id:2, tur:'yorum_begeni', sayi:3, okundu:false,
+      guncellendi:new Date(Date.now() - 3*3600000).toISOString(),
+      kullanici_adi:null, isim:null, foto:null, ulke:'Turkey', sehir:'Istanbul' },
+    { id:3, tur:'arkadas_kabul', sayi:1, okundu:true,
+      guncellendi:new Date(Date.now() - 4*86400000).toISOString(),
+      kullanici_adi:'ayse', isim:'Ayşe', foto:null, ulke:null, sehir:null }
+  ];
   window.__istekler2 = [];
   window.__favoriler  = [];
   window.__gezilenSunucu = [
@@ -234,6 +248,16 @@
             window.__log.begeni = (window.__log.begeni || [])
               .concat([(y.begendim ? 'begen:' : 'geri:') + y.id]);
             return ok([{ begeni: y.begeni, begendim: y.begendim }]);
+          }
+          if (ad === "bildirimlerim") return ok(
+            (window.__bildirimler || []).map(b => Object.assign({}, b)));
+          if (ad === "okunmamis_bildirim") return ok(
+            (window.__bildirimler || []).filter(b => !b.okundu).length);
+          if (ad === "bildirimleri_okudum") {
+            const n = (window.__bildirimler || []).filter(b => !b.okundu).length;
+            (window.__bildirimler || []).forEach(b => { b.okundu = true; });
+            window.__log.bildirim = (window.__log.bildirim || []).concat(['okudum:' + n]);
+            return ok(n);
           }
           if (ad === "yorumlarim") return ok(
             (window.__yorumlar || []).filter(y => y.benim));

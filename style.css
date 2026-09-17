@@ -3194,6 +3194,10 @@ body.misafirde #istatistik { display: none; }
 /* Baskasinin haritasindayken kendi sayilarini paylasamaz. */
 body.misafirde #paylasBtn,
 body.panelde   #paylasBtn { display: none; }
+/* Zil telefonda yüzen bir düğme; panel açıkken üstüne binmesin.
+   Misafir modunda da gizli: orada ekran başkasının haritası. */
+body.misafirde #bildirimBtn,
+body.panelde   #bildirimBtn { display: none !important; }
 
 @media (max-width: 720px), (max-height: 520px) {
     /* Telefonda buyuk sayacin yaninda, sag kenarda. */
@@ -3208,6 +3212,153 @@ body.panelde   #paylasBtn { display: none; }
     }
     /* Sayacin yazisi dugmenin altina girmesin diye kenarlardan pay. */
     #kureSayac { padding-left: 58px; padding-right: 58px; }
+}
+
+/* --- bildirimler ------------------------------------------------------
+   Zil masaüstünde profil düğmesinin solunda, telefonda paylaş
+   düğmesinin karşı kenarında. Küre ve sağ panel değişmiyor.
+   Okunmamış sayısı 0 iken rozet hiç yazılmıyor. */
+#bildirimBtn {
+    position: fixed;
+    top: 82px;
+    right: 272px;
+    z-index: 901;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: var(--katman);
+    border: none;
+    color: var(--yazi-soluk);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+#bildirimBtn[hidden] { display: none !important; }
+#bildirimBtn:hover { background: var(--katman-3); color: var(--yazi); }
+#bildirimBtn svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+#bildirimBtn.dolu { color: var(--kehribar-yazi); }
+#bildirimSayi {
+    position: absolute;
+    top: 5px; right: 5px;
+    min-width: 16px; height: 16px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--kehribar);
+    color: #1A1206;
+    font-size: 10.5px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+}
+#bildirimSayi[hidden] { display: none !important; }
+
+#bildirimPanel {
+    position: fixed;
+    inset: 0;
+    z-index: 10001;
+    background: rgba(var(--zemin-rgb), 0.82);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+#bildirimPanel[hidden] { display: none !important; }
+.bildirim-ic {
+    position: relative;
+    width: 100%;
+    max-width: 380px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--katman);
+    border: 1px solid rgba(var(--kehribar-rgb), 0.28);
+    border-radius: 18px;
+    padding: 22px 20px 16px;
+}
+.bildirim-ic h3 {
+    margin: 0 0 14px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--yazi);
+}
+#bildirimKapat {
+    position: absolute;
+    top: 8px; right: 10px;
+    background: none;
+    border: none;
+    color: var(--yazi-soluk);
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+}
+#bildirimListe {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.bildirim-kart {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 8px;
+    background: none;
+    border: 0;
+    border-radius: 8px;
+    font: inherit;
+    text-align: left;
+    color: var(--yazi);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.bildirim-kart:hover { background: rgba(var(--kil-rgb), 0.12); }
+.bildirim-kart.yeni { background: rgba(var(--kehribar-rgb), 0.08); }
+.bildirim-kart.yeni:hover { background: rgba(var(--kehribar-rgb), 0.14); }
+.bildirim-govde { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bildirim-metin { font-size: 13.5px; line-height: 1.4; }
+.bildirim-metin b { font-weight: 600; }
+.bildirim-zaman { font-size: 11px; color: var(--yazi-silik); }
+.bildirim-simge {
+    flex: none;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: rgba(var(--kehribar-rgb), 0.14);
+    color: var(--kehribar-yazi);
+}
+.bildirim-simge svg { fill: none; stroke: currentColor; stroke-width: 1.7;
+                      stroke-linecap: round; stroke-linejoin: round; }
+.bildirim-bos {
+    padding: 18px 4px 22px;
+    font-size: 13px;
+    color: var(--yazi-silik);
+    text-align: center;
+}
+
+@media (max-width: 720px), (max-height: 520px) {
+    /* Paylaş düğmesinin karşı kenarı: aynı yükseklik, aynı boy. */
+    #bildirimBtn {
+        top: auto;
+        right: auto;
+        left: 12px;
+        bottom: calc(70px + env(safe-area-inset-bottom));
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid rgba(var(--kehribar-rgb), 0.45);
+        color: var(--kehribar-yazi);
+        box-shadow: 0 6px 20px var(--golge);
+    }
 }
 
 #paylasPanel {
