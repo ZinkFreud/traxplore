@@ -2088,7 +2088,105 @@ function yorumKarti(y) {
   metin.className = "yorum-metin";
   metin.textContent = y.metin;
   kart.appendChild(metin);
+
+  kart.appendChild(begeniSatiri(y));
   return kart;
+}
+
+/* --- yorum begenisi --------------------------------------------------
+   SADECE SAYI gorunuyor, kimin begendigi hicbir yerde yok. Bunu arayuz
+   gizlemiyor: sehir_yorumlari o bilgiyi zaten dondurmuyor, tabloya da
+   dogrudan erisim kapali.
+
+   BEGENMEME DUGMESI YOK. Bir sehir hakkinda yazilmis kisisel bir
+   izlenimin altina "kotu" dugmesi koymak insani yazmaktan vazgecirir.
+   Uygunsuz yorumun yolu sikayet.
+
+   Sayi 0 iken hic yazilmiyor: "0" bir bilgi degil, bos bir sayac.
+   Kendi yorumunda dugme yok ama sayi (varsa) duruyor -- kac kisinin
+   begendigini gormek icin. */
+function begeniIkonu() {
+  const ns = "http://www.w3.org/2000/svg";
+  const s = document.createElementNS(ns, "svg");
+  s.setAttribute("viewBox", "0 0 24 24");
+  s.setAttribute("width", "15");
+  s.setAttribute("height", "15");
+  s.setAttribute("aria-hidden", "true");
+  const p = document.createElementNS(ns, "path");
+  p.setAttribute("d", "M7 10.5 11 3a2.4 2.4 0 0 1 2.4 2.4V9.5h4.3a1.9 1.9 0 0 1 1.85 2.33"
+                    + "l-1.2 5.6A2.2 2.2 0 0 1 16.2 19H7z");
+  s.appendChild(p);
+  const k = document.createElementNS(ns, "path");
+  k.setAttribute("d", "M7 10.5V19H5.2A1.2 1.2 0 0 1 4 17.8v-6.1a1.2 1.2 0 0 1 1.2-1.2z");
+  s.appendChild(k);
+  return s;
+}
+
+function begeniSatiri(y) {
+  const satir = document.createElement("div");
+  satir.className = "yorum-alt";
+
+  const sayi = document.createElement("span");
+  sayi.className = "begeni-sayi";
+
+  function yaz(deger) {
+    const n = deger || 0;
+    sayi.textContent = n ? String(n) : "";
+  }
+
+  if (y.benim) {
+    /* Kendi yorumun: dugme yok, sadece kac kisi begenmis. */
+    const kutu = document.createElement("span");
+    kutu.className = "begeni begeni-durgun";
+    kutu.appendChild(begeniIkonu());
+    kutu.appendChild(sayi);
+    yaz(y.begeni);
+    kutu.title = (y.begeni || 0) + " kişi bu yorumu beğendi";
+    kutu.style.display = y.begeni ? "" : "none";
+    satir.appendChild(kutu);
+    return satir;
+  }
+
+  const dugme = document.createElement("button");
+  dugme.type = "button";
+  dugme.className = "begeni";
+  dugme.appendChild(begeniIkonu());
+  dugme.appendChild(sayi);
+
+  function tazele() {
+    yaz(y.begeni);
+    dugme.classList.toggle("secili", !!y.begendim);
+    dugme.setAttribute("aria-pressed", y.begendim ? "true" : "false");
+    dugme.title = y.begendim ? "Beğenini geri al" : "Bu yorumu beğen";
+  }
+  tazele();
+
+  dugme.addEventListener("click", async function () {
+    if (dugme.disabled) return;
+    dugme.disabled = true;
+    /* Once ekranda degistiriyoruz: dokunusun karsiligi aninda gorunsun.
+       Sunucu ne derse son soz onun; cevap gelince uzerine yaziliyor. */
+    const eskiSayi = y.begeni, eskiBen = y.begendim;
+    y.begendim = !y.begendim;
+    y.begeni = (y.begeni || 0) + (y.begendim ? 1 : -1);
+    tazele();
+
+    const { data, error } = await db.rpc("yorum_begen", { p_id: y.id });
+    if (error) {
+      y.begeni = eskiSayi; y.begendim = eskiBen;
+      tazele();
+      alert(hataYaz(error.message));
+    } else {
+      const c = (data && data[0]) || {};
+      y.begeni  = c.begeni;
+      y.begendim = c.begendim;
+      tazele();
+    }
+    dugme.disabled = false;
+  });
+
+  satir.appendChild(dugme);
+  return satir;
 }
 
 /* Burayi gezenler. Sehir sayfasinin GOVDESININ DISINDA duruyor:
