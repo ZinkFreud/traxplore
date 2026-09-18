@@ -12,12 +12,12 @@
    yayinda degistirmek gerekiyor, yoksa telefon eski dosyalari tutar.
    ===================================================================== */
 
-const SURUM  = "traxplore-20260918a";
+const SURUM  = "traxplore-20260918b";
 const KABUK  = [
   "./",
   "./index.html",
-  "./style.css?v=20260918a",
-  "./script.js?v=20260918a",
+  "./style.css?v=20260918b",
+  "./script.js?v=20260918b",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
@@ -30,7 +30,9 @@ const KABUK  = [
   "./gizlilik.html",
   "./kosullar.html",
   "./privacy.html",
-  "./terms.html"
+  "./terms.html",
+  "./hesap-silme.html",
+  "./delete-account.html"
 ];
 /* Bunlar baska sunucudan geliyor; biri inmezse kurulum bozulmasin diye
    tek tek ve hatayi yutarak ekliyoruz. */

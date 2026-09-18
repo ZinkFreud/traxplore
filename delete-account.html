@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traxplore — Delete Account</title>
+    <meta name="description" content="How to delete your Traxplore account and data; what is deleted and what is kept.">
+    <meta property="og:title" content="Traxplore — Delete Account">
+    <meta property="og:description" content="How to delete your Traxplore account and data; what is deleted and what is kept.">
+    <meta property="og:image" content="https://traxplore.app/onizleme.png?v=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --zemin: #060a11; --yuzey: rgba(9,13,19,0.86);
+    --kil: rgba(190,212,218,0.10); --kil-guclu: rgba(190,212,218,0.20);
+    --yazi: #DEE7EB; --yazi-soluk: #808B94; --kehribar: #E9A23B;
+    --kehribar-a: #F3BE73;
+    color-scheme: dark;
+}
+
+/* Bu sayfalarda tema dugmesi yok (uygulamanin disinda da aciliyorlar),
+   o yuzden ziyaretcinin cihaz ayarina uyuyorlar. Uygulama icinde
+   acildiklarinda zaten uygulamanin temasini aliyorlar: panele sadece
+   metin aktariliyor, bu stil blogu gitmiyor. */
+@media (prefers-color-scheme: light) {
+    :root {
+        --zemin: #F2F4F7; --yuzey: rgba(255,255,255,0.95);
+        --kil: rgba(23,32,42,0.12); --kil-guclu: rgba(23,32,42,0.24);
+        --yazi: #17202A; --yazi-soluk: #49545F; --kehribar: #7A4E06;
+        --kehribar-a: #5C3A04;
+        color-scheme: light;
+    }
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0; background: var(--zemin); color: var(--yazi);
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px; line-height: 1.7;
+}
+.sayfa { max-width: 720px; margin: 0 auto; padding: 40px 22px 90px; }
+.ust { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+       border-bottom: 1px solid var(--kil); padding-bottom: 18px; margin-bottom: 26px; }
+.marka { font-size: 14px; letter-spacing: 0.2em; color: var(--kehribar);
+         font-weight: 600; text-decoration: none; }
+.diller { margin-left: auto; font-size: 13px; }
+a { color: var(--kehribar); }
+a:hover { color: var(--kehribar-a); }
+h1 { font-size: 24px; font-weight: 600; margin: 0 0 6px; }
+.tarih { color: var(--yazi-soluk); font-size: 13px; margin: 0 0 32px; }
+h2 { font-size: 16px; font-weight: 600; margin: 34px 0 10px;
+     padding-top: 20px; border-top: 1px solid var(--kil); }
+h3 { font-size: 14px; font-weight: 600; margin: 22px 0 6px; color: var(--kehribar); }
+p, li { color: var(--yazi); }
+ul { padding-left: 20px; }
+li { margin: 6px 0; }
+.soluk { color: var(--yazi-soluk); }
+.kutu { border: 1px solid var(--kil-guclu); border-radius: 6px;
+        background: var(--yuzey); padding: 14px 18px; margin: 18px 0; }
+.kutu p:first-child { margin-top: 0; }
+.kutu p:last-child { margin-bottom: 0; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--kil);
+         vertical-align: top; }
+th { color: var(--yazi-soluk); font-weight: 600; font-size: 12px;
+     letter-spacing: 0.06em; text-transform: uppercase; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+       font-size: 0.92em; color: var(--kehribar); }
+.alt { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--kil);
+       color: var(--yazi-soluk); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="sayfa">
+    <div class="ust">
+        <a class="marka" href="./">TRAXPLORE</a>
+        <span class="diller"><a href="hesap-silme.html">Türkçe</a></span>
+    </div>
+    <h1>Deleting your account and data</h1>
+    <p class="tarih">Traxplore — developer: Cihan Güzelsoy · Last updated: 18 September 2026</p>
+
+    <p>You can delete your Traxplore account and the data attached to it at
+    any time, without asking anyone. There are two ways.</p>
+
+    <h2>1. From inside the app (recommended)</h2>
+    <p>Deletion happens immediately; there is no waiting period.</p>
+    <ul>
+        <li>Open Traxplore and sign in to your account.</li>
+        <li>Tap the <b>profile</b> card in the top right.</li>
+        <li>Open the Settings screen with the <b>gear</b> icon at the top right of your profile.</li>
+        <li>Scroll to the bottom and find <b>Delete my account</b>.</li>
+        <li>Confirm, and the account and the data listed below are deleted.</li>
+    </ul>
+
+    <h2>2. By e-mail</h2>
+    <p>If you cannot sign in, write to
+    <a href="mailto:cihanguzelsoy@gmail.com">cihanguzelsoy@gmail.com</a>
+    from the e-mail address of your account. Once your identity is confirmed,
+    the request is completed within <b>30 days</b> at the latest.</p>
+
+    <h2>Data that is deleted</h2>
+    <p>The following is deleted permanently and cannot be restored:</p>
+    <ul>
+        <li>Your sign-in account: e-mail address and password</li>
+        <li>Your profile: name, location, username, profile photo</li>
+        <li>Your map: the countries and cities you marked, and the travel dates</li>
+        <li>Your city notes, ratings and public comments</li>
+        <li>The city photos you uploaded (both the records and the files)</li>
+        <li>Your friendships and your block list</li>
+        <li>Your favourites and your "want to go" list</li>
+    </ul>
+
+    <h2>The one thing that is kept: abuse reports</h2>
+    <p>If a report has been filed about you, that record is kept for
+    <b>12 months</b> after your account is deleted, and is removed
+    automatically at the end of that period.</p>
+    <p>The reason: deleting and re-creating an account cannot be a way to
+    erase an abuse record. What is kept is therefore minimal — the record
+    contains <b>only</b> your username at that time and the text of the
+    report. Your e-mail address, name, location, photos and map are deleted
+    and do not appear in it.</p>
+
+    <div class="kutu">
+        <p><b>Usernames:</b> a deleted username is never given to anyone
+        else, so a name in an old report cannot be confused with a
+        different person later.</p>
+    </div>
+
+    <h2>Deleting data without deleting your account</h2>
+    <p>If you do not want to close your account, you can delete parts of
+    your data from inside the app: unmark cities, delete your photos and
+    comments, or <b>reset your map</b> from the Settings screen. None of
+    this affects your account.</p>
+
+    <div class="alt">
+        <p>For anything: <a href="mailto:cihanguzelsoy@gmail.com">cihanguzelsoy@gmail.com</a><br>
+        <a href="privacy.html">Privacy Policy</a> ·
+        <a href="terms.html">Terms &amp; Conditions</a></p>
+    </div>
+</div>
+</body>
+</html>

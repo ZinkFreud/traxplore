@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Traxplore — Hesap Silme</title>
+    <meta name="description" content="Traxplore hesabını ve verilerini nasıl silersin; ne siliniyor, ne saklanıyor.">
+    <meta property="og:title" content="Traxplore — Hesap Silme">
+    <meta property="og:description" content="Traxplore hesabını ve verilerini nasıl silersin; ne siliniyor, ne saklanıyor.">
+    <meta property="og:image" content="https://traxplore.app/onizleme.png?v=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+    --zemin: #060a11; --yuzey: rgba(9,13,19,0.86);
+    --kil: rgba(190,212,218,0.10); --kil-guclu: rgba(190,212,218,0.20);
+    --yazi: #DEE7EB; --yazi-soluk: #808B94; --kehribar: #E9A23B;
+    --kehribar-a: #F3BE73;
+    color-scheme: dark;
+}
+
+/* Bu sayfalarda tema dugmesi yok (uygulamanin disinda da aciliyorlar),
+   o yuzden ziyaretcinin cihaz ayarina uyuyorlar. Uygulama icinde
+   acildiklarinda zaten uygulamanin temasini aliyorlar: panele sadece
+   metin aktariliyor, bu stil blogu gitmiyor. */
+@media (prefers-color-scheme: light) {
+    :root {
+        --zemin: #F2F4F7; --yuzey: rgba(255,255,255,0.95);
+        --kil: rgba(23,32,42,0.12); --kil-guclu: rgba(23,32,42,0.24);
+        --yazi: #17202A; --yazi-soluk: #49545F; --kehribar: #7A4E06;
+        --kehribar-a: #5C3A04;
+        color-scheme: light;
+    }
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0; background: var(--zemin); color: var(--yazi);
+    font-family: "Space Grotesk", -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px; line-height: 1.7;
+}
+.sayfa { max-width: 720px; margin: 0 auto; padding: 40px 22px 90px; }
+.ust { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+       border-bottom: 1px solid var(--kil); padding-bottom: 18px; margin-bottom: 26px; }
+.marka { font-size: 14px; letter-spacing: 0.2em; color: var(--kehribar);
+         font-weight: 600; text-decoration: none; }
+.diller { margin-left: auto; font-size: 13px; }
+a { color: var(--kehribar); }
+a:hover { color: var(--kehribar-a); }
+h1 { font-size: 24px; font-weight: 600; margin: 0 0 6px; }
+.tarih { color: var(--yazi-soluk); font-size: 13px; margin: 0 0 32px; }
+h2 { font-size: 16px; font-weight: 600; margin: 34px 0 10px;
+     padding-top: 20px; border-top: 1px solid var(--kil); }
+h3 { font-size: 14px; font-weight: 600; margin: 22px 0 6px; color: var(--kehribar); }
+p, li { color: var(--yazi); }
+ul { padding-left: 20px; }
+li { margin: 6px 0; }
+.soluk { color: var(--yazi-soluk); }
+.kutu { border: 1px solid var(--kil-guclu); border-radius: 6px;
+        background: var(--yuzey); padding: 14px 18px; margin: 18px 0; }
+.kutu p:first-child { margin-top: 0; }
+.kutu p:last-child { margin-bottom: 0; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 14px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--kil);
+         vertical-align: top; }
+th { color: var(--yazi-soluk); font-weight: 600; font-size: 12px;
+     letter-spacing: 0.06em; text-transform: uppercase; }
+code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+       font-size: 0.92em; color: var(--kehribar); }
+.alt { margin-top: 50px; padding-top: 20px; border-top: 1px solid var(--kil);
+       color: var(--yazi-soluk); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="sayfa">
+    <div class="ust">
+        <a class="marka" href="./">TRAXPLORE</a>
+        <span class="diller"><a href="delete-account.html">English</a></span>
+    </div>
+    <h1>Hesabını ve verilerini silme</h1>
+    <p class="tarih">Traxplore — geliştirici: Cihan Güzelsoy · Son güncelleme: 18 Eylül 2026</p>
+
+    <p>Traxplore hesabını ve hesabına bağlı verileri istediğin an, kimseden
+    izin almadan silebilirsin. İki yolu var.</p>
+
+    <h2>1. Uygulamanın içinden (önerilen)</h2>
+    <p>Silme işlemi anında gerçekleşir, beklemen gerekmez.</p>
+    <ul>
+        <li>Traxplore'u aç ve hesabına giriş yap.</li>
+        <li>Sağ üstteki <b>profil</b> kartına dokun.</li>
+        <li>Profilin sağ üst köşesindeki <b>çark</b> simgesiyle Ayarlar ekranını aç.</li>
+        <li>En altta <b>Hesabımı sil</b> başlığını bul.</li>
+        <li>İstenen onayı verdiğinde hesap ve aşağıda listelenen veriler silinir.</li>
+    </ul>
+
+    <h2>2. E-posta ile</h2>
+    <p>Uygulamaya giremiyorsan, hesabının e-posta adresinden
+    <a href="mailto:cihanguzelsoy@gmail.com">cihanguzelsoy@gmail.com</a>
+    adresine yazman yeterli. Talebi, kimliğini doğruladıktan sonra en geç
+    <b>30 gün</b> içinde tamamlıyoruz.</p>
+
+    <h2>Silinen veriler</h2>
+    <p>Aşağıdakiler kalıcı olarak silinir, geri getirilemez:</p>
+    <ul>
+        <li>Giriş hesabın: e-posta adresi ve şifre</li>
+        <li>Profilin: isim, konum, kullanıcı adı, profil fotoğrafı</li>
+        <li>Haritan: gezdiğin ülke ve şehirler, gezi tarihleri</li>
+        <li>Şehir notların, puanların ve herkese açık yorumların</li>
+        <li>Yüklediğin şehir fotoğrafları (hem kayıtları hem dosyaları)</li>
+        <li>Arkadaşlıkların ve engellediğin kişilerin listesi</li>
+        <li>Favorilerin ve "gitmek istediklerim" listen</li>
+    </ul>
+
+    <h2>Saklanan tek veri: şikayet kayıtları</h2>
+    <p>Hakkında yapılmış bir şikayet varsa, o kayıt hesabın silindikten
+    sonra da <b>12 ay</b> saklanır ve bu sürenin sonunda otomatik olarak
+    silinir.</p>
+    <p>Sebebi şudur: hesabı silip yeniden açmak, hakkındaki kötüye kullanım
+    kaydını sıfırlamanın yolu olamaz. Bu yüzden saklanan şey asgari
+    tutulmuştur — kaydın içinde <b>yalnızca</b> o zamanki kullanıcı adın ve
+    şikayetin metni kalır. E-posta adresin, ismin, konumun, fotoğrafların ve
+    haritan silinmiştir, şikayet kaydında da yer almaz.</p>
+
+    <div class="kutu">
+        <p><b>Kullanıcı adı:</b> Silinen bir kullanıcı adı bir daha kimseye
+        verilmez. Böylece eski bir şikayet kaydındaki ad, sonradan gelen
+        başka biriyle karıştırılamaz.</p>
+    </div>
+
+    <h2>Hesabını silmeden veri silmek</h2>
+    <p>Hesabını kapatmak istemiyorsan, verilerinin bir kısmını uygulama
+    içinden tek tek silebilirsin: şehir işaretlerini kaldırabilir,
+    fotoğraflarını ve yorumlarını silebilir ya da Ayarlar ekranından
+    <b>haritanı sıfırlayabilirsin</b>. Bunlar hesabını etkilemez.</p>
+
+    <div class="alt">
+        <p>Her konuda: <a href="mailto:cihanguzelsoy@gmail.com">cihanguzelsoy@gmail.com</a><br>
+        <a href="gizlilik.html">Gizlilik Politikası</a> ·
+        <a href="kosullar.html">Şartlar ve Koşullar</a></p>
+    </div>
+</div>
+</body>
+</html>
