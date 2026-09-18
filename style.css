@@ -577,6 +577,14 @@ body {
     background: var(--kehribar);   /* idle.png yoktu, 404 veriyordu */
     border-radius: 50%;
     max-width: 44px;
+    /* Bu kutu .avatar sınıfını taşımıyor, dolayısıyla oradaki
+       kırpma kuralları buraya HİÇ uygulanmıyordu: avatarKur yalnızca
+       background-image veriyor, boyut ayarı gelmeyince 256 piksellik
+       fotoğrafın sol üst köşesi 44 piksellik dairede görünüyordu —
+       koyu bir fotoğrafta daire tamamen siyah çıkıyordu. */
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
 }
 #profilCizgi {
     width: 2px;
@@ -1554,7 +1562,10 @@ html.mobil .scene-tooltip { display: none !important; }
 
 /* --- profil düğmesi ------------------------------------------------ */
 #profilFoto {
-    background: rgba(var(--kehribar-rgb), 0.12);
+    /* background-COLOR, kısayol değil. Kısayol yazılırsa yukarıdaki
+       background-size/position/repeat sıfırlanıyor ve fotoğraf daireye
+       kırpılmadan basılıyor. Hatanın asıl sebebi buydu. */
+    background-color: rgba(var(--kehribar-rgb), 0.12);
     border: 1px solid rgba(var(--kehribar-rgb), 0.40);
     box-sizing: border-box;
 }
