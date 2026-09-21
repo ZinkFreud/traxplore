@@ -1,10 +1,13 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.necart.traxplore",
       "sha256_cert_fingerprints": [
+        "88:0A:93:FA:DF:D7:CB:EC:36:F4:98:A0:32:2B:65:5F:35:6C:A7:13:42:16:F2:60:A8:F5:2E:7C:8F:46:CF:D0",
         "00:D9:C7:A1:6E:FB:43:A9:CA:50:30:AE:85:45:BC:6A:79:9C:F5:46:25:03:A1:65:BA:A0:58:68:D0:74:44:58"
       ]
     }
