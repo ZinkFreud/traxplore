@@ -87,18 +87,18 @@
         <p id="kutuBaslik" class="kutu-baslik">Giriş yap</p>
         <p id="girisMesaj" class="giris-mesaj"></p>
         <input type="email" id="girisEmail" placeholder="E-posta" />
-        <input type="password" id="girisSifre" placeholder="Şifre" />
+        <input type="password" id="girisSre" placeholder="Şre" />
         <input type="text" id="girisKullanici" placeholder="Kullanıcı adı" maxlength="20"
                autocomplete="off" autocapitalize="none" spellcheck="false" />
         <button id="girisBtn" class="giris-btn">Giriş Yap</button>
         <button id="kayitBtn" class="kayit-btn">Kayıt Ol</button>
         <button id="modDegistir" class="metin-btn">Hesabın yok mu? Kayıt ol</button>
-        <button id="sifreUnuttum" class="metin-btn">Şifremi unuttum</button>
-        <!-- Sifre sifirlama ADIMI. Eskiden ayri bir adim yoktu: "Sifremi
-             unuttum"a basinca ekran ayni kaliyor, sifre kutusu ve
+        <button id="sreUnuttum" class="metin-btn">Şremi unuttum</button>
+        <!-- Sre sirlama ADIMI. Eskiden ayri bir adim yoktu: "Sremi
+             unuttum"a basinca ekran ayni kaliyor, sre kutusu ve
              "Giris Yap" dugmesi onunde duruyordu. Simdi kutu bu kipe
              geciyor, ekranda sadece e-posta ve "Baglanti Gonder" kaliyor. -->
-        <div id="sifirlamaAlani">
+        <div id="sirlamaAlani">
             <button id="sifirlamaGonder" class="giris-btn">Bağlantı Gönder</button>
             <button id="sifirlamaVazgec" class="metin-btn">Girişe dön</button>
         </div>
@@ -617,7 +617,8 @@
                          window.matchMedia("(display-mode: standalone)").matches;
       let gizli = false;
       try { gizli = localStorage.getItem("ipucuKapali") === "1"; } catch (e) {}
-      if (iOS && !uygulamada && !gizli) el.classList.add("acik");
+            const kabuk = /TraxploreApp/.test(navigator.userAgent);
+      if (iOS && !uygulamada && !gizli && !kabuk) el.classList.add("acik");
       document.getElementById("ipucuKapat").addEventListener("click", function () {
         el.classList.remove("acik");
         try { localStorage.setItem("ipucuKapali", "1"); } catch (e) {}
