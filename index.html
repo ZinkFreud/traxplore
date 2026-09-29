@@ -61,12 +61,21 @@
             <p class="vitrin-baslik">Gittiğin her şehir<br>haritanda bir ışık.</p>
             <p class="vitrin-yazi">Kıtaları, ülkeleri ve şehirleri işaretle;
                 nereleri gezdiğini dünya üzerinde tek bakışta gör.</p>
-            <!-- YER TUTUCU. Uygulamalar yayina girince buradaki iki kutu
-                 Apple ve Google'in KENDI resmi rozetleriyle degistirilecek
-                 (marka kurallari var), baglantilar da o zaman doldurulacak. -->
-            <div class="vitrin-magaza">
-                <span class="magaza-btn"><i></i><b>İndir</b><em>App Store</em></span>
-                <span class="magaza-btn"><i></i><b>İndir</b><em>Google Play</em></span>
+            <!-- Apple'in KENDI resmi rozeti (marketingtools.apple.com'dan
+                 indirilen Turkce siyah surum, appstore-rozet.svg). Marka
+                 kurallari rozeti degistirmeyi ve Apple logosunu rozet
+                 yerine kullanmayi yasakliyor; ekranda en az 40 piksel
+                 yuksek olmali ve cevresinde rozetin dortte biri kadar
+                 bosluk kalmali -- yukseklik 48, bosluk 12 piksel.
+                 Google Play rozeti Android yayina girince eklenecek;
+                 su an kapali testte oldugu icin baglanacak yer yok. -->
+            <div class="vitrin-magaza" style="display:flex;gap:12px;align-items:center;">
+                <a class="magaza-rozet" target="_blank" rel="noopener"
+                   href="https://apps.apple.com/us/app/traxplore/id6816380035?itscg=30200&amp;itsct=apps_box_badge&amp;mttnsubad=6816380035">
+                    <img src="appstore-rozet.svg" alt="App Store'dan İndirin"
+                         width="182" height="48"
+                         style="display:block;height:48px;width:auto;">
+                </a>
             </div>
         </div>
     </aside>
