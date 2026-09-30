@@ -4463,17 +4463,41 @@ document.getElementById("adSecimKaydet").addEventListener("click", async functio
    baskasina gitmisse kullaniciya soruyor. */
 async function kullaniciAdiKapisi() {
   if (profilVeri.kullanici_adi) return false;
-  const bekleyen = kullaniciAdiTemizle(yerelOku("bekleyenKullaniciAdi", ""));
-  if (/^[a-z0-9_]{3,20}$/.test(bekleyen)) {
-    const { data, error } = await db.rpc("kullanici_adi_al", { p_ad: bekleyen });
+
+  /* Kayitta secilen ad IKI yerde duruyor: hesabin kendi bilgisinde
+     (signUp sirasinda oraya yaziliyor) ve bu tarayicinin yerel
+     kopyasinda. ONCELIK hesabin bilgisinde.
+
+     Sebebi: yerel kopya ilk girisde SILINIYOR. veriYukle() en basta
+     yerelSahibiniAyarla() cagiriyor, oturum sahibi "" iken gercek
+     kimlige gecince kopya temizleniyor -- ve temizlenen anahtarlarin
+     arasinda bekleyen ad da var. Yani kullanici kayit olurken adini
+     yaziyor, e-postasini dogrulayip giriyor, ad tam o anda siliniyor
+     ve ekran adi BIR DAHA soruyor. Hesabin kendi bilgisi ise
+     silinmiyor; dogrulama baglantisina baska bir cihazdan tiklansa
+     bile geliyor. */
+  let aday = "";
+  try {
+    const { data: o } = await db.auth.getSession();
+    const ust = o.session && o.session.user && o.session.user.user_metadata;
+    aday = kullaniciAdiTemizle(ust && ust.kullanici_adi);
+  } catch (e) { aday = ""; }
+  if (!/^[a-z0-9_]{3,20}$/.test(aday)) {
+    aday = kullaniciAdiTemizle(yerelOku("bekleyenKullaniciAdi", ""));
+  }
+
+  if (/^[a-z0-9_]{3,20}$/.test(aday)) {
+    const { data, error } = await db.rpc("kullanici_adi_al", { p_ad: aday });
     if (!error && data) {
       profilVeri.kullanici_adi = data;
       yerelYaz("profilVeri", profilVeri);
       yerelYaz("bekleyenKullaniciAdi", "");
       return false;
     }
+    /* Buraya dusmek: ad bu arada baskasina gitmis ya da sunucu kabul
+       etmemis. Ekran adi soruyor, kutuda secilen ad hazir duruyor. */
   }
-  adSecimEkraniniAc(bekleyen);
+  adSecimEkraniniAc(aday);
   return true;
 }
 
