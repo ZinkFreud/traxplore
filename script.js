@@ -836,6 +836,112 @@ function gezileriSirala(liste) {
   });
 }
 
+/* =====================================================================
+   ONAY VE UYARI PENCERELERI
+   Tarayicinin kendi soru ve uyari kutulari (confirm / alert) iOS
+   uygulamasinda HIC ACILMIYOR: uygulamanin icindeki web katmani bu
+   kutulari kendiliginden gostermiyor, uygulama tarafinda ayrica
+   tanimlanmalari gerekiyor. Tanimli olmadiklari icin soru hic
+   sorulmuyor, cevap "hayir" sayiliyordu: kullanici fotografin
+   carpisina basiyor, hicbir sey olmuyordu. Hata mesajlari da ayni
+   sebeple hic gorunmuyordu -- islem sessizce basarisiz oluyordu.
+
+   Kendi penceremiz her yerde ayni calisiyor, uygulamanin tasarimina
+   uyuyor ve sistem kutusundan okunakli. Bicimi kodun icinde duruyor
+   ki style.css'e dokunmadan tek dosyada kalsin.
+   ===================================================================== */
+function soruPenceresi(baslik, metin, onayYazi, vazgecYazi) {
+  return new Promise(function (bitir) {
+    const acikTema = document.documentElement.getAttribute("data-tema") === "acik";
+    const yazi  = acikTema ? "#17212B" : "#E4EBF1";
+    const soluk = acikTema ? "#55636F" : "#9DAAB6";
+
+    const ortu = document.createElement("div");
+    ortu.setAttribute("role", "dialog");
+    ortu.setAttribute("aria-modal", "true");
+    ortu.style.cssText =
+      "position:fixed;inset:0;z-index:4000;display:flex;align-items:center;" +
+      "justify-content:center;padding:24px;" +
+      "background:" + (acikTema ? "rgba(18,30,48,.55)" : "rgba(3,6,11,.74)") + ";";
+
+    const kutu = document.createElement("div");
+    kutu.style.cssText =
+      "width:100%;max-width:380px;border-radius:14px;padding:22px 22px 16px;" +
+      "background:" + (acikTema ? "#F4F7FA" : "#101923") + ";" +
+      "border:1px solid " + (acikTema ? "#C9D4DE" : "#22303D") + ";" +
+      "box-shadow:0 18px 50px rgba(0,0,0,.45);" +
+      "font-family:'Space Grotesk',system-ui,sans-serif;color:" + yazi + ";";
+
+    const b = document.createElement("h3");
+    b.textContent = baslik;
+    b.style.cssText = "margin:0 0 10px;font-size:17px;font-weight:600;line-height:1.3;";
+    kutu.appendChild(b);
+
+    if (metin) {
+      const p = document.createElement("p");
+      p.textContent = metin;
+      p.style.cssText = "margin:0 0 20px;font-size:14px;line-height:1.5;color:" + soluk + ";";
+      kutu.appendChild(p);
+    }
+
+    const satir = document.createElement("div");
+    satir.style.cssText = "display:flex;gap:6px;justify-content:flex-end;align-items:center;";
+
+    let kapandi = false;
+    function kapat(cevap) {
+      if (kapandi) return;
+      kapandi = true;
+      document.removeEventListener("keydown", tus, true);
+      ortu.remove();
+      bitir(cevap);
+    }
+    /* Escape'i ONCE biz yakaliyoruz (capture): sayfanin genel Escape
+       dinleyicisi arkadaki panelleri kapatmasin, once bu pencere
+       kapansin. */
+    function tus(e) {
+      if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); kapat(false); }
+      else if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); kapat(true); }
+    }
+
+    if (vazgecYazi !== null) {
+      const v = document.createElement("button");
+      v.type = "button";
+      v.textContent = vazgecYazi || "vazgeç";
+      v.style.cssText = "background:none;border:none;cursor:pointer;padding:10px 12px;" +
+        "font:inherit;font-size:14px;color:" + soluk + ";";
+      v.addEventListener("click", function () { kapat(false); });
+      satir.appendChild(v);
+    }
+
+    const o = document.createElement("button");
+    o.type = "button";
+    o.textContent = onayYazi || "Tamam";
+    o.style.cssText =
+      "border:1px solid #E9A23B;border-radius:9px;cursor:pointer;padding:10px 20px;" +
+      "font:inherit;font-size:14px;font-weight:600;" +
+      "background:rgba(233,162,59,.14);color:#E9A23B;";
+    o.addEventListener("click", function () { kapat(true); });
+    satir.appendChild(o);
+
+    kutu.appendChild(satir);
+    ortu.appendChild(kutu);
+    ortu.addEventListener("click", function (e) { if (e.target === ortu) kapat(false); });
+    document.body.appendChild(ortu);
+    document.addEventListener("keydown", tus, true);
+    o.focus();
+  });
+}
+
+/* Geri donusu olmayan bir is icin onay. true/false donuyor. */
+function onaySor(baslik, metin, onayYazi) {
+  return soruPenceresi(baslik, metin, onayYazi || "Devam et", "vazgeç");
+}
+
+/* Tek dugmeli bilgi penceresi -- eski uyari kutusunun yerine. */
+function uyariGoster(metin, baslik) {
+  return soruPenceresi(baslik || "Bir sorun var", metin, "Tamam", null);
+}
+
 function kacisla(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
                   .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -1151,13 +1257,14 @@ async function sehirSec(btn, ulke, s) {
        birinin bunu yanlislikla yapmasi can sikici, once soruyoruz. */
     const d0 = sehirDetaylari[anahtar(ulke, s.ad)] || {};
     const yazisiVar = (d0.not || "").trim() !== "";
-    if ((d0.puan > 0 || yazisiVar) &&
-        !confirm(s.ad + " işaretini kaldırıyorsun.\n\n" +
-                 (yazisiVar && d0.puan > 0 ? "Buraya verdiğin puan ve yazdığın not da silinecek."
-                  : yazisiVar ? "Buraya yazdığın not da silinecek."
-                              : "Buraya verdiğin puan da silinecek.") +
-                 " Geri alınamaz.\n\nDevam edilsin mi?")) {
-      return;
+    if (d0.puan > 0 || yazisiVar) {
+      const kayip = (yazisiVar && d0.puan > 0)
+        ? "Buraya verdiğin puan ve yazdığın not da silinecek."
+        : yazisiVar ? "Buraya yazdığın not da silinecek."
+                    : "Buraya verdiğin puan da silinecek.";
+      const devam = await onaySor(s.ad + " işaretini kaldır",
+        kayip + " Geri alınamaz.", "Kaldır");
+      if (!devam) return;
     }
     delete sehirDetaylari[anahtar(ulke, s.ad)];
     gezilenler = gezilenler.filter(function (g) {
@@ -1781,7 +1888,8 @@ async function fotoEkle(dosya) {
 }
 
 async function fotoSil(id, yol) {
-  if (!confirm("Bu fotograf silinsin mi?")) return;
+  if (!await onaySor("Fotoğrafı sil",
+        "Bu fotoğraf silinsin mi? Geri alınamaz.", "Sil")) return;
   // Once kaydi siliyoruz: kullanici aninda kaybolmus gormeli. Dosya
   // silinemezse kovada sahipsiz kalir, zararsiz; temizlik sorgusu var.
   const { error } = await db.from("sehir_fotolari").delete().eq("id", id);
@@ -2180,7 +2288,7 @@ function begeniSatiri(y) {
     if (error) {
       y.begeni = eskiSayi; y.begendim = eskiBen;
       tazele();
-      alert(hataYaz(error.message));
+      uyariGoster(hataYaz(error.message));
     } else {
       const c = (data && data[0]) || {};
       y.begeni  = c.begeni;
@@ -2959,13 +3067,14 @@ function gezginIslemleri() {
   eng.textContent = "engelle";
   eng.addEventListener("click", async function () {
     const ad = misafir.kullanici_adi;
-    if (!confirm("@" + ad + " engellensin mi?\n\n" +
-                 "Haritanı ve fotoğraflarını göremez, sen de onu görmezsin. " +
-                 "Arkadaşsanız arkadaşlığınız kalkar.")) return;
+    const onay = await onaySor("@" + ad + " engellensin mi?",
+      "Haritanı ve fotoğraflarını göremez, sen de onu görmezsin. " +
+      "Arkadaşsanız arkadaşlığınız kalkar.", "Engelle");
+    if (!onay) return;
     eng.disabled = true;
     const { error } = await db.rpc("engelle", { p_kullanici_adi: ad });
     eng.disabled = false;
-    if (error) { alert(hataYaz(error.message)); return; }
+    if (error) { uyariGoster(hataYaz(error.message)); return; }
     misafirdenCik();
     arkadasVeriTazele();
     /* Engel listesi kendiliginden tazelenmiyordu: birini engelledikten
@@ -3388,7 +3497,7 @@ function engelListesiniCiz() {
         kaldir.disabled = true;
         const { error } = await db.rpc("engeli_kaldir", { p_kullanici_adi: g.kullanici_adi });
         kaldir.disabled = false;
-        if (error) { alert(hataYaz(error.message)); return; }
+        if (error) { uyariGoster(hataYaz(error.message)); return; }
         engelListesiniYukle();
       });
       sat.appendChild(kaldir);
@@ -4503,7 +4612,9 @@ document.getElementById("cikisBtn").addEventListener("click", cikisYap);
 document.getElementById("profilCikis").addEventListener("click", cikisYap);
 
 document.getElementById("profilSifirla").addEventListener("click", async function () {
-  if (!confirm("Bütün gezdiklerin silinecek. Emin misin?")) return;
+  if (!await onaySor("Haritanı sıfırla",
+        "Bütün gezdiklerin, puanların ve notların silinecek. Geri alınamaz.",
+        "Sıfırla")) return;
   const { data: oturum } = await db.auth.getSession();
   if (oturum.session) {
     await db.from("gezilenler").delete().eq("user_id", oturum.session.user.id);
